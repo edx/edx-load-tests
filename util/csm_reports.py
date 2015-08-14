@@ -12,7 +12,10 @@ import pymongo
 # TODO: Figure out why...
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
+from bokeh.plotting import figure as bokeh_figure, output_file as bokeh_output_file, show as bokeh_show
+from bokeh.embed import components as bokeh_components
+from mako.template import Template
 
 # MongoDB defaults
 DEFAULT_MONGO_HOST = "localhost"
@@ -45,7 +48,10 @@ class MongoConnection(object):
             self.database.authenticate(user, password)
 
 
-def scatter_plot(successes, failures):
+def scatter_plot(successes, failures, label):
+    """
+    Scatter plot the successes/failures for a particular request type.
+    """
     # Make time bins at this regular time interval.
     bin_interval = np.timedelta64(1, 'm')
 
@@ -78,6 +84,9 @@ def scatter_plot(successes, failures):
     # Calculate the mean for each time bin.
     means_per_interval = [np.mean(x) if len(x) else 0.0 for x in vals_per_interval]
 
+    # Extract the max response time per interval.
+    max_per_interval = [ max(x) if len(x) else 0 for x in vals_per_interval ]
+
     # FAILURES
     # Convert all failure response timestamps to numpy datetimes.
     all_failure_timestamps = np.array(
@@ -86,43 +95,97 @@ def scatter_plot(successes, failures):
     all_failure_timestamps_i8 = all_failure_timestamps.view('i8')
 
     # Convert each failure response time into a plottable point against its time bin.
-    binned = np.digitize(all_failure_timestamps_i8, time_bins_i8)
+    binned = []
+    if len(all_failure_timestamps_i8):
+        binned = np.digitize(all_failure_timestamps_i8, time_bins_i8)
     failure_timestamps = []
     failure_resp_times = []
     for i, n in enumerate(binned):
         failure_timestamps.append(time_bins[n - 1])
         failure_resp_times.append(failures[i]['response_time'])
 
-    # Set axes labels and limits.
-    plt.xlabel("Time")
-    plt.ylabel("Mean Response Time (ms)")
-    plt.xlim(min_time, max_time)
+    TOOLS = "resize,crosshair,pan,wheel_zoom,box_zoom,reset,box_select"
+
+    # Find the maximum y-value.
+    y_max = max(max_per_interval)
+    if len(failure_resp_times):
+        y_max = max(y_max, max(failure_resp_times))
+
+    # Create a new plot with the tools above, and set axis labels.
+    p = bokeh_figure(
+        title=label,
+        tools=TOOLS,
+        x_range=(min_time, max_time),
+        y_range=(0, y_max)
+    )
+    p.xaxis.axis_label = "Time"
+    p.yaxis.axis_label = "Mean Response Time (ms)"
 
     # Scatter-plot the mean response time data for successes.
-    plt.scatter(np.array(time_bins), means_per_interval)
+    p.circle(x=np.array(time_bins), y=means_per_interval, fill_color='blue')
 
     # Scatter-plot the failure response times for all failures.
-    plt.scatter(np.array(failure_timestamps), failure_resp_times, marker='x', c='red')
+    p.x(x=np.array(failure_timestamps), y=failure_resp_times, line_color='red')
 
-    plt.show()
+    # show the results
+    #bokeh_show(p)
+
+    return p
 
 
-def read_req_data(mongo_host, mongo_port, db, collection):
+def get_all_request_types(collection):
+    all_names = collection.distinct("name")
+    all = dict(zip(all_names, all_names))
+    all['All Requests'] = None
+    return all
+
+
+def output_report(ctx, test_run):
     """
-    Read all test run data from MongoDB.
-    For now, assume that all data in the DB should be graphed.
+    Output a report analyzing a test run.
     """
-    print "Reading data..."
-    db = MongoConnection(db=db, host=mongo_host, port=mongo_port)
-    req_data = db.database[collection]
+    conn = MongoConnection(
+        host=ctx.obj['MONGO_HOST'],
+        port=ctx.obj['MONGO_PORT'],
+        db=ctx.obj['MONGO_DBNAME']
+    )
+    collection = conn.database[RAW_DATA_COLLECTION_FMT.format(test_run)]
+    req_types = get_all_request_types(collection)
+    all_plots = {}
+    for label, req_query in req_types.iteritems():
+        req_data = get_req_data(collection, label, req_query)
+        if len(req_data[0]) == 0:
+            # No successes to plot.
+            continue
+        p = scatter_plot(*req_data, label=label)
+        all_plots[label] = p
+
+    script, divs = bokeh_components(all_plots)
+    with open('report.html', 'w') as outfile:
+        report_template = Template(filename='static/test_run_report.html')
+        outfile.write(report_template.render(script=script, divs=divs))
+
+
+def get_req_data(collection, label, req_type):
+    """
+    Read test run data from MongoDB.
+    """
+    print "Reading data for '{}'...".format(label)
+
+    query = {'result': 'success'}
+    if req_type:
+        query['name'] = req_type
     successes = [
-        successful_req for successful_req in req_data.find({"result": "success"}).sort("timestamp", pymongo.ASCENDING)
+        successful_req for successful_req in collection.find(query).sort("timestamp", pymongo.ASCENDING)
     ]
     print "Success read complete ({}).".format(len(successes))
+
+    query['result'] = 'failure'
     failures = [
-        failed_req for failed_req in req_data.find({"result": "failure"}).sort("timestamp", pymongo.ASCENDING)
+        failed_req for failed_req in collection.find(query).sort("timestamp", pymongo.ASCENDING)
     ]
     print "Failure read complete ({}).".format(len(failures))
+
     return (successes, failures)
 
 
@@ -196,14 +259,8 @@ def analyze(ctx, test_run):
     if test_run is None:
         # If no test run is specified, use the latest test run.
         test_run = get_test_runs(ctx)[-1]
+    output_report(ctx, test_run)
 
-    req_data = read_req_data(
-        ctx.obj['MONGO_HOST'],
-        ctx.obj['MONGO_PORT'],
-        ctx.obj['MONGO_DBNAME'],
-        RAW_DATA_COLLECTION_FMT.format(test_run)
-    )
-    scatter_plot(*req_data)
 
 
 if __name__ == '__main__':
