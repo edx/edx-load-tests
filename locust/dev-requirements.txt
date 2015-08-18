@@ -1,3 +1,3 @@
 lazy==1.2
--e git+https://github.com/edx/locust.git@0565fc85f2bd647e1023aaae6fdab7a8a97724a0#egg=locustio
+-e git+https://github.com/edx/locust.git@e3fc3c02ec890683145fab21666117c48d782e50#egg=locustio
 PyJWT==1.1.0

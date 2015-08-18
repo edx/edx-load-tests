@@ -21,9 +21,11 @@ import os
 import socket
 import random
 import datetime
+import hashlib
 import pymongo
 from itertools import chain
-from locust import runners, events as locust_events
+from collections import defaultdict
+from locust import stats, events as locust_events
 
 
 class MongoConnection(object):
@@ -114,8 +116,8 @@ class RequestDatabaseLogger(object):
         finish_time = datetime.datetime.now()
 
         # Save the Locust test information - the stuff usually sent to CSV.
-        request_stats = runners.locust_runner.request_stats.get_request_stats_dataset()
-        distribution_stats = runners.locust_runner.request_stats.get_percentile_dataset()
+        request_stats = stats.global_stats.get_request_stats_dataset()
+        distribution_stats = stats.global_stats.get_percentile_dataset()
         self.test_runs.update(
             {'_id': self.run_id},
             {'$set':
