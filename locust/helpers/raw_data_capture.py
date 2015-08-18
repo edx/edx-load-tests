@@ -19,6 +19,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'helpers'))
 
 import os
 import socket
+import random
 import datetime
 import pymongo
 from itertools import chain
@@ -66,17 +67,18 @@ class RequestDatabaseLogger(object):
 
     def __init__(self, mongo_host='localhost', mongo_port=27017):
         # Add list of request data.
-        self._successes = []
-        self._failures = []
+        self._results = defaultdict(list)
 
         # Make a unique identifier for this Locust client.
-        self.client_id = "{}:{}".format(socket.gethostname(), os.getpid())
+        slave_id = "{}:{}".format(socket.gethostname(), os.getpid())
+        slave_id_to_hash = "{}:{:08d}".format(slave_id, random.randint(0, 99999999))
+        self.client_id = "{}:{}".format(slave_id, hashlib.md5(slave_id_to_hash).hexdigest())
 
         self.db = MongoConnection(db=self.DB_NAME, host=mongo_host, port=mongo_port)
         self.req_data = self.db.database[self.COLLECTION_NAME]
         self.test_runs = self.db.database[self.TEST_RUNS_COLLECTION]
 
-    def _apply_event(self, event_list, result, request_type, name, response_time, response_length, exception):
+    def _apply_event(self, result, request_type, name, response_time, response_length, exception):
         event_data = {
             'result': result,
             'type': request_type,
@@ -87,82 +89,13 @@ class RequestDatabaseLogger(object):
             'client_id': self.client_id,
             'timestamp': datetime.datetime.utcnow()
         }
-        event_list.append(event_data)
+        self._results[result].append(event_data)
 
         # Check if list is big enough to insert.
-        if len(event_list) >= self.EVENTS_BEFORE_FLUSH:
-            self.req_data.insert(event_list)
-            return True
-
-        return False
-
-    def _sort_stats(self, stats):
-        return [stats[key] for key in sorted(stats.iterkeys())]
-
-    def _gather_request_stats(self):
-        """
-        Gather all the statistics about requests in the test.
-        """
-        headers = [
-            'Method',
-            'Name',
-            '# requests',
-            '# failures',
-            'Median response time',
-            'Average response time',
-            'Min response time',
-            'Max response time',
-            'Average Content Size',
-            'Requests/s',
-        ]
-
-        rows = []
-        for s in chain(self._sort_stats(runners.locust_runner.request_stats), [runners.locust_runner.stats.aggregated_stats("Total", full_request_history=True)]):
-            rows.append([
-                s.method,
-                s.name,
-                s.num_requests,
-                s.num_failures,
-                s.median_response_time,
-                s.avg_response_time,
-                s.min_response_time or 0,
-                s.max_response_time,
-                s.avg_content_length,
-                s.total_rps,
-            ])
-        return headers, rows
-
-    def _gather_distribution_stats(self):
-        """
-        """
-        headers = [
-            'Name',
-            '# requests',
-            '50%',
-            '66%',
-            '75%',
-            '80%',
-            '90%',
-            '95%',
-            '98%',
-            '99%',
-            '100%',
-        ]
-        rows = []
-        for s in chain(self._sort_stats(runners.locust_runner.request_stats), [runners.locust_runner.stats.aggregated_stats("Total", full_request_history=True)]):
-            if s.num_requests:
-                #rows.append(s.percentile(tpl='%s,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i').split(','))
-                stats = []
-                for x in s.percentile(tpl='%s,%i,%i,%i,%i,%i,%i,%i,%i,%i,%i').split(','):
-                    try:
-                        stats.append(int(x))
-                    except ValueError:
-                        stats.append(x)
-                rows.append(stats)
-            else:
-                rows.append([s.name, 0, "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A", "N/A"])
-        return headers, rows
-
+        if len(self._results[result]) >= self.EVENTS_BEFORE_FLUSH:
+            self.req_data.insert(self._results[result])
+            # Since the events were inserted, clear this result list.
+            self._results[result] = []
 
     def master_start_hatching_handler(self):
         # Make an ID for this test run. Use this for all raw data captured.
@@ -181,8 +114,8 @@ class RequestDatabaseLogger(object):
         finish_time = datetime.datetime.now()
 
         # Save the Locust test information - the stuff usually sent to CSV.
-        request_stats = self._gather_request_stats()
-        distribution_stats = self._gather_distribution_stats()
+        request_stats = runners.locust_runner.request_stats.get_request_stats_dataset()
+        distribution_stats = runners.locust_runner.request_stats.get_percentile_dataset()
         self.test_runs.update(
             {'_id': self.run_id},
             {'$set':
@@ -199,31 +132,26 @@ class RequestDatabaseLogger(object):
 
     def success_handler(self, request_type, name, response_time, response_length, **kwargs):
         # Add to list.
-        if self._apply_event(
-            self._successes, self.REQ_SUCCESS,
+        self._apply_event(
+            self.REQ_SUCCESS,
             request_type, name, response_time, response_length, None
-        ):
-            # If events were inserted, clear the list.
-            self._successes = []
+        )
 
     def failure_handler(self, request_type, name, response_time, exception, **kwargs):
         # Add to list.
-        if self._apply_event(
-            self._failures, self.REQ_FAILURE,
+        self._apply_event(
+            self.REQ_FAILURE,
             request_type, name, response_time, None, unicode(exception)
-        ):
-            # If events were inserted, clear the list.
-            self._failures = []
+        )
 
     def flush(self):
         """
         Flush all remaining events to the database.
         """
-        if len(self._successes):
-            self.req_data.insert(self._successes)
-        if len(self._failures):
-            self.req_data.insert(self._failures)
-        self._successes = self._failures = []
+        for result in (self.REQ_SUCCESS, self.REQ_FAILURE):
+            if len(self._results[result]):
+                self.req_data.insert(self._results[result])
+            self._results[result] = []
 
     def activate(self):
         """
