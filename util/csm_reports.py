@@ -51,19 +51,22 @@ def scatter_plot(successes, failures):
 
     ## SUCCESSES
     # Convert all success response timestamps to numpy datetimes.
-    all_success_timestamps = [ np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in successes ]
+    all_success_timestamps = np.array(
+        [ np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in successes ]
+    )
 
     # Start the bins with the initial response time.
     min_time = all_success_timestamps[0]
     max_time = all_success_timestamps[-1]
-    time_bins = [ min_time ]
+    num_bins = 1 + (max_time - min_time) / bin_interval
 
     # Make regular time-intervaled bins until all response times are covered.
-    while time_bins[-1] < max_time:
-        time_bins.append(time_bins[-1] + bin_interval)
+    time_bins = []
+    for i in range(int(num_bins)):
+        time_bins.append(min_time + bin_interval * i)
 
     # Convert the timestamps into a comparable data type.
-    all_success_timestamps_i8 = np.array(all_success_timestamps).view('i8')
+    all_success_timestamps_i8 = all_success_timestamps.view('i8')
     time_bins_i8 = np.array(time_bins).view('i8')
 
     # Aggregate each response time into the appropriate time bin.
@@ -77,8 +80,10 @@ def scatter_plot(successes, failures):
 
     ## FAILURES
     # Convert all failure response timestamps to numpy datetimes.
-    all_failure_timestamps = [ np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in failures ]
-    all_failure_timestamps_i8 = np.array(all_failure_timestamps).view('i8')
+    all_failure_timestamps = np.array(
+        [ np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in failures ]
+    )
+    all_failure_timestamps_i8 = all_failure_timestamps.view('i8')
 
     # Convert each failure response time into a plottable point against its time bin.
     binned = np.digitize(all_failure_timestamps_i8, time_bins_i8)
