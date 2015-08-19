@@ -1,6 +1,6 @@
 pymongo==3.0.3
 click==4.1
 numpy==1.9.2
-scipy
+scipy=0.16.0
 pandas==0.16.2
 matplotlib==1.4.3
