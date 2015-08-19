@@ -140,7 +140,7 @@ class CSMLoadModel(TaskSet):
             str(numpy.random.randint(0, 1000)),
         )
 
-    @task
+    @task(2)
     def get_many(self):
         block_count = self._gen_num_blocks()
         if block_count > len(self.usages_with_data):
@@ -153,7 +153,7 @@ class CSMLoadModel(TaskSet):
                 random.sample(self.usages_with_data, block_count)
             )
 
-    @task
+    @task(1)
     def set_many(self):
         usage_key = self._gen_usage_key()
         self.client.set_many(self.client.username, {usage_key: self._gen_block_data()})
