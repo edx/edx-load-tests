@@ -123,8 +123,8 @@ class RequestDatabaseLogger(object):
             {
                 '$set': {
                     'finish_time': finish_time,
-                    'request_stats': {'headers': request_stats[0], 'data': request_stats[1]},
-                    'distribution_stats': {'headers': distribution_stats[0], 'data': distribution_stats[1]}
+                    'request_stats': {'headers': request_stats.headers, 'data': request_stats[0:]},
+                    'distribution_stats': {'headers': distribution_stats.headers, 'data': distribution_stats[0:]}
                 }
             }
         )
