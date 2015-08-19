@@ -127,13 +127,14 @@ def scatter_plot(successes, failures, label):
     # Scatter-plot the failure response times for all failures.
     p.x(x=np.array(failure_timestamps), y=failure_resp_times, line_color='red')
 
-    # show the results
-    #bokeh_show(p)
-
     return p
 
 
 def get_all_request_types(collection):
+    """
+    Returns a dict with request types as keys and values, in order to have a
+    special None value for all requests.
+    """
     all_names = collection.distinct("name")
     all = dict(zip(all_names, all_names))
     all['All Requests'] = None
@@ -149,21 +150,39 @@ def output_report(ctx, test_run):
         port=ctx.obj['MONGO_PORT'],
         db=ctx.obj['MONGO_DBNAME']
     )
-    collection = conn.database[RAW_DATA_COLLECTION_FMT.format(test_run)]
-    req_types = get_all_request_types(collection)
+    resp_collection = conn.database[RAW_DATA_COLLECTION_FMT.format(test_run)]
+    req_types = get_all_request_types(resp_collection)
+
+    # Grab all the Locust-generated data.
+    run_collection = conn.database[TEST_RUN_COLLECTION]
+    run_data = run_collection.find_one({'_id': test_run})
+
+    # Generate plots for each request type.
     all_plots = {}
     for label, req_query in req_types.iteritems():
-        req_data = get_req_data(collection, label, req_query)
+        req_data = get_req_data(resp_collection, label, req_query)
         if len(req_data[0]) == 0:
             # No successes to plot.
             continue
         p = scatter_plot(*req_data, label=label)
         all_plots[label] = p
 
+    # Output an HTML report of the test run.
     script, divs = bokeh_components(all_plots)
+
+    from mako import exceptions
+
     with open('report.html', 'w') as outfile:
-        report_template = Template(filename='static/test_run_report.html')
-        outfile.write(report_template.render(script=script, divs=divs))
+        try:
+            report_template = Template(filename='static/test_run_report.html')
+            outfile.write(report_template.render(
+                script=script,
+                divs=divs,
+                run_title='CSM Load Test Run: {}'.format(test_run),
+                run_data=run_data
+            ))
+        except:
+            outfile.write(exceptions.html_error_template().render())
 
 
 def get_req_data(collection, label, req_type):
@@ -172,9 +191,9 @@ def get_req_data(collection, label, req_type):
     """
     print "Reading data for '{}'...".format(label)
 
-    query = {'result': 'success'}
-    if req_type:
-        query['name'] = req_type
+    query = {'name': req_type} if req_type else {}
+
+    query['result'] = 'success'
     successes = [
         successful_req for successful_req in collection.find(query).sort("timestamp", pymongo.ASCENDING)
     ]

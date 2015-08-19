@@ -1,18 +1,46 @@
+<%def name="locust_data_table(req_data)">
+    <table>
+        <tr>
+        % for col in req_data['headers']:
+            <th>${col}</th>
+        % endfor
+        </tr>
+    % for req in req_data['data']:
+        <tr>
+        % for col in req:
+            <td>${col}</td>
+        % endfor
+        </tr>
+    % endfor
+    </table>
+</%def>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Bokeh Scatter Plots</title>
+        <title>${run_title}</title>
 
         <link rel="stylesheet" href="http://cdn.pydata.org/bokeh/release/bokeh-0.9.0.min.css" type="text/css" />
         <script type="text/javascript" src="http://cdn.pydata.org/bokeh/release/bokeh-0.9.0.min.js"></script>
 
-        <!-- COPY/PASTE SCRIPT HERE -->
+        <!-- All graph JS inserted here. -->
         ${script}
 
     </head>
     <body>
-        <!-- INSERT DIVS HERE -->
+
+        <center><h1>${run_title}</h1></center>
+
+        <h2>Request Data</h2>
+        <%self:locust_data_table req_data="${run_data['request_stats']}">
+        </%self:locust_data_table>
+
+        <h2>Request Percentiles</h2>
+        <%self:locust_data_table req_data="${run_data['distribution_stats']}">
+        </%self:locust_data_table>
+
+        <!-- All graphs inserted in these divs. -->
         % for tag, div in divs.iteritems():
             ${div}
         % endfor
