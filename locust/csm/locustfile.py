@@ -2,7 +2,11 @@
 Load tests for the courseware student module.
 """
 
+import logging
+import numpy
 import os
+import random
+import string
 import sys
 import time
 
@@ -20,29 +24,11 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "locustsettings"
 
 import courseware.user_state_client as user_state_client
 from student.tests.factories import UserFactory
-from opaque_keys.edx.locator import BlockUsageLocator
+from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator
 
 
-class QuestionResponse(TaskSet):
-    "Respond to a question in the LMS."
-
-    @task
-    def set_many(self):
-        "set many load test"
-        usage = BlockUsageLocator.from_string(
-            'block-v1:HarvardX+SPU27x+2015_Q2+type@html+block'
-            + '@1a1866accf254461aa2df3e0b4238a5f')
-        self.client.set_many(self.client.username,
-                             {usage: {"soup": "delicious"}})
-
-    @task
-    def get_many(self):
-        "get many load test"
-        usage = BlockUsageLocator.from_string(
-            'block-v1:HarvardX+SPU27x+2015_Q2+type@html+block'
-            + '@1a1866accf254461aa2df3e0b4238a5f')
-        response = [s for s in self.client.get_many(self.client.username,
-                                                    [usage])]
+LOG = logging.getLogger(__file__)
+RANDOM_CHARACTERS = [random.choice(string.printable) for __ in xrange(1000)]
 
 
 class UserStateClient(object):
@@ -73,27 +59,111 @@ class UserStateClient(object):
             try:
                 result = func(*args, **kwargs)
             except Exception as e:
-                total_time = int((time.time() - start_time) * 1000)
+                end_time = time.time()
+                total_time = (end_time - start_time) * 1000
+                LOG.warning("Request Failed", exc_info=True)
                 events.request_failure.fire(
                     request_type="DjangoXBlockUserStateClient",
                     name=name,
                     response_time=total_time,
-                    exception=e)
+                    start_time=start_time,
+                    end_time=end_time,
+                    exception=e
+                )
             else:
-                total_time = int((time.time() - start_time) * 1000)
+                end_time = time.time()
+                total_time = (end_time - start_time) * 1000
                 events.request_success.fire(
-                    request_type="DjangoXBlockUserStateClient",
                     name=name,
                     response_time=total_time,
-                    response_length=0)
+                    start_time=start_time,
+                    end_time=time.time(),
+                    response_length=0
+                )
                 return result
         return wrapper
+
+
+class CSMLoadModel(TaskSet):
+    """
+    Generate load for courseware.StudentModule using the model defined here:
+    https://openedx.atlassian.net/wiki/display/PLAT/CSM+Loadtest+Request+Modelling
+    """
+
+    def __init__(self, *args, **kwargs):
+        super(CSMLoadModel, self).__init__(*args, **kwargs)
+        self.course_key = CourseLocator('org', 'course', 'run')
+        self.usages_with_data = set()
+
+    def _gen_field_count(self):
+        choice = numpy.random.random_sample()
+        if choice <= .45:
+            return 1
+        elif choice <= .9:
+            return 2
+        elif choice <= .99:
+            return 3
+        elif choice <= .999:
+            return 4
+        else:
+            return 5
+
+    def _gen_block_type(self):
+        return random.choice(['problem', 'html', 'sequence', 'vertical'])
+
+    def _gen_block_data(self):
+        target_serialized_size = int(numpy.random.pareto(a=0.262) + 2)
+        num_fields = self._gen_field_count()
+
+        if target_serialized_size == 2:
+            return {}
+        else:
+            # A serialized field looks like: `"key": "value",`.
+            # We'll use a standard set of single characters for keys (so that
+            # our data overlaps). So, we need 1 char for the key, 6 for the syntax,
+            # and the rest goes to the value.
+            data_per_field = max(target_serialized_size // num_fields - 6, 0)
+            return {
+                str(field): (RANDOM_CHARACTERS * (data_per_field // 1000 + 1))[:data_per_field]
+                for field in range(num_fields)
+            }
+
+    def _gen_num_blocks(self):
+        return int(numpy.random.pareto(a=2.21) + 1)
+
+    def _gen_usage_key(self):
+        return BlockUsageLocator(
+            self.course_key,
+            self._gen_block_type(),
+            # We've seen at most 1000 blocks requested in a course, so we'll
+            # generate at most that many different indexes.
+            str(numpy.random.randint(0, 1000)),
+        )
+
+    @task
+    def get_many(self):
+        block_count = self._gen_num_blocks()
+        if block_count > len(self.usages_with_data):
+            self.set_many()
+        else:
+            # TODO: This doesn't accurately represent queries which would retrieve
+            # data from StudentModules with no state, or usages with no StudentModules
+            self.client.get_many(
+                self.client.username,
+                random.sample(self.usages_with_data, block_count)
+            )
+
+    @task
+    def set_many(self):
+        usage_key = self._gen_usage_key()
+        self.client.set_many(self.client.username, {usage_key: self._gen_block_data()})
+        self.usages_with_data.add(usage_key)
 
 
 class UserStateClientClient(Locust):
     "Locust class for the User State Client."
 
-    task_set = QuestionResponse
+    task_set = CSMLoadModel
     min_wait = 1000
     max_wait = 5000
 
@@ -101,14 +171,6 @@ class UserStateClientClient(Locust):
         '''Constructor. DATABASE environment variables must be set
         (via locustsetting.py) prior to constructing this object.'''
         super(UserStateClientClient, self).__init__()
-
-        if locustsettings.DATABASES['default']['USER'] is None \
-                or locustsettings.DATABASES['default']['PASSWORD'] is None \
-                or locustsettings.DATABASES['default']['HOST'] is None:
-            raise LocustError("You must specify the username, password and "
-                              + "host for the database as environment "
-                              + "variables DB_USER, DB_PASSWORD and DB_HOST, "
-                              + "respectively.")
 
         # Without this, the greenlets will halt for database warnings
         filterwarnings('ignore', category=Database.Warning)
