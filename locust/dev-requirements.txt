@@ -1,4 +1,4 @@
 lazy==1.2
-locustio==0.7.2
+-e git+https://github.com/edx/locust.git@e3fc3c02ec890683145fab21666117c48d782e50#egg=locustio
 PyJWT==1.1.0
 -r platform-requirements.txt
