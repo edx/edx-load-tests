@@ -1,6 +1,13 @@
 """
 Load tests for the courseware student module.
 """
+#from gevent import monkey
+#monkey.patch_all()
+
+
+#import pymysql
+# Monkeypatch MySQLdb to a gevent-compatible library
+#pymysql.install_as_MySQLdb()
 
 import logging
 import numpy
