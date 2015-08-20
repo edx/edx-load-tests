@@ -187,8 +187,8 @@ class UserStateClientClient(Locust):
     "Locust class for the User State Client."
 
     task_set = CSMLoadModel
-    min_wait = 1000
-    max_wait = 5000
+    min_wait = 1
+    max_wait = 1
 
     def __init__(self):
         '''Constructor. DATABASE environment variables must be set
