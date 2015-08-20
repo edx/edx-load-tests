@@ -63,8 +63,6 @@ ipython-genutils==0.1.0
 itsdangerous==0.24
 Jinja2==2.8
 kombu==3.0.26
-lazy==1.2
-locustio==0.7.2
 lxml==3.4.4
 Mako==1.0.1
 Markdown==2.2.1
@@ -89,14 +87,12 @@ pickleshare==0.5
 Pillow==2.7.0
 PyContracts==1.7.6
 pycrypto==2.6.1
-PyJWT==1.1.0
 pymongo==3.0.3
 pyparsing==2.0.1
 python-dateutil==2.4.2
 python-memcached==1.57
 pytz===2012h
 PyYAML==3.11
-pyzmq==14.5.0
 requests==2.7.0
 scipy==0.14.0
 Shapely==1.2.16
@@ -114,8 +110,8 @@ urllib3==1.11
 WebOb==1.4.1
 Werkzeug==0.10.4
 XBlock===unknown
--e 'git+https://github.com/edx/edx-platform.git@master#egg=edx-calc&subdirectory=common/lib/calc'
--e 'git+https://github.com/edx/edx-platform.git@master#egg=edx-chem&subdirectory=common/lib/chem'
--e 'git+https://github.com/edx/edx-platform.git@master#egg=edx-capa&subdirectory=common/lib/capa'
--e 'git+https://github.com/edx/edx-platform.git@master#egg=edx-xmodule&subdirectory=common/lib/xmodule'
--e 'git+https://github.com/edx/edx-platform.git@master#egg=edx-dogstats&subdirectory=common/lib/dogstats'
+-e git+https://github.com/edx/edx-platform.git@master#egg=edx-calc&subdirectory=common/lib/calc
+-e git+https://github.com/edx/edx-platform.git@master#egg=edx-chem&subdirectory=common/lib/chem
+-e git+https://github.com/edx/edx-platform.git@master#egg=edx-capa&subdirectory=common/lib/capa
+-e git+https://github.com/edx/edx-platform.git@master#egg=edx-xmodule&subdirectory=common/lib/xmodule
+-e git+https://github.com/edx/edx-platform.git@master#egg=edx-dogstats&subdirectory=common/lib/dogstats
