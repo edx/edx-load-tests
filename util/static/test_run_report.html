@@ -1,5 +1,5 @@
 <%def name="locust_data_table(req_data)">
-    <table>
+    <table class="hoverTable">
         <tr>
         % for col in req_data['headers']:
             <th>${col}</th>
@@ -17,6 +17,36 @@
 
 <!DOCTYPE html>
 <html lang="en">
+    <style style="text/css">
+        .hoverTable{
+            font-family: verdana,arial,sans-serif;
+            font-size:11px;
+            color:#333333;
+            border-width: 1px;
+            border-color: #999999;
+            border-collapse: collapse;
+        }
+        .hoverTable td{
+            padding:7px; border:#4e95f4 1px solid;
+        }
+        /* Define the default color for all the table rows */
+        .hoverTable tr{
+            background: #b8d1f3;
+        }
+        /* Define the hover highlight color for the table row */
+        .hoverTable tr:hover {
+              background-color: #ffff99;
+        }
+        .hovertable th{
+            background-color:#c3dde0;
+            border-width: 1px;
+            border-color: #999999;
+            padding: 8px;
+            border-style: solid;
+            border-color: #a9c6c9;
+        }
+    </style>
+
     <head>
         <meta charset="utf-8">
         <title>${run_title}</title>
@@ -41,8 +71,10 @@
         </%self:locust_data_table>
 
         <!-- All graphs inserted in these divs. -->
+        <center>
         % for tag, div in divs.iteritems():
             ${div}
         % endfor
+        </center>
     </body>
 </html>
