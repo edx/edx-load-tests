@@ -5,6 +5,8 @@ You must have installed the requirements in the util_requirements.txt file in or
 successfully run this script.
 """
 
+import os
+import sys
 import datetime
 import click
 import pymongo
@@ -17,35 +19,9 @@ from bokeh.plotting import figure as bokeh_figure, output_file as bokeh_output_f
 from bokeh.embed import components as bokeh_components
 from mako.template import Template
 
-# MongoDB defaults
-DEFAULT_MONGO_HOST = "localhost"
-DEFAULT_MONGO_PORT = 27017
-DEFAULT_MONGO_DATABASE = "locust_data"
-
-RAW_DATA_COLLECTION_FMT = 'requests_{}'
-TEST_RUN_COLLECTION = "test_runs"
-
-
-class MongoConnection(object):
-    """
-    Base class for connecting to MongoDB.
-    """
-    def __init__(self, db, host, port=27107, tz_aware=True, user=None, password=None, **kwargs):
-        """
-        Create & open the connection - and authenticate.
-        """
-        self.database = pymongo.database.Database(
-            pymongo.MongoClient(
-                host=host,
-                port=port,
-                tz_aware=tz_aware,
-                **kwargs
-            ),
-            db
-        )
-
-        if user is not None and password is not None:
-            self.database.authenticate(user, password)
+# Work around the fact that this code doesn't live in a proper Python package.
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'locust', 'helpers'))
+from mongo_connection import RawDataCollection, MongoConnection
 
 
 def scatter_plot(successes, failures, label):
@@ -150,11 +126,11 @@ def output_report(ctx, test_run):
         port=ctx.obj['MONGO_PORT'],
         db=ctx.obj['MONGO_DBNAME']
     )
-    resp_collection = conn.database[RAW_DATA_COLLECTION_FMT.format(test_run)]
+    resp_collection = conn.database[RawDataCollection.RAW_DATA_COLLECTION_FMT.format(test_run)]
     req_types = get_all_request_types(resp_collection)
 
     # Grab all the Locust-generated data.
-    run_collection = conn.database[TEST_RUN_COLLECTION]
+    run_collection = conn.database[RawDataCollection.TEST_RUN_COLLECTION]
     run_data = run_collection.find_one({'_id': test_run})
 
     # Generate plots for each request type.
@@ -217,7 +193,7 @@ def get_test_runs(ctx):
         port=ctx.obj['MONGO_PORT'],
         db=ctx.obj['MONGO_DBNAME']
     )
-    test_runs = db.database[TEST_RUN_COLLECTION]
+    test_runs = db.database[RawDataCollection.TEST_RUN_COLLECTION]
     return [run_id['_id'] for run_id in test_runs.find(projection=['_id'], sort=[('_id', pymongo.ASCENDING)])]
 
 
@@ -231,17 +207,17 @@ def print_test_runs(ctx):
 
 @click.group()
 @click.option('--mongo_host',
-              default=DEFAULT_MONGO_HOST,
+              default="localhost",
               help="MongoDB host name to connect to.",
               required=False
               )
 @click.option('--mongo_port',
-              default=DEFAULT_MONGO_PORT,
+              default=27017,
               help="MongoDB port to connect to.",
               required=False
               )
 @click.option('--mongo_dbname',
-              default=DEFAULT_MONGO_DATABASE,
+              default=RawDataCollection.MONGO_DATABASE_NAME,
               help="MongoDB database to use.",
               required=False
               )
