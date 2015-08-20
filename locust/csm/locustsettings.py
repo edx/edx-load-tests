@@ -17,5 +17,5 @@ DATABASES = {
 
 DATABASES['default'].update(
     {k: os.environ.get('DB_' + k)
-        for k in ['HOST', 'NAME', 'PASSWORD', 'PORT', 'USER']
+        for k in ['ENGINE', 'HOST', 'NAME', 'PASSWORD', 'PORT', 'USER']
         if 'DB_' + k in os.environ})
