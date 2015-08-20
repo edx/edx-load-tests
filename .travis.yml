@@ -1,0 +1,18 @@
+language: python
+python:
+    - "2.7"
+
+# use docker container infrastructure
+sudo: false
+
+# Cache the pip directory. "cache: pip" doesn't work due to install override. See https://github.com/travis-ci/travis-ci/issues/3239.
+cache:
+  directories:
+    - $HOME/.cache/pip
+install:
+    - pip install -r locust/requirements.txt
+script:
+    - pep8
+branches:
+    only:
+        - master
