@@ -12,7 +12,7 @@ cache:
 install:
     - pip install -r locust/requirements.txt
 script:
-    - pep8
+    - pep8 locust/
 branches:
     only:
         - master
