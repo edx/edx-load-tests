@@ -74,6 +74,7 @@ class UserStateClient(object):
                 end_time = time.time()
                 total_time = (end_time - start_time) * 1000
                 events.request_success.fire(
+                    request_type="DjangoXBlockUserStateClient",
                     name=name,
                     response_time=total_time,
                     start_time=start_time,
