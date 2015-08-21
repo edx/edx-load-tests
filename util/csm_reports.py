@@ -10,21 +10,16 @@ import sys
 import datetime
 import click
 import pymongo
-# If you remove the pandas import below, some of the numpy calls fail below.
-# TODO: Figure out why...
-import pandas as pd
 import numpy as np
 
 from bokeh.plotting import figure as bokeh_figure, output_file as bokeh_output_file, show as bokeh_show
 from bokeh.embed import components as bokeh_components
 from mako.template import Template
 
-# Work around the fact that this code doesn't live in a proper Python package.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'locust', 'helpers'))
-from mongo_connection import RawDataCollection, MongoConnection
+from helpers.mongo_connection import RawDataCollection, MongoConnection
 
 
-def scatter_plot(successes, failures, label):
+def scatter_plot(successes, failures, label, min_time=None, max_time=None):
     """
     Scatter plot the successes/failures for a particular request type.
     """
@@ -38,8 +33,7 @@ def scatter_plot(successes, failures, label):
     )
 
     # Start the bins with the initial response time.
-    min_time = all_success_timestamps[0]
-    max_time = all_success_timestamps[-1]
+    min_time, max_time = [np.datetime64(datetime.datetime.isoformat(x)) for x in [min_time, max_time]]
     num_bins = 1 + (max_time - min_time) / bin_interval
 
     # Make regular time-intervaled bins until all response times are covered.
@@ -88,60 +82,70 @@ def scatter_plot(successes, failures, label):
         y_max = max(y_max, max(failure_resp_times))
 
     # Create a new plot with the tools above, and set axis labels.
-    p = bokeh_figure(
+    graph_plot = bokeh_figure(
         title=label,
         tools=TOOLS,
         x_range=(min_time, max_time),
         y_range=(0, y_max)
     )
-    p.xaxis.axis_label = "Time"
-    p.yaxis.axis_label = "Mean Response Time (ms)"
+    graph_plot.xaxis.axis_label = "Time"
+    graph_plot.yaxis.axis_label = "Mean Response Time (ms)"
 
     # Scatter-plot the mean response time data for successes.
-    p.circle(x=np.array(time_bins), y=means_per_interval, fill_color='blue')
+    graph_plot.circle(x=np.array(time_bins), y=means_per_interval, fill_color='blue')
 
     # Scatter-plot the failure response times for all failures.
-    p.x(x=np.array(failure_timestamps), y=failure_resp_times, line_color='red')
+    graph_plot.x(x=np.array(failure_timestamps), y=failure_resp_times, line_color='red')
 
-    return p
+    return graph_plot
 
 
-def get_all_request_types(collection):
+def _connect_to_mongo(ctx):
     """
-    Returns a dict with request types as keys and values, in order to have a
-    special None value for all requests.
+    Utility function to connect to MongoDB.
     """
-    all_names = collection.distinct("name")
-    all = dict(zip(all_names, all_names))
-    all['All Requests'] = None
-    return all
+    return MongoConnection(
+        host=ctx.obj['MONGO_HOST'],
+        port=ctx.obj['MONGO_PORT'],
+        db=ctx.obj['MONGO_DBNAME']
+    )
 
 
 def output_report(ctx, test_run):
     """
     Output a report analyzing a test run.
     """
-    conn = MongoConnection(
-        host=ctx.obj['MONGO_HOST'],
-        port=ctx.obj['MONGO_PORT'],
-        db=ctx.obj['MONGO_DBNAME']
-    )
+    conn = _connect_to_mongo(ctx)
     resp_collection = conn.database[RawDataCollection.RAW_DATA_COLLECTION_FMT.format(test_run)]
-    req_types = get_all_request_types(resp_collection)
+    req_types = sorted(resp_collection.distinct("name"))
 
     # Grab all the Locust-generated data.
     run_collection = conn.database[RawDataCollection.TEST_RUN_COLLECTION]
     run_data = run_collection.find_one({'_id': test_run})
 
-    # Generate plots for each request type.
-    all_plots = {}
-    for label, req_query in req_types.iteritems():
-        req_data = get_req_data(resp_collection, label, req_query)
-        if len(req_data[0]) == 0:
-            # No successes to plot.
-            continue
-        p = scatter_plot(*req_data, label=label)
-        all_plots[label] = p
+    all_plots = []
+    min_time = None
+    max_time = None
+
+    # Generate a single plot for all requests.
+    label = 'All Requests'
+    (successes, failures) = get_req_data(resp_collection, label, None)
+    if len(successes):
+        # Set minimum and maximum times from all request data.
+        min_time = min(successes[0]['timestamp'], failures[0]['timestamp'])
+        max_time = max(successes[-1]['timestamp'], failures[-1]['timestamp'])
+        all_plots.append(scatter_plot(
+            successes, failures, label=label, min_time=min_time, max_time=max_time
+        ))
+
+    # Generate a plot for each request type.
+    for req_type in req_types:
+        label = req_type
+        (successes, failures) = get_req_data(resp_collection, label, req_type)
+        if len(successes):
+            all_plots.append(scatter_plot(
+                successes, failures, label=label, min_time=min_time, max_time=max_time
+            ))
 
     # Output an HTML report of the test run.
     script, divs = bokeh_components(all_plots)
@@ -188,11 +192,7 @@ def get_test_runs(ctx):
     """
     Get all test run IDs.
     """
-    db = MongoConnection(
-        host=ctx.obj['MONGO_HOST'],
-        port=ctx.obj['MONGO_PORT'],
-        db=ctx.obj['MONGO_DBNAME']
-    )
+    db = _connect_to_mongo(ctx)
     test_runs = db.database[RawDataCollection.TEST_RUN_COLLECTION]
     return [run_id['_id'] for run_id in test_runs.find(projection=['_id'], sort=[('_id', pymongo.ASCENDING)])]
 
