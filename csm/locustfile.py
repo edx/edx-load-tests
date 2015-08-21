@@ -25,6 +25,15 @@ from locust.exception import LocustError
 from warnings import filterwarnings
 import MySQLdb as Database
 
+from helpers.raw_data_capture import RequestDatabaseLogger
+db_evts = RequestDatabaseLogger(
+    mongo_host=os.environ.get('MONGO_HOST', None),
+    mongo_port=os.environ.get('MONGO_PORT', None),
+    mongo_user=os.environ.get('MONGO_USER', None),
+    mongo_password=os.environ.get('MONGO_PASSWORD', None)
+)
+db_evts.activate()
+
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 # Load settings here to trigger edx-platform sys.path manipulations
 from django.conf import settings  # noqa

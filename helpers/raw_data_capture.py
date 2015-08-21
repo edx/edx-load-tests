@@ -53,13 +53,16 @@ class RequestDatabaseLogger(object):
         slave_id_to_hash = "{}:{:08d}".format(slave_id, random.randint(0, 99999999))
         self.client_id = "{}:{}".format(slave_id, hashlib.md5(slave_id_to_hash).hexdigest())
 
-        self.db = MongoConnection(
-            db=RawDataCollection.MONGO_DATABASE_NAME,
-            host=mongo_host, port=mongo_port,
-            user=mongo_user, password=mongo_password
-        )
-        self.req_data = self.db.database[self.TEMP_COLLECTION_NAME]
-        self.test_runs = self.db.database[RawDataCollection.TEST_RUN_COLLECTION]
+        if mongo_host == None or mongo_port == None:
+            self.db = None
+        else:
+            self.db = MongoConnection(
+                db=RawDataCollection.MONGO_DATABASE_NAME,
+                host=mongo_host, port=mongo_port,
+                user=mongo_user, password=mongo_password
+            )
+            self.req_data = self.db.database[self.TEMP_COLLECTION_NAME]
+            self.test_runs = self.db.database[RawDataCollection.TEST_RUN_COLLECTION]
 
     def _apply_event(self, result, request_type, name, response_time, response_length, exception):
         event_data = {
@@ -140,8 +143,9 @@ class RequestDatabaseLogger(object):
         """
         Register all event handlers.
         """
-        locust_events.master_start_hatching += self.master_start_hatching_handler
-        locust_events.master_stop_hatching += self.master_stop_hatching_handler
-        locust_events.request_success += self.success_handler
-        locust_events.request_failure += self.failure_handler
-        locust_events.quitting += self.flush
+        if self.db:
+            locust_events.master_start_hatching += self.master_start_hatching_handler
+            locust_events.master_stop_hatching += self.master_stop_hatching_handler
+            locust_events.request_success += self.success_handler
+            locust_events.request_failure += self.failure_handler
+            locust_events.quitting += self.flush
