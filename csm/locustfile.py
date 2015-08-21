@@ -26,13 +26,6 @@ from warnings import filterwarnings
 import MySQLdb as Database
 
 from helpers.raw_data_capture import RequestDatabaseLogger
-db_evts = RequestDatabaseLogger(
-    mongo_host=os.environ.get('MONGO_HOST', None),
-    mongo_port=os.environ.get('MONGO_PORT', None),
-    mongo_user=os.environ.get('MONGO_USER', None),
-    mongo_password=os.environ.get('MONGO_PASSWORD', None)
-)
-db_evts.activate()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 # Load settings here to trigger edx-platform sys.path manipulations
@@ -202,6 +195,14 @@ class UserStateClientClient(Locust):
         '''Constructor. DATABASE environment variables must be set
         (via locustsetting.py) prior to constructing this object.'''
         super(UserStateClientClient, self).__init__()
+
+        db_evts = RequestDatabaseLogger(
+            mongo_host=os.environ.get('MONGO_HOST', None),
+            mongo_port=os.environ.get('MONGO_PORT', None),
+            mongo_user=os.environ.get('MONGO_USER', None),
+            mongo_password=os.environ.get('MONGO_PASSWORD', None)
+        )
+        db_evts.activate()
 
         # Without this, the greenlets will halt for database warnings
         filterwarnings('ignore', category=Database.Warning)

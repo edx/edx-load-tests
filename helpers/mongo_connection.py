@@ -36,6 +36,7 @@ class MongoConnection(object):
                 host=host,
                 port=port,
                 tz_aware=tz_aware,
+                w=0,
                 **kwargs
             ),
             db

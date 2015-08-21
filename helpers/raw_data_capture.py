@@ -35,7 +35,7 @@ class RequestDatabaseLogger(object):
     Buffers the data and inserts it in batches to MongoDB.
     """
     # Flush request data events only after this many have been collected.
-    EVENTS_BEFORE_FLUSH = 10
+    EVENTS_BEFORE_FLUSH = 100
 
     # Enum of request outcomes.
     REQ_SUCCESS = 'success'
