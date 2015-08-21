@@ -1,0 +1,1 @@
+from csm.locustfile import UserStateClientClient

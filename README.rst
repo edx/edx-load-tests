@@ -7,7 +7,16 @@ Installation
 mkvirtualenv edx-load-tests
 pip install -r locust/requirements.txt
 cd locust/$TEST_DIR
-locust --host="http://localhost"
+locust --host="http://localhost" -f $csm
+
+Layout
+------
+
+Each set of tasks should be captured as a top-level locustfile named
+for the particular set of endpoints being tested. This toplevel file
+can be a flat python file (lms.py) or a directory (csm/). In the case
+of a directory, the __init__.py file should have (or import) the Locust
+subclass that defines the test.
 
 License
 -------
