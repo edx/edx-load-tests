@@ -53,7 +53,11 @@ class RequestDatabaseLogger(object):
         slave_id_to_hash = "{}:{:08d}".format(slave_id, random.randint(0, 99999999))
         self.client_id = "{}:{}".format(slave_id, hashlib.md5(slave_id_to_hash).hexdigest())
 
-        self.db = MongoConnection(db=RawDataCollection.MONGO_DATABASE_NAME, host=mongo_host, port=mongo_port, user=mongo_user, password=mongo_password)
+        self.db = MongoConnection(
+            db=RawDataCollection.MONGO_DATABASE_NAME,
+            host=mongo_host, port=mongo_port,
+            user=mongo_user, password=mongo_password
+        )
         self.req_data = self.db.database[self.TEMP_COLLECTION_NAME]
         self.test_runs = self.db.database[RawDataCollection.TEST_RUN_COLLECTION]
 
