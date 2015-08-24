@@ -1,13 +1,13 @@
 """
 Load tests for the courseware student module.
 """
-#from gevent import monkey
-#monkey.patch_all()
+# from gevent import monkey
+# monkey.patch_all()
 
 
-#import pymysql
+# import pymysql
 # Monkeypatch MySQLdb to a gevent-compatible library
-#pymysql.install_as_MySQLdb()
+# pymysql.install_as_MySQLdb()
 
 import bisect
 import csv
@@ -27,12 +27,12 @@ import MySQLdb as Database
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 # Load settings here to trigger edx-platform sys.path manipulations
-from django.conf import settings
+from django.conf import settings  # noqa
 settings.INSTALLED_APPS
 
-import courseware.user_state_client as user_state_client
-from student.tests.factories import UserFactory
-from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator
+import courseware.user_state_client as user_state_client  # noqa
+from student.tests.factories import UserFactory  # noqa
+from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator  # noqa
 
 
 LOG = logging.getLogger(__file__)
@@ -132,7 +132,7 @@ class CSMLoadModel(TaskSet):
     def _gen_block_size(self):
         i = bisect.bisect(CSM_SIZES, (random.randint(0, CSM_COUNT), 0))
         return CSM_SIZES[i][1]
-    
+
     def _gen_block_data(self):
         target_serialized_size = self._gen_block_size()
         num_fields = self._gen_field_count()
