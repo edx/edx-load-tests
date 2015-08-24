@@ -13,7 +13,7 @@ install:
     - pip install pip==6.1.0
     - pip install -r dev-requirements.txt
 script:
-    - pep8 locust/
+    - pep8 .
 branches:
     only:
         - master
