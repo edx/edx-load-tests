@@ -1,1 +1,4 @@
+# Packages needed to run the CSM suite of loadtests
+
 pymysql==0.6.6
+-r platform-requirements.txt
