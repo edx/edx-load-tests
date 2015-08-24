@@ -198,7 +198,7 @@ class UserStateClientClient(Locust):
 
         db_evts = RequestDatabaseLogger(
             mongo_host=os.environ.get('MONGO_HOST', None),
-            mongo_port=os.environ.get('MONGO_PORT', None),
+            mongo_port=int(os.environ.get('MONGO_PORT', -1)),
             mongo_user=os.environ.get('MONGO_USER', None),
             mongo_password=os.environ.get('MONGO_PASSWORD', None)
         )
