@@ -110,8 +110,8 @@ urllib3==1.11
 WebOb==1.4.1
 Werkzeug==0.10.4
 XBlock===unknown
--e git+https://github.com/edx/edx-platform.git@master#egg=edx-calc&subdirectory=common/lib/calc
--e git+https://github.com/edx/edx-platform.git@master#egg=edx-chem&subdirectory=common/lib/chem
--e git+https://github.com/edx/edx-platform.git@master#egg=edx-capa&subdirectory=common/lib/capa
--e git+https://github.com/edx/edx-platform.git@master#egg=edx-xmodule&subdirectory=common/lib/xmodule
--e git+https://github.com/edx/edx-platform.git@master#egg=edx-dogstats&subdirectory=common/lib/dogstats
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-calc&subdirectory=common/lib/calc
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-chem&subdirectory=common/lib/chem
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-capa&subdirectory=common/lib/capa
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-xmodule&subdirectory=common/lib/xmodule
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-dogstats&subdirectory=common/lib/dogstats
