@@ -25,11 +25,10 @@ from locust.exception import LocustError
 from warnings import filterwarnings
 import MySQLdb as Database
 
-sys.path.append(os.path.dirname(__file__))
-
-import locustsettings
-
-os.environ["DJANGO_SETTINGS_MODULE"] = "locustsettings"
+os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
+# Load settings here to trigger edx-platform sys.path manipulations
+from django.conf import settings
+settings.INSTALLED_APPS
 
 import courseware.user_state_client as user_state_client
 from student.tests.factories import UserFactory
@@ -212,9 +211,9 @@ def set_params():
     database parameters when locust's web interface is enabled.'''
     if web.request.method == 'POST':
         if len(web.request.form['PASSWORD']) > 0:
-            locustsettings.DATABASES['default']['PASSWORD'] \
+            settings.DATABASES['default']['PASSWORD'] \
                 = web.request.form['PASSWORD']
         for key in ['USER', 'PORT', 'NAME', 'HOST']:
-            locustsettings.DATABASES['default'][key] = web.request.form[key]
+            settings.DATABASES['default'][key] = web.request.form[key]
     return web.render_template('set_params.html',
-                               **locustsettings.DATABASES['default'])
+                               **settings.DATABASES['default'])
