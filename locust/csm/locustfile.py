@@ -1,7 +1,16 @@
 """
 Load tests for the courseware student module.
 """
+#from gevent import monkey
+#monkey.patch_all()
 
+
+#import pymysql
+# Monkeypatch MySQLdb to a gevent-compatible library
+#pymysql.install_as_MySQLdb()
+
+import bisect
+import csv
 import logging
 import numpy
 import os
@@ -28,7 +37,16 @@ from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator
 
 
 LOG = logging.getLogger(__file__)
-RANDOM_CHARACTERS = [random.choice(string.printable) for __ in xrange(1000)]
+RANDOM_CHARACTERS = [random.choice(string.ascii_letters + string.digits) for __ in xrange(1000)]
+
+with open(os.path.join(os.path.dirname(__file__), 'csm-sizes.csv')) as sizes:
+    reader = csv.reader(sizes)
+    reader.next()  # Drop the header row
+    CSM_SIZES = []
+    CSM_COUNT = 0
+    for count, length in reader:
+        CSM_COUNT += int(count)
+        CSM_SIZES.append((CSM_COUNT, int(length)))
 
 
 class UserStateClient(object):
@@ -112,8 +130,12 @@ class CSMLoadModel(TaskSet):
     def _gen_block_type(self):
         return random.choice(['problem', 'html', 'sequence', 'vertical'])
 
+    def _gen_block_size(self):
+        i = bisect.bisect(CSM_SIZES, (random.randint(0, CSM_COUNT), 0))
+        return CSM_SIZES[i][1]
+    
     def _gen_block_data(self):
-        target_serialized_size = int(numpy.random.pareto(a=0.262) + 2)
+        target_serialized_size = self._gen_block_size()
         num_fields = self._gen_field_count()
 
         if target_serialized_size == 2:
@@ -165,8 +187,8 @@ class UserStateClientClient(Locust):
     "Locust class for the User State Client."
 
     task_set = CSMLoadModel
-    min_wait = 1000
-    max_wait = 5000
+    min_wait = 1
+    max_wait = 1
 
     def __init__(self):
         '''Constructor. DATABASE environment variables must be set

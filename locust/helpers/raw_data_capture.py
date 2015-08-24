@@ -67,7 +67,7 @@ class RequestDatabaseLogger(object):
     COLLECTION_NAME = 'requests'
     TEST_RUNS_COLLECTION = 'test_runs'
 
-    def __init__(self, mongo_host='localhost', mongo_port=27017):
+    def __init__(self, mongo_host='localhost', mongo_port=27017, mongo_user=None, mongo_password=None):
         # Add list of request data.
         self._results = defaultdict(list)
 
@@ -76,7 +76,7 @@ class RequestDatabaseLogger(object):
         slave_id_to_hash = "{}:{:08d}".format(slave_id, random.randint(0, 99999999))
         self.client_id = "{}:{}".format(slave_id, hashlib.md5(slave_id_to_hash).hexdigest())
 
-        self.db = MongoConnection(db=self.DB_NAME, host=mongo_host, port=mongo_port)
+        self.db = MongoConnection(db=self.DB_NAME, host=mongo_host, port=mongo_port, user=mongo_user, password=mongo_password)
         self.req_data = self.db.database[self.COLLECTION_NAME]
         self.test_runs = self.db.database[self.TEST_RUNS_COLLECTION]
 
