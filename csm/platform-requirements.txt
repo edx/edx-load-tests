@@ -77,8 +77,8 @@ numpy==1.6.2
 oauth2==1.5.211
 oauth2-provider==0.0
 oauthlib==0.7.2
--e git+https://github.com/edx/opaque-keys.git@1254ed4d615a428591850656f39f26509b86d30a#egg=opaque_keys-dev
--e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=Open_edX-master
+-e git+https://github.com/edx/opaque-keys.git@1254ed4d615a428591850656f39f26509b86d30a#egg=opaque_keys
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=Open_edX
 path.py==7.6
 pbr==1.5.0
 pexpect==3.3
@@ -108,9 +108,9 @@ traitlets==4.0.0
 urllib3==1.11
 WebOb==1.4.1
 Werkzeug==0.10.4
--e git+https://github.com/edx/XBlock.git@master#egg=edx-xblock
--e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-calc&subdirectory=common/lib/calc
--e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-chem&subdirectory=common/lib/chem
--e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-capa&subdirectory=common/lib/capa
--e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-xmodule&subdirectory=common/lib/xmodule
--e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=edx-dogstats&subdirectory=common/lib/dogstats
+-e git+https://github.com/edx/XBlock.git@master#egg=XBlock
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=calc&subdirectory=common/lib/calc
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=chem&subdirectory=common/lib/chem
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=capa&subdirectory=common/lib/capa
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=XModule&subdirectory=common/lib/xmodule
+-e git+https://github.com/edx/edx-platform.git@346ff8407608251159de8e3c8715ab5ea2aa898b#egg=dogstats_wrapper&subdirectory=common/lib/dogstats

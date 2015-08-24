@@ -49,10 +49,10 @@ def scatter_plot(successes, failures):
     # Make time bins at this regular time interval.
     bin_interval = np.timedelta64(1, 'm')
 
-    ## SUCCESSES
+    # SUCCESSES
     # Convert all success response timestamps to numpy datetimes.
     all_success_timestamps = np.array(
-        [ np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in successes ]
+        [np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in successes]
     )
 
     # Start the bins with the initial response time.
@@ -71,17 +71,17 @@ def scatter_plot(successes, failures):
 
     # Aggregate each response time into the appropriate time bin.
     binned = np.digitize(all_success_timestamps_i8, time_bins_i8)
-    vals_per_interval = [ [] for x in xrange(time_bins_i8.size) ]
+    vals_per_interval = [[] for x in xrange(time_bins_i8.size)]
     for i, n in enumerate(binned):
-        vals_per_interval[n - 1].append( successes[i]['response_time'] )
+        vals_per_interval[n - 1].append(successes[i]['response_time'])
 
     # Calculate the mean for each time bin.
-    means_per_interval = [ np.mean(x) if len(x) else 0.0 for x in vals_per_interval ]
+    means_per_interval = [np.mean(x) if len(x) else 0.0 for x in vals_per_interval]
 
-    ## FAILURES
+    # FAILURES
     # Convert all failure response timestamps to numpy datetimes.
     all_failure_timestamps = np.array(
-        [ np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in failures ]
+        [np.datetime64(datetime.datetime.isoformat(s['timestamp'])) for s in failures]
     )
     all_failure_timestamps_i8 = all_failure_timestamps.view('i8')
 
@@ -145,7 +145,6 @@ def print_test_runs(ctx):
     """
     for run_id in get_test_runs(ctx):
         click.echo(run_id)
-
 
 
 @click.group()

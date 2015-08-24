@@ -120,8 +120,8 @@ class RequestDatabaseLogger(object):
         distribution_stats = stats.global_stats.get_percentile_dataset()
         self.test_runs.update(
             {'_id': self.run_id},
-            {'$set':
-                {
+            {
+                '$set': {
                     'finish_time': finish_time,
                     'request_stats': {'headers': request_stats[0], 'data': request_stats[1]},
                     'distribution_stats': {'headers': distribution_stats[0], 'data': distribution_stats[1]}
@@ -164,5 +164,3 @@ class RequestDatabaseLogger(object):
         locust_events.request_success += self.success_handler
         locust_events.request_failure += self.failure_handler
         locust_events.quitting += self.flush
-
-
