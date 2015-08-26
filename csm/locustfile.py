@@ -25,7 +25,7 @@ from locust.exception import LocustError
 from warnings import filterwarnings
 import MySQLdb as Database
 
-from helpers.raw_data_capture import RequestDatabaseLogger
+from helpers.raw_logs import RawLogger
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 # Load settings here to trigger edx-platform sys.path manipulations
@@ -48,6 +48,12 @@ with open(os.path.join(os.path.dirname(__file__), 'csm-sizes.csv')) as sizes:
     for count, length in reader:
         CSM_COUNT += int(count)
         CSM_SIZES.append((CSM_COUNT, int(length)))
+
+
+# TODO: This won't work well if we want to import this file
+# from some other test. For that to work, locust would need
+# a way to signal which file is the primary test file.
+REQUEST_LOGGER = RawLogger()
 
 
 class UserStateClient(object):
@@ -195,14 +201,6 @@ class UserStateClientClient(Locust):
         '''Constructor. DATABASE environment variables must be set
         (via locustsetting.py) prior to constructing this object.'''
         super(UserStateClientClient, self).__init__()
-
-        db_evts = RequestDatabaseLogger(
-            mongo_host=os.environ.get('MONGO_HOST', None),
-            mongo_port=int(os.environ.get('MONGO_PORT', -1)),
-            mongo_user=os.environ.get('MONGO_USER', None),
-            mongo_password=os.environ.get('MONGO_PASSWORD', None)
-        )
-        db_evts.activate()
 
         # Without this, the greenlets will halt for database warnings
         filterwarnings('ignore', category=Database.Warning)
