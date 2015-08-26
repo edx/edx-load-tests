@@ -55,7 +55,7 @@ def scatter_plot(successes, failures, label, min_time=None, max_time=None):
     means_per_interval = [np.mean(x) if len(x) else 0.0 for x in vals_per_interval]
 
     # Extract the max response time per interval.
-    max_per_interval = [ max(x) if len(x) else 0 for x in vals_per_interval ]
+    max_per_interval = [max(x) if len(x) else 0 for x in vals_per_interval]
 
     # FAILURES
     # Convert all failure response timestamps to numpy datetimes.
@@ -255,7 +255,6 @@ def analyze(ctx, test_run):
         # If no test run is specified, use the latest test run.
         test_run = get_test_runs(ctx)[-1]
     output_report(ctx, test_run)
-
 
 
 if __name__ == '__main__':

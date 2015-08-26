@@ -44,4 +44,3 @@ class MongoConnection(object):
 
         if user is not None and password is not None:
             self.database.authenticate(user, password)
-

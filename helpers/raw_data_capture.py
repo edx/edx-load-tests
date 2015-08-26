@@ -53,7 +53,7 @@ class RequestDatabaseLogger(object):
         slave_id_to_hash = "{}:{:08d}".format(slave_id, random.randint(0, 99999999))
         self.client_id = "{}:{}".format(slave_id, hashlib.md5(slave_id_to_hash).hexdigest())
 
-        if mongo_host == None or mongo_port == None:
+        if mongo_host is None or mongo_port is None:
             self.db = None
         else:
             self.db = MongoConnection(

@@ -17,6 +17,7 @@ LOG_FIELDS = [
     "exception",
 ]
 
+
 class RawLogger(object):
     def __init__(self):
         events.request_success += self.on_request_success
@@ -40,8 +41,9 @@ class RawLogger(object):
 
         if self.logfile is not None:
             self.logfile.close()
+
         self.logfile = None
-        self.csvwriter  = None
+        self.csvwriter = None
 
     def on_request_success(self, **kwargs):
         self._open_log_file()
