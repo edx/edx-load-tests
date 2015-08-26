@@ -11,12 +11,24 @@ import datetime
 import click
 import pymongo
 import numpy as np
+import itertools
+import heapq
 
 from bokeh.plotting import figure as bokeh_figure, output_file as bokeh_output_file, show as bokeh_show
 from bokeh.embed import components as bokeh_components
-from mako.template import Template
+from csv import DictReader
+from collections import defaultdict
+from mako.lookup import TemplateLookup
+import mako.exceptions
 
 from helpers.mongo_connection import RawDataCollection, MongoConnection
+
+
+TEMPLATE_LOOKUP = TemplateLookup(
+    directories=[
+        os.path.join(os.path.dirname(__file__), 'static')
+    ]
+)
 
 
 def scatter_plot(successes, failures, label, min_time=None, max_time=None):
@@ -34,7 +46,8 @@ def scatter_plot(successes, failures, label, min_time=None, max_time=None):
 
     # Start the bins with the initial response time.
     min_time, max_time = [np.datetime64(datetime.datetime.isoformat(x)) for x in [min_time, max_time]]
-    num_bins = 1 + (max_time - min_time) / bin_interval
+    num_bins = 50 #1 + (max_time - min_time) / bin_interval
+    bin_interval = (max_time - min_time) / num_bins
 
     # Make regular time-intervaled bins until all response times are covered.
     time_bins = []
@@ -111,81 +124,142 @@ def _connect_to_mongo(ctx):
     )
 
 
-def output_report(ctx, test_run):
+def output_report(data_source):
     """
     Output a report analyzing a test run.
     """
-    conn = _connect_to_mongo(ctx)
-    resp_collection = conn.database[RawDataCollection.RAW_DATA_COLLECTION_FMT.format(test_run)]
-    req_types = sorted(resp_collection.distinct("name"))
-
-    # Grab all the Locust-generated data.
-    run_collection = conn.database[RawDataCollection.TEST_RUN_COLLECTION]
-    run_data = run_collection.find_one({'_id': test_run})
-
     all_plots = []
     min_time = None
     max_time = None
 
     # Generate a single plot for all requests.
-    label = 'All Requests'
-    (successes, failures) = get_req_data(resp_collection, label, None)
-    if len(successes):
-        # Set minimum and maximum times from all request data.
-        min_time = min(successes[0]['timestamp'], failures[0]['timestamp'])
-        max_time = max(successes[-1]['timestamp'], failures[-1]['timestamp'])
-        all_plots.append(scatter_plot(
-            successes, failures, label=label, min_time=min_time, max_time=max_time
-        ))
+    (successes, failures) = data_source.get_req_data(None)
+    mins = []
+    maxes = []
+
+    if successes:
+        mins.append(successes[0]['timestamp'])
+        maxes.append(successes[-1]['timestamp'])
+
+    if failures:
+        mins.append(failures[0]['timestamp'])
+        maxes.append(failures[-1]['timestamp'])
+        
+    # Set minimum and maximum times from all request data.
+    min_time = min(mins)
+    max_time = max(maxes)
+    all_plots.append(scatter_plot(
+        successes, failures, label='All Requests', min_time=min_time, max_time=max_time
+    ))
 
     # Generate a plot for each request type.
-    for req_type in req_types:
-        label = req_type
-        (successes, failures) = get_req_data(resp_collection, label, req_type)
+    for req_type in data_source.req_types:
+        (successes, failures) = data_source.get_req_data(req_type)
         if len(successes):
             all_plots.append(scatter_plot(
-                successes, failures, label=label, min_time=min_time, max_time=max_time
+                successes, failures, label=req_type, min_time=min_time, max_time=max_time
             ))
 
     # Output an HTML report of the test run.
     script, divs = bokeh_components(all_plots)
 
-    from mako import exceptions
-
     with open('report.html', 'w') as outfile:
         try:
-            report_template = Template(filename='static/test_run_report.html')
+            report_template = TEMPLATE_LOOKUP.get_template('test_run_report.html')
             outfile.write(report_template.render(
                 script=script,
                 divs=divs,
-                run_title='CSM Load Test Run: {}'.format(test_run),
-                run_data=run_data
+                run_title='CSM Load Test Run: {}'.format(data_source.test_run),
+                run_data=data_source.run_data
             ))
         except:
-            outfile.write(exceptions.html_error_template().render())
+            outfile.write(mako.exceptions.html_error_template().render())
 
 
-def get_req_data(collection, label, req_type):
-    """
-    Read test run data from MongoDB.
-    """
-    print "Reading data for '{}'...".format(label)
+class DataSource(object):
+    def get_req_data(req_type):
+        """
+        Return a tuple of (successes, failures) requests for the specified req_type
+        """
+        raise NotImplementedError()
 
-    query = {'name': req_type} if req_type else {}
 
-    query['result'] = 'success'
-    successes = [
-        successful_req for successful_req in collection.find(query).sort("timestamp", pymongo.ASCENDING)
-    ]
-    print "Success read complete ({}).".format(len(successes))
+class MongoDataSource(DataSource):
+    def __init__(self, ctx, test_run):
+        conn = _connect_to_mongo(ctx)
+        self.resp_collection = conn.database[RawDataCollection.RAW_DATA_COLLECTION_FMT.format(test_run)]
+        req_types = sorted(self.resp_collection.distinct("name"))
 
-    query['result'] = 'failure'
-    failures = [
-        failed_req for failed_req in collection.find(query).sort("timestamp", pymongo.ASCENDING)
-    ]
-    print "Failure read complete ({}).".format(len(failures))
+        # Grab all the Locust-generated data.
+        self.run_collection = conn.database[RawDataCollection.TEST_RUN_COLLECTION]
+        self.run_data = self.run_collection.find_one({'_id': test_run})
 
-    return (successes, failures)
+
+    def get_req_data(self, req_type):
+        """
+        Read test run data from MongoDB.
+        """
+        if req_type:
+            print "Reading data for '{}'...".format(req_type)
+        else:
+            print "Reading all data ..."
+
+        query = {'name': req_type} if req_type else {}
+
+        query['result'] = 'success'
+        successes = [
+            successful_req for successful_req in collection.find(query).sort("timestamp", pymongo.ASCENDING)
+        ]
+        print "Success read complete ({}).".format(len(successes))
+
+        query['result'] = 'failure'
+        failures = [
+            failed_req for failed_req in collection.find(query).sort("timestamp", pymongo.ASCENDING)
+        ]
+        print "Failure read complete ({}).".format(len(failures))
+
+        return (successes, failures)
+
+
+class FileDataSource(DataSource):
+
+    def __init__(self, files):
+        self.files = files
+        self.test_run = self.files[0].name
+        self.run_data = None
+
+        data = itertools.chain.from_iterable(DictReader(file) for file in self.files)
+
+        self.data_by_type = defaultdict(lambda: ([], []))
+        for request in data:
+            request['start_time'] = datetime.datetime.fromtimestamp(float(request['start_time']))
+            request['end_time'] = datetime.datetime.fromtimestamp(float(request['end_time']))
+            request['response_time'] = float(request['response_time'])
+            request['response_length'] = int(request['response_length'])
+            request['timestamp'] = request['start_time']
+            if request['result'] == 'success':
+                self.data_by_type[request['name']][0].append(request)
+            else:
+                self.data_by_type[request['name']][1].append(request)
+
+        for requests in self.data_by_type.values():
+            requests[0].sort()
+            requests[1].sort()
+
+    @property
+    def req_types(self):
+        return self.data_by_type.keys()
+
+    def get_req_data(self, req_type):
+        if req_type is None:
+            successes = [successes for (successes, _) in self.data_by_type.values()]
+            failures = [failures for (_, failures) in self.data_by_type.values()]
+            return (
+                list(heapq.merge(*successes)),
+                list(heapq.merge(*failures)),
+            )
+
+        return self.data_by_type[req_type]
 
 
 def get_test_runs(ctx):
@@ -247,15 +321,26 @@ def print_runs(ctx):
               required=False
               )
 @click.pass_context
-def analyze(ctx, test_run):
+def analyze_mongo(ctx, test_run):
     """
     Generate graphs for a CSM load test run using the raw data captured in MongoDB.
     """
     if test_run is None:
         # If no test run is specified, use the latest test run.
         test_run = get_test_runs(ctx)[-1]
-    output_report(ctx, test_run)
+    data_source = MongoDataSource(ctx, test_run)
+    output_report(data_source)
 
+
+@cli.command()
+@click.argument(
+    'files',
+    type=click.File('r'),
+    nargs=-1,
+    required=False,
+)
+def analyze_files(files):
+    output_report(FileDataSource(files))
 
 if __name__ == '__main__':
     cli(obj={})  # pylint: disable=no-value-for-parameter

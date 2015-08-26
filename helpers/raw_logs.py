@@ -47,6 +47,7 @@ class RawLogger(object):
 
     def on_request_success(self, **kwargs):
         self._open_log_file()
+        kwargs['result'] = 'success'
         self.csvwriter.writerow(kwargs)
 
     def on_request_failure(self, **kwargs):

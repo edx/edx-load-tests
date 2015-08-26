@@ -62,13 +62,15 @@
 
         <center><h1>${run_title}</h1></center>
 
-        <h2>Request Data</h2>
-        <%self:locust_data_table req_data="${run_data['request_stats']}">
-        </%self:locust_data_table>
+        % if run_data is not None:
+            <h2>Request Data</h2>
+            <%self:locust_data_table req_data="${run_data['request_stats']}">
+            </%self:locust_data_table>
 
-        <h2>Request Percentiles</h2>
-        <%self:locust_data_table req_data="${run_data['distribution_stats']}">
+            <h2>Request Percentiles</h2>
+            <%self:locust_data_table req_data="${run_data['distribution_stats']}">
         </%self:locust_data_table>
+        % endif
 
         <!-- All graphs inserted in these divs. -->
         <center>
