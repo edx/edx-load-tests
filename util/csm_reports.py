@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 """
 Generate graphs from the raw Locust data captured in MongoDB.
 
