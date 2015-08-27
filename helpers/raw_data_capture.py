@@ -26,28 +26,7 @@ import pymongo
 from itertools import chain
 from collections import defaultdict
 from locust import stats, events as locust_events
-
-
-class MongoConnection(object):
-    """
-    Base class for connecting to MongoDB.
-    """
-    def __init__(self, db, host, port=27017, tz_aware=True, user=None, password=None, **kwargs):
-        """
-        Create & open the connection - and authenticate.
-        """
-        self.database = pymongo.database.Database(
-            pymongo.MongoClient(
-                host=host,
-                port=port,
-                tz_aware=tz_aware,
-                **kwargs
-            ),
-            db
-        )
-
-        if user is not None and password is not None:
-            self.database.authenticate(user, password)
+from helpers.mongo_connection import RawDataCollection, MongoConnection
 
 
 class RequestDatabaseLogger(object):
@@ -56,16 +35,14 @@ class RequestDatabaseLogger(object):
     Buffers the data and inserts it in batches to MongoDB.
     """
     # Flush request data events only after this many have been collected.
-    EVENTS_BEFORE_FLUSH = 10
+    EVENTS_BEFORE_FLUSH = 100
 
     # Enum of request outcomes.
     REQ_SUCCESS = 'success'
     REQ_FAILURE = 'failure'
 
-    # MongoDB database info
-    DB_NAME = 'locust_data'
-    COLLECTION_NAME = 'requests'
-    TEST_RUNS_COLLECTION = 'test_runs'
+    # Temporary MongoDB collection name for data during test run.
+    TEMP_COLLECTION_NAME = 'requests'
 
     def __init__(self, mongo_host='localhost', mongo_port=27017, mongo_user=None, mongo_password=None):
         # Add list of request data.
@@ -76,9 +53,16 @@ class RequestDatabaseLogger(object):
         slave_id_to_hash = "{}:{:08d}".format(slave_id, random.randint(0, 99999999))
         self.client_id = "{}:{}".format(slave_id, hashlib.md5(slave_id_to_hash).hexdigest())
 
-        self.db = MongoConnection(db=self.DB_NAME, host=mongo_host, port=mongo_port, user=mongo_user, password=mongo_password)
-        self.req_data = self.db.database[self.COLLECTION_NAME]
-        self.test_runs = self.db.database[self.TEST_RUNS_COLLECTION]
+        if mongo_host is None or mongo_port is None:
+            self.db = None
+        else:
+            self.db = MongoConnection(
+                db=RawDataCollection.MONGO_DATABASE_NAME,
+                host=mongo_host, port=mongo_port,
+                user=mongo_user, password=mongo_password
+            )
+            self.req_data = self.db.database[self.TEMP_COLLECTION_NAME]
+            self.test_runs = self.db.database[RawDataCollection.TEST_RUN_COLLECTION]
 
     def _apply_event(self, result, request_type, name, response_time, response_length, exception):
         event_data = {
@@ -123,14 +107,14 @@ class RequestDatabaseLogger(object):
             {
                 '$set': {
                     'finish_time': finish_time,
-                    'request_stats': {'headers': request_stats[0], 'data': request_stats[1]},
-                    'distribution_stats': {'headers': distribution_stats[0], 'data': distribution_stats[1]}
+                    'request_stats': {'headers': request_stats.headers, 'data': request_stats[0:]},
+                    'distribution_stats': {'headers': distribution_stats.headers, 'data': distribution_stats[0:]}
                 }
             }
         )
 
         # Rename the collection containing all the raw request data.
-        self.req_data.rename('{}_{}'.format(self.COLLECTION_NAME, self.run_id))
+        self.req_data.rename(RawDataCollection.RAW_DATA_COLLECTION_FMT.format(self.run_id))
 
     def success_handler(self, request_type, name, response_time, response_length, **kwargs):
         # Add to list.
@@ -159,8 +143,9 @@ class RequestDatabaseLogger(object):
         """
         Register all event handlers.
         """
-        locust_events.master_start_hatching += self.master_start_hatching_handler
-        locust_events.master_stop_hatching += self.master_stop_hatching_handler
-        locust_events.request_success += self.success_handler
-        locust_events.request_failure += self.failure_handler
-        locust_events.quitting += self.flush
+        if self.db:
+            locust_events.master_start_hatching += self.master_start_hatching_handler
+            locust_events.master_stop_hatching += self.master_stop_hatching_handler
+            locust_events.request_success += self.success_handler
+            locust_events.request_failure += self.failure_handler
+            locust_events.quitting += self.flush

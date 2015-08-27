@@ -25,6 +25,8 @@ from locust.exception import LocustError
 from warnings import filterwarnings
 import MySQLdb as Database
 
+from helpers.raw_logs import RawLogger
+
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 # Load settings here to trigger edx-platform sys.path manipulations
 from django.conf import settings  # noqa
@@ -46,6 +48,12 @@ with open(os.path.join(os.path.dirname(__file__), 'csm-sizes.csv')) as sizes:
     for count, length in reader:
         CSM_COUNT += int(count)
         CSM_SIZES.append((CSM_COUNT, int(length)))
+
+
+# TODO: This won't work well if we want to import this file
+# from some other test. For that to work, locust would need
+# a way to signal which file is the primary test file.
+REQUEST_LOGGER = RawLogger()
 
 
 class UserStateClient(object):
