@@ -17,6 +17,10 @@ LOG_FIELDS = [
     "exception",
 ]
 
+# A value between 0 and 1 that specifies what fraction of metrics
+# to log.
+METRIC_RESOLUTION = float(os.environ.get('METRIC_RESOLUTION', 1))
+
 
 class RawLogger(object):
     def __init__(self):
@@ -25,6 +29,7 @@ class RawLogger(object):
         events.reconfigure += self.on_reconfigure
         self.logfile = None
         self.csvwriter = None
+        self._metric_counter = 0
 
     def _open_log_file(self):
         if self.logfile is None:
@@ -46,13 +51,29 @@ class RawLogger(object):
         self.csvwriter = None
 
     def on_request_success(self, **kwargs):
+        if self._skip_entry():
+            return
+
         self._open_log_file()
         kwargs['result'] = 'success'
         self.csvwriter.writerow(kwargs)
 
     def on_request_failure(self, **kwargs):
+        if self._skip_entry():
+            return
+
         self._open_log_file()
         kwargs['result'] = 'failure'
         if 'exception' in kwargs:
             kwargs['exception'] = unicode(kwargs['exception'])
         self.csvwriter.writerow(kwargs)
+
+    def _skip_entry(self):
+        """
+        Return True if the logger should skip this entry.
+        """
+        self._metric_counter += METRIC_RESOLUTION
+        record = self._metric_counter >= 1
+        if record:
+            self._metric_counter -= 1
+        return not record
