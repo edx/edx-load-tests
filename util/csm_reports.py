@@ -124,7 +124,7 @@ def _connect_to_mongo(ctx):
     )
 
 
-def output_report(data_source):
+def output_report(outfile, data_source):
     """
     Output a report analyzing a test run.
     """
@@ -163,17 +163,16 @@ def output_report(data_source):
     # Output an HTML report of the test run.
     script, divs = bokeh_components(all_plots)
 
-    with open('report.html', 'w') as outfile:
-        try:
-            report_template = TEMPLATE_LOOKUP.get_template('test_run_report.html')
-            outfile.write(report_template.render(
-                script=script,
-                divs=divs,
-                run_title='CSM Load Test Run: {}'.format(data_source.test_run),
-                run_data=data_source.run_data
-            ))
-        except:
-            outfile.write(mako.exceptions.html_error_template().render())
+    try:
+        report_template = TEMPLATE_LOOKUP.get_template('test_run_report.html')
+        outfile.write(report_template.render(
+            script=script,
+            divs=divs,
+            run_title='CSM Load Test Run: {}'.format(data_source.test_run),
+            run_data=data_source.run_data
+        ))
+    except:
+        outfile.write(mako.exceptions.html_error_template().render())
 
 
 class DataSource(object):
@@ -315,13 +314,14 @@ def print_runs(ctx):
 
 
 @cli.command()
+@click.option('--output', '-o', type=click.File('w'), default='report.html')
 @click.option('--test_run',
               default=None,
               help="Test run id to analyze (YYYYMMDD_HHMMSS).",
               required=False
               )
 @click.pass_context
-def analyze_mongo(ctx, test_run):
+def analyze_mongo(ctx, output, test_run):
     """
     Generate graphs for a CSM load test run using the raw data captured in MongoDB.
     """
@@ -329,18 +329,19 @@ def analyze_mongo(ctx, test_run):
         # If no test run is specified, use the latest test run.
         test_run = get_test_runs(ctx)[-1]
     data_source = MongoDataSource(ctx, test_run)
-    output_report(data_source)
+    output_report(output, data_source)
 
 
 @cli.command()
+@click.option('--output', '-o', type=click.File('w'), default='report.html')
 @click.argument(
     'files',
     type=click.File('r'),
     nargs=-1,
     required=False,
 )
-def analyze_files(files):
-    output_report(FileDataSource(files))
+def analyze_files(output, files):
+    output_report(output, FileDataSource(files))
 
 if __name__ == '__main__':
     cli(obj={})  # pylint: disable=no-value-for-parameter
