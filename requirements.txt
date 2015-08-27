@@ -1,4 +1,4 @@
 # Packages needed to run any loadtest in this repo
 
--e git+https://github.com/edx/locust.git@eabaea099b738c637c3d4e1fdddd624e78932539#egg=locustio[scipy]
+-e git+https://github.com/edx/locust.git@edx#egg=locustio[scipy]
 -e .
