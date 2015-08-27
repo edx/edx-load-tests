@@ -37,9 +37,6 @@ def scatter_plot(successes, failures, label, min_time=None, max_time=None):
     """
     Scatter plot the successes/failures for a particular request type.
     """
-    # Make time bins at this regular time interval.
-    bin_interval = np.timedelta64(1, 'm')
-
     # SUCCESSES
     # Convert all success response timestamps to numpy datetimes.
     all_success_timestamps = np.array(
@@ -48,7 +45,7 @@ def scatter_plot(successes, failures, label, min_time=None, max_time=None):
 
     # Start the bins with the initial response time.
     min_time, max_time = [np.datetime64(datetime.datetime.isoformat(x)) for x in [min_time, max_time]]
-    num_bins = 50 #1 + (max_time - min_time) / bin_interval
+    num_bins = 50
     bin_interval = (max_time - min_time) / num_bins
 
     # Make regular time-intervaled bins until all response times are covered.
@@ -146,7 +143,7 @@ def output_report(outfile, data_source):
     if failures:
         mins.append(failures[0]['timestamp'])
         maxes.append(failures[-1]['timestamp'])
-        
+
     # Set minimum and maximum times from all request data.
     min_time = min(mins)
     max_time = max(maxes)
@@ -194,7 +191,6 @@ class MongoDataSource(DataSource):
         # Grab all the Locust-generated data.
         self.run_collection = conn.database[RawDataCollection.TEST_RUN_COLLECTION]
         self.run_data = self.run_collection.find_one({'_id': test_run})
-
 
     def get_req_data(self, req_type):
         """
