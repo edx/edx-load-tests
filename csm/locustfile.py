@@ -26,6 +26,7 @@ from warnings import filterwarnings
 import MySQLdb as Database
 
 from helpers.raw_logs import RawLogger
+from helpers import datadog_reporting
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 # Load settings here to trigger edx-platform sys.path manipulations
@@ -54,6 +55,8 @@ with open(os.path.join(os.path.dirname(__file__), 'csm-sizes.csv')) as sizes:
 # from some other test. For that to work, locust would need
 # a way to signal which file is the primary test file.
 REQUEST_LOGGER = RawLogger()
+
+datadog_reporting.setup()
 
 
 class UserStateClient(object):
