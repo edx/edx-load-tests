@@ -46,7 +46,7 @@ git+https://github.com/edx/edx-submissions.git
 git+https://github.com/edx/edx-user-state-client.git
 elasticsearch==0.4.5
 git+https://github.com/edx/event-tracking.git
-factory-boy==2.2.1
+factory-boy==2.5.2
 Flask==0.10.1
 fs==0.5.2
 funcsigs==0.4
