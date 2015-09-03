@@ -24,7 +24,7 @@ django-mako==0.1.3
 django-memcached==0.1.2
 django-model-utils==1.4.0
 django-mptt==0.7.4
-django-nose==1.3
+django-nose==1.4.1
 django-notify==1.1.2
 git+https://github.com/edx/django-oauth2-provider.git
 django-openid-auth==0.5
