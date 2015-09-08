@@ -163,7 +163,8 @@ class CSMLoadModel(TaskSet):
             }
 
     def _gen_num_blocks(self):
-        return int(numpy.random.pareto(a=2.21) + 1)
+        # Limit the Pareto distribution to remove large numbers that happen over time.
+        return min(int(numpy.random.pareto(a=2.21) + 1), 1000)
 
     def _gen_usage_key(self):
         return BlockUsageLocator(
