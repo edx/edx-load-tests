@@ -37,9 +37,10 @@ import courseware.user_state_client as user_state_client  # noqa
 from student.tests.factories import UserFactory  # noqa
 from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator  # noqa
 
-
 LOG = logging.getLogger(__file__)
 RANDOM_CHARACTERS = [random.choice(string.ascii_letters + string.digits) for __ in xrange(1000)]
+
+from django.db import transaction  # noqa
 
 with open(os.path.join(os.path.dirname(__file__), 'csm-sizes.csv')) as sizes:
     reader = csv.reader(sizes)
@@ -162,7 +163,8 @@ class CSMLoadModel(TaskSet):
             }
 
     def _gen_num_blocks(self):
-        return int(numpy.random.pareto(a=2.21) + 1)
+        # Limit the Pareto distribution to remove large numbers that happen over time.
+        return min(int(numpy.random.pareto(a=2.21) + 1), 1000)
 
     def _gen_usage_key(self):
         return BlockUsageLocator(
@@ -173,7 +175,8 @@ class CSMLoadModel(TaskSet):
             str(numpy.random.randint(0, 1000)),
         )
 
-    @task(2)
+    @task(1)
+    @transaction.commit_manually
     def get_many(self):
         block_count = self._gen_num_blocks()
         if block_count > len(self.usages_with_data):
@@ -185,12 +188,16 @@ class CSMLoadModel(TaskSet):
                 self.client.username,
                 random.sample(self.usages_with_data, block_count)
             )
+        transaction.commit()
 
     @task(1)
+    @transaction.commit_manually
     def set_many(self):
         usage_key = self._gen_usage_key()
+        self.client.get_many(self.client.username, [usage_key])
         self.client.set_many(self.client.username, {usage_key: self._gen_block_data()})
         self.usages_with_data.add(usage_key)
+        transaction.commit()
 
 
 class UserStateClientClient(Locust):
