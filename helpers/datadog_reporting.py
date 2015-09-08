@@ -15,10 +15,10 @@ def setup():
        2b) /edx/app/edx_ansible/server-vars.yaml
     """
 
-    api_key = os.env.get('DATADOG_API_KEY')
+    api_key = os.environ.get('DATADOG_API_KEY')
 
     if api_key is None:
-        server_vars_path = os.env.get('ANSIBLE_VARS', '/edx/app/edx_ansible/server-vars.yaml')
+        server_vars_path = os.environ.get('ANSIBLE_VARS', '/edx/app/edx_ansible/server-vars.yaml')
         server_vars = yaml.safe_load(server_vars_path)
         api_key = server_vars.get('DATADOG_API_KEY')
 
