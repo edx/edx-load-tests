@@ -40,6 +40,7 @@ from tasks.dapi_tasks import (
     DeleteCommentsTask,
     DeleteThreadsTask,
     GetThreadsTask,
+     GetCommentsTask,
     GetThreadListTask,
     GetThreadWithCommentsTask,
     PatchCommentsTask,
@@ -49,7 +50,6 @@ from tasks.dapi_tasks import (
 )
 
 requests.packages.urllib3.disable_warnings()
-
 
 class DiscussionsApiTest(DiscussionsApiTasks):
     """
@@ -137,6 +137,12 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         PatchThreadsTask: 92,
         PostCommentsTask: 194,
         PostThreadsTask: 220,
+        #GetCommentsTask: 2000,
+        #GetThreadsTask: 88000,
+        #PatchCommentsTask: 92,
+        #PatchThreadsTask: 69,
+        #PostCommentsTask: 300,
+        #PostThreadsTask: 200,
     }
 
 
@@ -144,3 +150,6 @@ class DiscussionsApiLocust(HttpLocust):
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'DiscussionsApiTest')]
     min_wait = int(os.getenv('LOCUST_MIN_WAIT', 5000))
     max_wait = int(os.getenv('LOCUST_MAX_WAIT', 5000))
+    #min_wait = int(os.getenv('LOCUST_MIN_WAIT', 1000))
+    #max_wait = int(os.getenv('LOCUST_MAX_WAIT', 2000))
+    #min_wait = max_wait = 500
