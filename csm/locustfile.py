@@ -126,17 +126,9 @@ class CSMLoadModel(TaskSet):
         self.usages_with_data = set()
 
     def _gen_field_count(self):
-        choice = numpy.random.random_sample()
-        if choice <= .45:
-            return 1
-        elif choice <= .9:
-            return 2
-        elif choice <= .99:
-            return 3
-        elif choice <= .999:
-            return 4
-        else:
-            return 5
+        # Instead of picking from a distribution that will continually increase the number of fields per block,
+        # just make all blocks have three fields for now.
+        return 3
 
     def _gen_block_type(self):
         return random.choice(['problem', 'html', 'sequence', 'vertical'])
