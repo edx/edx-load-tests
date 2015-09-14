@@ -1,5 +1,5 @@
 """
-Loadtests for the Discussions API
+Load tests for the Discussions API
 
 These classes of tests are tests that run a suite of tasks that answers a single
 question.
@@ -40,6 +40,7 @@ from tasks.dapi_tasks import (
     DeleteCommentsTask,
     DeleteThreadsTask,
     GetThreadsTask,
+    GetCommentsTask,
     GetThreadListTask,
     GetThreadWithCommentsTask,
     PatchCommentsTask,
@@ -111,7 +112,7 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
     This test will use all the available discussion API endpoints. Over time
     test will change the response time of the course as it POSTs more threads
     than it DELETEs. As the course becomes larger, the response times become
-    slower (assuming
+    slower.
 
     Note: Currently GET_thread grabs its thread ids from a static list. POST
     does not add to this list. Over time, as more DELETE are done, more 404s
@@ -125,22 +126,26 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         params = {
             "course_id": self.course_id,
             "staff": "true",
-            "roles": ["Administrator"]
+            "roles": ["Administrator"],
         }
         self.auto_auth(verify_ssl=False, params=params)
 
+    # TODO: Document updated numbers in wiki and update here following example in
+    # - https://openedx.atlassian.net/wiki/display/MA/Goals+and+setup
     tasks = {
-        DeleteCommentsTask: 40,
-        DeleteThreadsTask: 40,
         GetThreadsTask: 7560,
-        PatchCommentsTask: 83,
-        PatchThreadsTask: 92,
-        PostCommentsTask: 194,
+        GetThreadListTask: 500,
+        GetCommentsTask: 2000,
         PostThreadsTask: 220,
+        PostCommentsTask: 500,
+        PatchThreadsTask: 92,
+        PatchCommentsTask: 83,
+        DeleteThreadsTask: 40,
+        DeleteCommentsTask: 300,
     }
 
 
 class DiscussionsApiLocust(HttpLocust):
-    task_set = globals()[os.getenv('LOCUST_TASK_SET', 'DiscussionsApiTest')]
+    task_set = globals()[os.getenv('LOCUST_TASK_SET', 'FullDiscussionsApiTest')]
     min_wait = int(os.getenv('LOCUST_MIN_WAIT', 5000))
     max_wait = int(os.getenv('LOCUST_MAX_WAIT', 5000))
