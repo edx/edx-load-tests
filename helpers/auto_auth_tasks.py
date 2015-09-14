@@ -45,17 +45,10 @@ class AutoAuthTasks(TaskSet):
             params=params or {},
             verify=verify_ssl
         )
+
         json_response = json.loads(response.text)
         self._username = json_response['username']
         self._email = json_response['email']
         self._password = json_response['password']
         self._user_id = json_response['user_id']
         self._anonymous_user_id = json_response['anonymous_id']
-
-    @task
-    def stop(self):
-        """
-        Supports usage as nested or top-level task set.
-        """
-        if self.parent != self.locust:
-            self.interrupt()
