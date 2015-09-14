@@ -190,6 +190,8 @@ class DiscussionsSeeder(object):
         if response.status_code != 200:
             print "{}: {}".format(response.status_code, response.content[0:200])
             return
+            # Do we want to return or not???
+            # print "{}: {}".format(response.status_code, response)
 
         response = response.json()
 
