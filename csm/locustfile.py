@@ -87,6 +87,7 @@ class UserStateClient(object):
             start_time = time.time()
             try:
                 result = func(*args, **kwargs)
+                result = list(result)
             except Exception as e:
                 end_time = time.time()
                 total_time = (end_time - start_time) * 1000
