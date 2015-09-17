@@ -18,6 +18,7 @@ import random
 import string
 import sys
 import time
+import types
 
 from locust import Locust, TaskSet, task, events, web
 from locust.exception import LocustError
@@ -87,7 +88,9 @@ class UserStateClient(object):
             start_time = time.time()
             try:
                 result = func(*args, **kwargs)
-                result = list(result)
+                if isinstance(result, types.GeneratorType):
+                    # To make a generator actually be called, iterate over all the results.
+                    result = list(result)
             except Exception as e:
                 end_time = time.time()
                 total_time = (end_time - start_time) * 1000
@@ -173,7 +176,9 @@ class CSMLoadModel(TaskSet):
     def get_many(self):
         block_count = self._gen_num_blocks()
         if block_count > len(self.usages_with_data):
-            self.set_many()
+            # Create the number of blocks up to block_count.
+            for __ in xrange(block_count - len(self.usages_with_data)):
+                self.set_many()
         else:
             # TODO: This doesn't accurately represent queries which would retrieve
             # data from StudentModules with no state, or usages with no StudentModules
