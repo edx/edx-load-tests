@@ -18,6 +18,7 @@ import random
 import string
 import sys
 import time
+import types
 
 from locust import Locust, TaskSet, task, events, web
 from locust.exception import LocustError
@@ -87,7 +88,9 @@ class UserStateClient(object):
             start_time = time.time()
             try:
                 result = func(*args, **kwargs)
-                result = list(result)
+                if isinstance(result, types.GeneratorType):
+                    # To make a generator actually be called, iterate over all the results.
+                    result = list(result)
             except Exception as e:
                 end_time = time.time()
                 total_time = (end_time - start_time) * 1000
