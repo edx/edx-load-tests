@@ -176,7 +176,9 @@ class CSMLoadModel(TaskSet):
     def get_many(self):
         block_count = self._gen_num_blocks()
         if block_count > len(self.usages_with_data):
-            self.set_many()
+            # Create the number of blocks up to block_count.
+            for __ in xrange(block_count - len(self.usages_with_data)):
+                self.set_many()
         else:
             # TODO: This doesn't accurately represent queries which would retrieve
             # data from StudentModules with no state, or usages with no StudentModules
