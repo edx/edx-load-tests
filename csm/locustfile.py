@@ -41,7 +41,7 @@ from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator  # noqa
 LOG = logging.getLogger(__file__)
 RANDOM_CHARACTERS = [random.choice(string.ascii_letters + string.digits) for __ in xrange(1000)]
 
-from django.db import transaction  # noqa
+from django.db import transaction, connection  # noqa
 
 with open(os.path.join(os.path.dirname(__file__), 'csm-sizes.csv')) as sizes:
     reader = csv.reader(sizes)
@@ -187,6 +187,7 @@ class CSMLoadModel(TaskSet):
                 random.sample(self.usages_with_data, block_count)
             )
         transaction.commit()
+        connection.close()
 
     @task(1)
     @transaction.commit_manually
@@ -196,6 +197,7 @@ class CSMLoadModel(TaskSet):
         self.client.set_many(self.client.username, {usage_key: self._gen_block_data()})
         self.usages_with_data.add(usage_key)
         transaction.commit()
+        connection.close()
 
 
 class UserStateClientClient(Locust):
