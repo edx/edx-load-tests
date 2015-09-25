@@ -34,6 +34,7 @@ os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 from django.conf import settings  # noqa
 settings.INSTALLED_APPS
 
+import dogstats_wrapper as dog_stats_api
 import courseware.user_state_client as user_state_client  # noqa
 from student.tests.factories import UserFactory  # noqa
 from opaque_keys.edx.locator import BlockUsageLocator, CourseLocator  # noqa
@@ -69,6 +70,7 @@ class UserStateClient(object):
       this is only a method "username" which returns the username
       associated with the client instance).
     '''
+    API_DATADOG_SAMPLE_RATE = 0.01
 
     def __init__(self, user):
         '''Constructor. The argument 'user' is passed to the
@@ -79,6 +81,17 @@ class UserStateClient(object):
     def username(self):
         "Convenience method. Returns the username associated with the client."
         return self._client.user.username
+
+    def _ddog_histogram(self, evt_time, evt_name, value):
+        """
+        DataDog histogram method.
+        """
+        dog_stats_api.histogram(
+            'DjangoXBlockUserStateClient.{}'.format(evt_name),
+            value,
+            timestamp=evt_time,
+            sample_rate=self.API_DATADOG_SAMPLE_RATE,
+        )
 
     def __getattr__(self, name):
         "Wraps around client methods and reports stats to locust."
@@ -103,6 +116,7 @@ class UserStateClient(object):
                     end_time=end_time,
                     exception=e
                 )
+                self._ddog_histogram(end_time, '{}.failure_response_time'.format(name), total_time)
             else:
                 end_time = time.time()
                 total_time = (end_time - start_time) * 1000
@@ -114,6 +128,7 @@ class UserStateClient(object):
                     end_time=time.time(),
                     response_length=0
                 )
+                self._ddog_histogram(end_time, '{}.success_response_time'.format(name), total_time)
                 return result
         return wrapper
 
