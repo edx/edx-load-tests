@@ -2,3 +2,6 @@
 
 -e git+https://github.com/edx/locust.git@edx#egg=locustio[scipy]
 -e .
+jupyter
+runipy
+seaborn
