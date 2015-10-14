@@ -35,10 +35,10 @@ def get_random_thread(self, page=None, page_size=None, prioritize_comments=False
     order_by = "order_by={}".format("comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY))
     order_direction = "order_direction={}".format("desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION))
 
-    url = "/api/discussion/v1/threads/?{}&{}&{}&{}&{}&{}&{}".format(
+    url = "/api/discussion/v1/threads/?{}&{}&{}&{}&{}&{}".format(
         course_id,
         following,
-        view,
+        # view, # causing 500 for some reason
         order_by,
         order_direction,
         page,
@@ -61,6 +61,7 @@ def get_random_thread(self, page=None, page_size=None, prioritize_comments=False
             return random.choice(response.json()["results"])
         return None
     else:
+        print url
         print "{}: {}".format(response.status_code, response.content[0:200])
         return None
 
@@ -112,6 +113,7 @@ def get_random_comment(self, thread, verbose=False):
             return random.choice(response.json()["results"])
         return None
     else:
+        print url
         print "{}: {}".format(response.status_code, response.content[0:200])
         return None
 
@@ -143,6 +145,7 @@ def post_thread(self):
     if response.status_code == 200:
         return response
     else:
+        print url
         print "{}: {}".format(response.status_code, response.content[0:200])
 
 
@@ -165,6 +168,7 @@ def create_response(self, thread_id):
         name="POST_comment_response"
     )
     if response.status_code != 200:
+        print url
         print "{}: {}".format(response.status_code, response.content[0:200])
     return response.json()
 
@@ -191,5 +195,6 @@ def create_comment(self, comment_id, thread_id):
     )
 
     if response.status_code != 200:
+        print url
         print "{}: {}".format(response.status_code, response.content[0:200])
     return response.content

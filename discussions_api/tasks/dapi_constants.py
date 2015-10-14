@@ -7,7 +7,7 @@ FOLLOWING = [
 ]
 VIEW = [
     "unread",
-    "unanswered",
+    # "unanswered",
 ]
 ORDER_BY = [
     "last_activity_at",

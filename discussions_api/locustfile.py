@@ -1,5 +1,5 @@
 """
-Loadtests for the Discussions API
+Load tests for the Discussions API
 
 These classes of tests are tests that run a suite of tasks that answers a single
 question.
@@ -40,7 +40,7 @@ from tasks.dapi_tasks import (
     DeleteCommentsTask,
     DeleteThreadsTask,
     GetThreadsTask,
-     GetCommentsTask,
+    GetCommentsTask,
     GetThreadListTask,
     GetThreadWithCommentsTask,
     PatchCommentsTask,
@@ -144,7 +144,6 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         #PostCommentsTask: 300,
         #PostThreadsTask: 200,
     }
-
 
 class DiscussionsApiLocust(HttpLocust):
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'DiscussionsApiTest')]
