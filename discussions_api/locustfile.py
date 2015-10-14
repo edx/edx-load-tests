@@ -44,16 +44,15 @@ class DiscussionsApiTest(DiscussionsApiTasks):
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
-        DeleteCommentsTask: 40,
-        DeleteThreadsTask: 40,
-        GetCommentsTask: 2000,
-        GetThreadsTask: 88000,
-        PatchCommentsTask: 92,
-        PatchThreadsTask: 69,
-        PostCommentsTask: 300,
-        PostThreadsTask: 200,
+        # DeleteCommentsTask: 40,
+        # DeleteThreadsTask: 40,
+        # GetCommentsTask: 2000,
+        GetThreadsTask: 7560,
+        PatchCommentsTask: 83,
+        PatchThreadsTask: 92,
+        PostCommentsTask: 194,
+        PostThreadsTask: 220,
     }
-
 
 class DiscussionsApiLocust(HttpLocust):
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'DiscussionsApiTest')]

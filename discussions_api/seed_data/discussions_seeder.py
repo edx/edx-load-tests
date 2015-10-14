@@ -188,7 +188,8 @@ class DiscussionsSeeder(object):
         response = self.sess.get(url)\
 
         if response.status_code != 200:
-            print "{}: {}".format(response.status_code, response)
+            print "{}: {}".format(response.status_code, response.content[0:200])
+            return
 
         response = response.json()
 
