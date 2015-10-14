@@ -3,6 +3,7 @@ This file holds the different tasks used for the Discussion API tests
 """
 import json
 import random
+import time
 
 from locust import task
 
@@ -36,6 +37,7 @@ class GetThreadsTask(DiscussionsApiTasks):
         url = "/api/discussion/v1/threads/{}".format(choice)
         self.client.get(url=url, verify=False, name="GET_thread")
         self.wait_then_stop()
+        #self.stop()
 
 
 class GetThreadListTask(DiscussionsApiTasks):
@@ -52,6 +54,7 @@ class GetThreadListTask(DiscussionsApiTasks):
         """
         self.get_random_thread(verbose=self.verbose)
         self.wait_then_stop()
+        #self.stop()
 
 
 class GetThreadWithCommentsTask(DiscussionsApiTasks):
@@ -76,12 +79,12 @@ class GetThreadWithCommentsTask(DiscussionsApiTasks):
         name = "Comment_Range:{}-{}".format(rounded_count, rounded_count + 25)
         self.client.get(url=url, verify=False, name=name)
         self.wait_then_stop()
-
-
+        
 class GetCommentsTask(DiscussionsApiTasks):
     """
     Tasks for GETting comments
     """
+
     @task
     def get_comment_list(self):
         """
@@ -98,6 +101,11 @@ class GetCommentsTask(DiscussionsApiTasks):
         self.get_random_comment(thread=thread, verbose=self.verbose)
         self.wait_then_stop()
         
+        #thread = get_random_thread(self, page=1, page_size=10, prioritize_comments=True)
+        #time.sleep(1)
+        #get_random_comment(self, thread=thread, verbose=self.verbose)
+        #self.stop()
+
     def _get_comment_and_response_count(self, thread_id):
         """
         Returns the comment_count and response_count for a Thread
@@ -121,6 +129,7 @@ class GetCommentsTask(DiscussionsApiTasks):
             response = response.json()
             return response["comment_count"], response["response_count"]
         else:
+            #print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
 
@@ -139,10 +148,12 @@ class PatchThreadsTask(DiscussionsApiTasks):
         #thread = get_random_thread(self, page=1, page_size=10)
         if not thread:
             self.stop()
+        #time.sleep(1)
         return thread["id"]
 
     @task(51)
     def patch_edit_thread(self):
+    #def edit_thread(self):
         """
         Edit a thread's raw_body
 
@@ -152,6 +163,8 @@ class PatchThreadsTask(DiscussionsApiTasks):
         """
         new_body_size = random.choice(dapi_constants.BODY.keys())
         data = {"raw_body": dapi_constants.BODY[new_body_size]}
+        url = "/api/discussion/v1/threads/{}/".format(self._get_thread_id())
+
         name = "edit_thread_with_{}".format(new_body_size) if self.verbose else "PATCH_thread"
         thread_id = self._get_thread_id()
         self.patch_thread(
@@ -164,14 +177,16 @@ class PatchThreadsTask(DiscussionsApiTasks):
 
         #name = "edit_thread_with_{}".format(new_body_size) if self.verbose else "PATCH_thread"
 
-        #self.client.patch(
+        #response =self.client.patch(
         #    url,
         #    data=json.dumps(data),
         #    verify=False,
         #    headers=self._headers,
         #    name=name
         #)
-
+        #if response.status_code != 200:
+        #print url
+        #print "{}: {}".format(response.status_code, response.content[0:200])
         #self.stop()
 
     @task(3)
@@ -205,6 +220,7 @@ class PatchThreadsTask(DiscussionsApiTasks):
         #)
 
         #if response.status_code != 200:
+        #    print url
         #    print "{}: {}".format(response.status_code, response.content[0:200])
 
         #self.stop()
@@ -239,6 +255,7 @@ class PatchThreadsTask(DiscussionsApiTasks):
         #    name=name
         #)
         #if response.status_code != 200:
+        #    print url
         #    print "{}: {}".format(response.status_code, response.content[0:200])
 
         #self.stop()
@@ -261,8 +278,8 @@ class PatchThreadsTask(DiscussionsApiTasks):
             name=name,
 
         )
-        self.wait_then_stop()
-        #url = "/api/discussion/v1/threads/{}/".format(self._get_thread_id())
+        if response.status_code != 200:
+            print "{}: {}".format(response.status_code, response.content[0:200])
 
         #name = "vote_on_thread" if self.verbose else "PATCH_thread"
 
@@ -274,6 +291,7 @@ class PatchThreadsTask(DiscussionsApiTasks):
         #    name=name
         #)
         #if response.status_code != 200:
+        #    print url
         #    print "{}: {}".format(response.status_code, response.content[0:200])
 
         #self.stop()
@@ -290,6 +308,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
     """
 
     def _get_comment_id(self):
+    # def _comment_id(self):
         thread = self.get_random_thread(page=1, page_size=100, prioritize_comments=True)
         #thread = get_random_thread(self, page=1, page_size=10, prioritize_comments=True)
         self.wait()
@@ -299,6 +318,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
         self.wait()
         if not comment:
             self.stop()
+        #time.sleep(1)
         return comment["id"]
 
     @task(30)
@@ -333,6 +353,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
         #    name=name
         #)
         #if response.status_code != 200:
+        #    print url
         #    print "{}: {}".format(response.status_code, response.content[0:200])
 
         #self.stop()
@@ -369,6 +390,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
         #)
 
         #if response.status_code != 200:
+        #    print url
         #    print "{}: {}".format(response.status_code, response.content[0:200])
 
         #self.stop()
@@ -404,6 +426,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
         #    name=name
         #)
         #if response.status_code != 200:
+        #    print url
         #    print "{}: {}".format(response.status_code, response.content[0:200])
 
         #self.stop()
@@ -453,7 +476,8 @@ class PostCommentsTask(DiscussionsApiTasks):
         #thread = get_random_thread(self, page=1, page_size=10)
         #if thread:
         #    create_response(self, thread_id=thread["id"])
-        #self.stop()
+        # time.sleep(1)
+        # self.stop()
 
     @task(1)
     def post_comment(self):
@@ -463,10 +487,10 @@ class PostCommentsTask(DiscussionsApiTasks):
         Calls made:
         GET_thread_list
         POST_comment_response
-        POST_comment_comment
         """
         thread = self.get_random_thread(page=1, page_size=100)
         #thread = get_random_thread(self, page=1, page_size=10)
+        #time.sleep(1)
         self.wait()
         if thread:
             response = self.create_response(thread_id=thread["id"])
@@ -515,6 +539,7 @@ class DeleteThreadsTask(DiscussionsApiTasks):
         #)
 
         #if response.status_code != 204:
+        #    print url
         #    print "{}: {}".format(response.status_code, response.content[0:200])
 
         #self.stop()
