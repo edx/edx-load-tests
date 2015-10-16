@@ -101,7 +101,7 @@ def get_random_comment(self, thread, verbose=False):
 
     # Only be useful when running task in isolation with pre-set comment data
     if verbose:
-        comment_count, response_count = self._get_comment_and_response_count(thread["id"])
+        comment_count, response_count = get_comment_and_response_count(thread["id"])
         name = "comment_count={}_response_count={}".format(comment_count, response_count)
     else:
         name = "GET_comment_list"
@@ -198,3 +198,30 @@ def create_comment(self, comment_id, thread_id):
         print url
         print "{}: {}".format(response.status_code, response.content[0:200])
     return response.content
+
+
+def get_comment_and_response_count(self, thread_id):
+    """
+    Returns the comment_count and response_count for a Thread
+
+    This helper method is used when requiring verbose outputs for threads
+    that have high comment_counts. For example, a response with
+    1000 comment.
+
+    Calls made:
+    GET_thread
+
+    Args:
+        thread_id (str): Thread to get the comment_count and response_count
+
+    Returns:
+        (tuple): (comment_count, response_count)
+    """
+    url = "/api/discussion/v1/threads/{}/".format(thread_id)
+    response = self.client.get(url, verify=False, name="GET_thread")
+    if response.status_code == 200:
+        response = response.json()
+        return response["comment_count"], response["response_count"]
+    else:
+        print url
+        print "{}: {}".format(response.status_code, response.content[0:200])

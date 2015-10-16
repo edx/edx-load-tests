@@ -23,6 +23,7 @@ from tasks.dapi_tasks import (
     DeleteThreadsTask,
     GetCommentsTask,
     GetThreadsTask,
+    GetThreadWithCommentsTask,
     PatchCommentsTask,
     PatchThreadsTask,
     PostCommentsTask,

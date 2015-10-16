@@ -53,12 +53,13 @@ class GetThreadsTask(DiscussionsApiTasks):
         time.sleep(self.min_wait / 1000)
         self.stop()
 
-class GetThreadListTask(DiscussionsApiTasks):
+
+class GetThreadWithCommentsTask(DiscussionsApiTasks):
     """
     Task for GETting a thread list
     """
-    @task(1)
-    def get_thread_list(self, return_id=False):
+    @task
+    def get_thread_with_comments(self):
         """
         GET a thread list
 
@@ -67,7 +68,13 @@ class GetThreadListTask(DiscussionsApiTasks):
         Calls made:
         GET_thread_list
         """
-        get_random_thread(self, verbose=self.verbose)
+        thread = get_random_thread(self, verbose=self.verbose, prioritize_comments=True)
+        url = "/api/discussion/v1/threads/{}".format(thread["id"])
+        comment_count = thread["comment_count"]
+        rounded_count = int(round(comment_count / 25) * 25)
+        name = "Comment_Range:{}-{}".format(rounded_count, rounded_count +25 )
+
+        self.client.get(url=url, verify=False, name=name)
         time.sleep(self.min_wait / 1000)
         self.stop()
 
@@ -93,32 +100,6 @@ class GetCommentsTask(DiscussionsApiTasks):
         get_random_comment(self, thread=thread, verbose=self.verbose)
         time.sleep(self.min_wait / 1000)
         self.stop()
-
-    def _get_comment_and_response_count(self, thread_id):
-        """
-        Returns the comment_count and response_count for a Thread
-
-        This helper method is used when requiring verbose outputs for threads
-        that have high comment_counts. For example, a response with
-        1000 comment.
-
-        Calls made:
-        GET_thread
-
-        Args:
-            thread_id (str): Thread to get the comment_count and response_count
-
-        Returns:
-            (tuple): (comment_count, response_count)
-        """
-        url = "/api/discussion/v1/threads/{}/".format(thread_id)
-        response = self.client.get(url, verify=False, name="GET_thread")
-        if response.status_code == 200:
-            response = response.json()
-            return response["comment_count"], response["response_count"]
-        else:
-            print url
-            print "{}: {}".format(response.status_code, response.content[0:200])
 
 
 class PatchThreadsTask(DiscussionsApiTasks):

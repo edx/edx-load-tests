@@ -7,12 +7,12 @@ FOLLOWING = [
 ]
 VIEW = [
     "unread",
-    # "unanswered",
+    "unanswered",
 ]
 ORDER_BY = [
     "last_activity_at",
-    # "comment_count",
-    # "vote_count",
+    "comment_count",
+    "vote_count",
 ]
 ORDER_DIRECTION = [
     # "asc",
