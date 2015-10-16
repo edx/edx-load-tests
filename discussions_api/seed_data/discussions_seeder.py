@@ -194,20 +194,31 @@ class DiscussionsSeeder(object):
         response = response.json()
 
         thread_id_list = []
+        comment_count_list = []
+        thread_count = 0
         for thread in response["results"]:
             thread_id_list.append(thread["id"])
+            thread_count += 1
         while response["next"]:
             next_page_url = response["next"]
             response = self.sess.get(next_page_url)
-            while response.status_code != 200:
+            timeout_counter = 0
+            while response.status_code != 200 and timeout_counter <= 10:
                 print "{}: Could not get next in response. Trying again in 5 seconds".format(response.status_code)
                 time.sleep(5)
                 response = self.sess.get(next_page_url)
+                timeout_counter += 1
+            if timeout_counter == 11:
+                break
             response = response.json()
             if response["next"]:
                 print "GETting page {}".format(response["next"].split("&page=")[1])
             for thread in response["results"]:
                 thread_id_list.append(thread["id"])
+                comment_count_list.append(thread["comment_count"])
+                thread_count += 1
+
+        print "{} {} {}".format(course_id, thread_count, sum(comment_count_list))
 
         with open(file_name, 'w') as file_:
             l = len(thread_id_list)

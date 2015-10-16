@@ -50,12 +50,27 @@ class DiscussionsApiTest(DiscussionsApiTasks):
         GetThreadsTask: 7560,
         PatchCommentsTask: 83,
         PatchThreadsTask: 92,
-        PostCommentsTask: 194,
-        PostThreadsTask: 220,
+        # PostCommentsTask: 194,
+        # PostThreadsTask: 220,
     }
+
+
+class MobileDiscussionUsageTask(DiscussionsApiTasks):
+
+    def on_start(self):
+        """
+        User is created here. When task is finished, user selects from tasks
+        """
+        params = {
+            "course_id": self.course_id,
+            "staff": "true",
+            "roles": ["Administrator"]
+        }
+        self.auto_auth(verify_ssl=False, params=params)
+
 
 class DiscussionsApiLocust(HttpLocust):
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'DiscussionsApiTest')]
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 1000))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 2000))
-    min_wait = max_wait = 500
+    min_wait = max_wait = 5000
+
+

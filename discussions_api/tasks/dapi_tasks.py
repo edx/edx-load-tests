@@ -20,7 +20,7 @@ import dapi_constants
 
 class GetThreadsTask(DiscussionsApiTasks):
     """
-    Tasks for GETs for threads
+    Task for GETting a single thread
     """
 
     @task(2)
@@ -36,6 +36,7 @@ class GetThreadsTask(DiscussionsApiTasks):
         choice = random.choice(self.thread_id_list)
         url = "/api/discussion/v1/threads/{}".format(choice)
         self.client.get(url=url, verify=False, name="GET_thread")
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task(1)
@@ -49,6 +50,25 @@ class GetThreadsTask(DiscussionsApiTasks):
         GET_thread_list
         """
         get_random_thread(self, verbose=self.verbose)
+        time.sleep(self.min_wait / 1000)
+        self.stop()
+
+class GetThreadListTask(DiscussionsApiTasks):
+    """
+    Task for GETting a thread list
+    """
+    @task(1)
+    def get_thread_list(self, return_id=False):
+        """
+        GET a thread list
+
+        /api/discussion/v1/threads/?course_id={}...
+
+        Calls made:
+        GET_thread_list
+        """
+        get_random_thread(self, verbose=self.verbose)
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
 
@@ -68,9 +88,10 @@ class GetCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         GET_comment_list
         """
-        thread = get_random_thread(self, page=1, page_size=10, prioritize_comments=True)
-        time.sleep(1)
+        thread = get_random_thread(self, page=1, page_size=100, prioritize_comments=True)
+        time.sleep(self.min_wait / 1000)
         get_random_comment(self, thread=thread, verbose=self.verbose)
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     def _get_comment_and_response_count(self, thread_id):
@@ -110,10 +131,10 @@ class PatchThreadsTask(DiscussionsApiTasks):
     and follow.
     """
     def _get_thread_id(self):
-        thread = get_random_thread(self, page=1, page_size=10)
+        thread = get_random_thread(self, page=1, page_size=100)
         if not thread:
             self.stop()
-        time.sleep(1)
+        time.sleep(self.min_wait / 1000)
         return thread["id"]
 
     @task(51)
@@ -142,6 +163,7 @@ class PatchThreadsTask(DiscussionsApiTasks):
         if response.status_code != 200:
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task(3)
@@ -170,6 +192,7 @@ class PatchThreadsTask(DiscussionsApiTasks):
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task(1)
@@ -197,6 +220,7 @@ class PatchThreadsTask(DiscussionsApiTasks):
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task(47)
@@ -224,6 +248,7 @@ class PatchThreadsTask(DiscussionsApiTasks):
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
 
@@ -238,13 +263,15 @@ class PatchCommentsTask(DiscussionsApiTasks):
     """
 
     def _comment_id(self):
-        thread = get_random_thread(self, page=1, page_size=10, prioritize_comments=True)
+        thread = get_random_thread(self, page=1, page_size=100, prioritize_comments=True)
         if not thread:
+            time.sleep(self.min_wait / 1000)
             self.stop()
         comment = get_random_comment(self, thread=thread)
         if not comment:
+            time.sleep(self.min_wait / 1000)
             self.stop()
-        time.sleep(1)
+        time.sleep(self.min_wait / 1000)
         return comment["id"]
 
     @task(30)
@@ -274,6 +301,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task(50)
@@ -303,6 +331,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task(4)
@@ -331,6 +360,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
 
@@ -350,6 +380,7 @@ class PostThreadsTask(DiscussionsApiTasks):
         POST_thread
         """
         post_thread(self)
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
 
@@ -369,10 +400,11 @@ class PostCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         POST_comment_response
         """
-        thread = get_random_thread(self, page=1, page_size=10)
+        thread = get_random_thread(self, page=1, page_size=100)
         if thread:
             create_response(self, thread_id=thread["id"])
-        time.sleep(1)
+        time.sleep(self.min_wait / 1000)
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task(1)
@@ -384,13 +416,15 @@ class PostCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         POST_comment_comment
         """
-        thread = get_random_thread(self, page=1, page_size=10)
-        time.sleep(1)
+        thread = get_random_thread(self, page=1, page_size=100)
+        time.sleep(self.min_wait / 1000)
         if thread:
             response = create_response(self, thread_id=thread["id"])
-            time.sleep(1)
+            time.sleep(self.min_wait / 1000)
             if response:
                 create_comment(self, comment_id=response["id"], thread_id=response["thread_id"])
+
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
 
@@ -415,10 +449,11 @@ class DeleteThreadsTask(DiscussionsApiTasks):
         POST_comments
         """
         post_thread(self)
-        time.sleep(1)
-        thread = get_random_thread(self, page=1, page_size=10)
-        time.sleep(1)
+        time.sleep(self.min_wait / 1000)
+        thread = get_random_thread(self, page=1, page_size=100)
+        time.sleep(self.min_wait / 1000)
         if not thread:
+            time.sleep(self.min_wait / 1000)
             self.stop()
         thread_id = thread["id"]
 
@@ -434,6 +469,7 @@ class DeleteThreadsTask(DiscussionsApiTasks):
             print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
 
@@ -458,15 +494,17 @@ class DeleteCommentsTask(DiscussionsApiTasks):
         GET_comment_list
         DELETE_response
         """
-        thread = get_random_thread(self, page=1, page_size=10)
-        time.sleep(1)
+        thread = get_random_thread(self, page=1, page_size=100)
+        time.sleep(self.min_wait / 1000)
         if not thread:
+            time.sleep(self.min_wait / 1000)
             self.stop()
         create_response(self, thread_id=thread["id"])
-        time.sleep(1)
+        time.sleep(self.min_wait / 1000)
         comment = get_random_comment(self, thread=thread)
-        time.sleep(1)
+        time.sleep(self.min_wait / 1000)
         if not comment:
+            time.sleep(self.min_wait / 1000)
             self.stop()
         comment_id = comment["id"]
 
@@ -478,6 +516,8 @@ class DeleteCommentsTask(DiscussionsApiTasks):
             name="DELETE_response",
             headers=self._headers
         )
+
+        time.sleep(self.min_wait / 1000)
         self.stop()
 
     @task
@@ -496,11 +536,13 @@ class DeleteCommentsTask(DiscussionsApiTasks):
         POST_comment
         DELETE_comment
         """
-        thread = get_random_thread(self, page=1, page_size=10)
+        thread = get_random_thread(self, page=1, page_size=100)
         if not thread:
+            time.sleep(self.min_wait / 1000)
             self.stop()
         comment = get_random_comment(self, thread=thread)
         if not comment:
+            time.sleep(self.min_wait / 1000)
             self.stop()
         comment_id = comment["id"]
         create_comment(self, comment_id=comment_id, thread_id=thread["id"])
@@ -513,4 +555,6 @@ class DeleteCommentsTask(DiscussionsApiTasks):
             name="DELETE_comment",
             headers=self._headers
         )
+
+        time.sleep(self.min_wait / 1000)
         self.stop()
