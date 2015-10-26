@@ -1,0 +1,4 @@
+# Packages required to develop load tests
+-r base.txt
+
+pep8==1.6.2

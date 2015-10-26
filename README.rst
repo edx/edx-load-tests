@@ -1,28 +1,55 @@
-This project is the single source for public load tests for edX software component.  New tests should be developed here unless there is a very good reason why that cannot be the case.  Old tests should be scrubbed and moved here over time.
+edX Load Tests  |Travis|_
+=========================
+.. |Travis| image:: https://travis-ci.org/edx/edx-load-tests.svg?branch=master
+.. _Travis: https://travis-ci.org/edx/edx-load-tests
 
+This repository is home to public load tests for edX software components. New tests should be developed here. Old tests should be scrubbed and moved here over time.
 
-Installation
-------------
+Getting Started
+---------------
 
-mkvirtualenv edx-load-tests
-pip install -r locust/requirements.txt
-cd locust/$TEST_DIR
-locust --host="http://localhost" -f $csm
+If you have not already done so, create and activate a `virtualenv <https://virtualenvwrapper.readthedocs.org/en/latest/>`_. Unless otherwise stated, assume all commands below are executed within said virtualenv.
 
-Layout
-------
+Next, install load testing requirements.
 
-Each set of tasks should be captured as a top-level locustfile named
-for the particular set of endpoints being tested. This toplevel file
-can be a flat python file (lms.py) or a directory (csm/). In the case
-of a directory, the __init__.py file should have (or import) the Locust
-subclass that defines the test.
+.. code-block:: bash
+
+    $ pip install -r requirements.txt
+
+Start Locust by providing the Locust CLI with a target host and pointing it to the location of your desired locustfile. For example,
+
+.. code-block:: bash
+
+    $ locust --host=http://localhost:8009 -f programs
+
+Repository Structure
+--------------------
+
+Tests are organized into top-level packages. For examples, see ``csm`` and ``programs``. A module called ``locustfile.py`` is included inside each test package, within which a subclass of the `Locust class <http://docs.locust.io/en/latest/writing-a-locustfile.html#the-locust-class>`_ is defined. This subclass is imported into the test package's ``__init__.py`` to facilitate discovery at runtime.
 
 License
 -------
 
-The code in this repository is licensed under version 3 of the AGPL
-unless otherwise noted. Please see the `LICENSE`_ file for details.
+The code in this repository is licensed under the AGPLv3 unless otherwise noted. Please see `LICENSE.txt <https://github.com/edx/edx-load-tests/blob/master/LICENSE.txt>`_ for details.
 
-.. _LICENSE: https://github.com/edx/edx-load-tests/blob/master/LICENSE
+How To Contribute
+-----------------
 
+Contributions are very welcome.
+
+Please read `How To Contribute <https://github.com/edx/edx-platform/blob/master/CONTRIBUTING.rst>`_ for details.
+
+Even though they were written with ``edx-platform`` in mind, the guidelines
+should be followed for Open edX code in general.
+
+Reporting Security Issues
+-------------------------
+
+Please do not report security issues in public. Please email security@edx.org.
+
+Mailing List and IRC Channel
+----------------------------
+
+You can discuss this code in the `edx-code Google Group`__ or in the ``#edx-code`` IRC channel on Freenode.
+
+__ https://groups.google.com/forum/#!forum/edx-code

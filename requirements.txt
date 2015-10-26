@@ -1,7 +1,1 @@
-# Packages needed to run any loadtest in this repo
-
--e git+https://github.com/edx/locust.git@edx#egg=locustio[scipy]
--e .
-jupyter
-runipy
-seaborn
+-r requirements/dev.txt

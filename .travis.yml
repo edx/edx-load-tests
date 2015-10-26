@@ -2,7 +2,7 @@ language: python
 python:
     - "2.7"
 
-# use docker container infrastructure
+# Use docker container infrastructure.
 sudo: false
 
 # Cache the pip directory. "cache: pip" doesn't work due to install override. See https://github.com/travis-ci/travis-ci/issues/3239.
@@ -10,8 +10,7 @@ cache:
   directories:
     - $HOME/.cache/pip
 install:
-    - pip install pip==6.1.0
-    - pip install -r dev-requirements.txt
+    - pip install --upgrade pip wheel pep8
 script:
     - pep8 .
 branches:

@@ -1,3 +1,0 @@
-# Packages needed to develop loadtests in this repo
-
-pep8==1.6.2
