@@ -12,7 +12,7 @@ cache:
 install:
     - pip install --upgrade pip wheel pep8
 script:
-    - pep8 .
+    - pep8 --config=.pep8 .
 branches:
     only:
         - master
