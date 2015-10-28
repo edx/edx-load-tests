@@ -1,0 +1,6 @@
+# Packages required to run load tests
+-e git+https://github.com/edx/locust.git@edx#egg=locustio[scipy]
+edx-rest-api-client==1.2.1
+jupyter
+runipy
+seaborn
