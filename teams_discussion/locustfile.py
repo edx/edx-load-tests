@@ -10,18 +10,15 @@ Supported Environment Variables:
   TEAM_COURSE_ID - course id that we're running these tests against
 
 """
-import os
-import sys
-import string
-import json
-import random
 from collections import deque
+import json
+import os
+import random
+import string
 
 from locust import HttpLocust, task
-# Work around the fact that this code doesn't live in a proper Python package.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'helpers'))  # noqa
-from auto_auth_tasks import AutoAuthTasks
-from opaque_keys.edx.keys import CourseKey
+
+from helpers.auto_auth_tasks import AutoAuthTasks
 
 
 _dummy_chars = string.lowercase + ' '

@@ -1,0 +1,1 @@
+from teams_discussion.locustfile import TeamsDiscussionLocust
