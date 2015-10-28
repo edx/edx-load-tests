@@ -25,6 +25,9 @@ class ProgramsUser(HttpLocust):
     user should wait between executing tasks. This class also provides a custom client used
     to interface with edX REST APIs.
     """
+    # Django's AbstractUser, subclassed by Programs, limits usernames to 30 characters.
+    # See: https://github.com/django/django/blob/stable/1.8.x/django/contrib/auth/models.py#L385
+    USERNAME_MAX_LENGTH = 30
     USERNAME_PREFIX = 'load-test-'
 
     task_set = ProgramsTaskSet
@@ -47,8 +50,14 @@ class ProgramsUser(HttpLocust):
         )
 
     def _get_token(self):
+        if len(self.USERNAME_PREFIX) > self.USERNAME_MAX_LENGTH:
+            raise RuntimeError('A JWT secret key is required to run Programs load tests.')
+
+        # Keep the length of the resulting username within Django's prescribed limits.
+        username_suffix = uuid.uuid4().hex[:self.USERNAME_MAX_LENGTH - len(self.USERNAME_PREFIX)]
+
         payload = {
-            'preferred_username': self.USERNAME_PREFIX + str(uuid.uuid4()),
+            'preferred_username': self.USERNAME_PREFIX + username_suffix,
             'iss': JWT_ISSUER,
             'aud': JWT_AUDIENCE,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(days=JWT_EXPIRATION_DELTA),
