@@ -31,8 +31,8 @@ class ProgramsUser(HttpLocust):
     USERNAME_PREFIX = 'load-test-'
 
     task_set = ProgramsTaskSet
-    min_wait = 3 * 1000
-    max_wait = 5 * 1000
+    min_wait = 30
+    max_wait = 100
 
     def __init__(self):
         super(ProgramsUser, self).__init__()
@@ -50,9 +50,6 @@ class ProgramsUser(HttpLocust):
         )
 
     def _get_token(self):
-        if len(self.USERNAME_PREFIX) > self.USERNAME_MAX_LENGTH:
-            raise RuntimeError('A JWT secret key is required to run Programs load tests.')
-
         # Keep the length of the resulting username within Django's prescribed limits.
         username_suffix = uuid.uuid4().hex[:self.USERNAME_MAX_LENGTH - len(self.USERNAME_PREFIX)]
 
