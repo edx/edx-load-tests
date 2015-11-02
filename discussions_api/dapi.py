@@ -3,6 +3,7 @@
 Parent class of the discussion api tasks.
 """
 import json
+import logging
 import os
 import random
 import urllib
@@ -27,6 +28,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
     def __init__(self, *args, **kwargs):  # pylint: disable=super-on-old-class
         super(DiscussionsApiTasks, self).__init__(*args, **kwargs)
         self.course_id = os.getenv('COURSE_ID')
+        self.url_prefix = "/api/discussion/v1"
 
         if os.getenv('SEEDED_DATA'):
             with open("discussions_api/" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
@@ -38,6 +40,11 @@ class DiscussionsApiTasks(AutoAuthTasks):
         self.pages = len(self.thread_id_list) / int(dapi_constants.PAGE_SIZE[0])
         if self.pages == 0:
             self.pages = 1
+        logging.basicConfig(
+            format='%(asctime)s %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        self.log = logging.getLogger()
 
     def random_page_number(self):
         return random.randint(1, self.pages)
@@ -97,8 +104,8 @@ class DiscussionsApiTasks(AutoAuthTasks):
             UnexpectedResponse: raised when we do not get a 200 response.
         """
         if response.status_code != 200:
-            print url
-            print response.status_code
+            self.log.info(url)
+            self.log.info(response.status_code)
             raise UnexpectedResponse("{}: {}".format(response.status_code, response.content[0:200]))
 
     def get_random_thread(self, page=None, page_size=None, prioritize_comments=False, verbose=False):
@@ -132,7 +139,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         }
         encoded_args = urllib.urlencode(query_args)
 
-        url = "/api/discussion/v1/threads/?" + encoded_args
+        url = "{}/threads/?{}".format(self.url_prefix, encoded_args)
         name = url if verbose else "GET_thread_list"
 
         response = self.client.get(url=url, verify=False, name=name)
@@ -175,7 +182,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         }
         encoded_args = urllib.urlencode(query_args)
 
-        url = "/api/discussion/v1/comments/?" + encoded_args
+        url = "{}/comments/?".format(self.url_prefix, encoded_args)
 
         # Only be useful when running task in isolation with pre-set comment data
         if verbose:
@@ -206,7 +213,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
             "raw_body": "This is a thread. {}".format(dapi_constants.BODY["250char"]),
         }
 
-        url = "/api/discussion/v1/threads"
+        url = "{}/threads".format(self.url_prefix)
         response = self.client.post(
             url=url,
             data=json.dumps(body),
@@ -228,7 +235,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (dict): The comment.
         """
-        url = "/api/discussion/v1/comments"
+        url = "{}/comments".format(self.url_prefix)
         body = {
             "thread_id": thread_id,
             "raw_body": "Orphaned comment aka Batman. {}".format(dapi_constants.BODY["250char"]),
@@ -253,7 +260,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (dict): The comment.
         """
-        url = "/api/discussion/v1/comments/"
+        url = "{}/comments".format(self.url_prefix)
         body = {
             "parent_id": comment_id,
             "thread_id": thread_id,
@@ -283,7 +290,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (tuple): (comment_count, response_count)
         """
-        url = "/api/discussion/v1/threads/{}/".format(thread_id)
+        url = "{}/threads/{}/".format(self.url_prefix, thread_id)
         response = self.client.get(url, verify=False, name="GET_thread")
         self.verify_response(response, url)
         response = response.json()
@@ -301,7 +308,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (dict): The thread
         """
-        url = "/api/discussion/v1/threads/{}/".format(thread_id)
+        url = "{}/threads/{}/".format(self.url_prefix, thread_id)
         response = self.client.patch(
             url,
             data=json.dumps(data),
@@ -324,7 +331,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (dict): The comment
         """
-        url = "/api/discussion/v1/comment/{}/".format(comment_id)
+        url = "{}/comment/{}/".format(self.url_prefix, comment_id)
         response = self.client.patch(
             url,
             data=json.dumps(data),
@@ -342,7 +349,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Args:
             thread_id (str): Thread to patch
         """
-        url = "/api/discussion/v1/threads/{}/".format(thread_id)
+        url = "{}/threads/{}/".format(self.url_prefix, thread_id)
         self.client.delete(
             url,
             verify=False,
@@ -357,7 +364,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Args:
             comment_id (str): Comment to patch
         """
-        url = "/api/discussion/v1/comments/{}/".format(comment_id)
+        url = "{}/comments/{}/".format(self.url_prefix, comment_id)
         self.client.delete(
             url,
             verify=False,
