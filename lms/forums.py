@@ -13,12 +13,14 @@ _thread_ids = deque(maxlen=1000)
 
 
 _dummy_chars = string.lowercase + '      '
+
+
 def _dummy_text(minlen, maxlen):
     """
     Naive helper function to generate dummy text where needed in forums submissions.
     """
 
-    return ''.join(random.choice(_dummy_chars) for _ in xrange(minlen, random.randrange(minlen+1, maxlen)))
+    return ''.join(random.choice(_dummy_chars) for _ in xrange(minlen, random.randrange(minlen + 1, maxlen)))
 
 
 class ForumsTasks(LmsTasks):

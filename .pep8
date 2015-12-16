@@ -1,5 +1,5 @@
 [pep8]
 # E501: Line too long.
 # See: http://pep8.readthedocs.org/en/latest/intro.html#error-codes
-ignore=E501
+ignore=E501,E402
 exclude=.git,.pycharm_helpers

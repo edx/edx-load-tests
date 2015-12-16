@@ -104,7 +104,7 @@ class LmsTasks(EdxAppTasks):
         Single internal helper for setting up course-specific LMS requests.
         """
         path = '/courses/{course_id}/' + path
-        path = path.format(**{n:getattr(self, n) for n in ('course_id', 'course_num', 'course_run', 'course_org')})
+        path = path.format(**{n: getattr(self, n) for n in ('course_id', 'course_num', 'course_run', 'course_org')})
         logging.debug(path)
         return getattr(self.client, method)(path, *args, **kwargs)
 
