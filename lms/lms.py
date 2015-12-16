@@ -4,15 +4,13 @@
 import logging
 import os
 import sys
-
 from lazy import lazy
 from opaque_keys.edx.keys import CourseKey
+from auto_auth_tasks import AutoAuthTasks
+import course_data
 
 # Work around the fact that this code doesn't live in a proper Python package.
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'helpers'))
-from auto_auth_tasks import AutoAuthTasks
-
-import course_data
 
 
 class EdxAppTasks(AutoAuthTasks):
@@ -104,7 +102,7 @@ class LmsTasks(EdxAppTasks):
         Single internal helper for setting up course-specific LMS requests.
         """
         path = '/courses/{course_id}/' + path
-        path = path.format(**{n:getattr(self, n) for n in ('course_id', 'course_num', 'course_run', 'course_org')})
+        path = path.format(**{n: getattr(self, n) for n in ('course_id', 'course_num', 'course_run', 'course_org')})
         logging.debug(path)
         return getattr(self.client, method)(path, *args, **kwargs)
 

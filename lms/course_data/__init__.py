@@ -76,7 +76,7 @@ class CourseData(dict):
 
 # data extracted from edX/DemoX/Demo_Course as of Feb. 2015
 demo_course = CourseData(
-    sequential_ids = (
+    sequential_ids=(
         "edx_introduction",
         "basic_questions",
         "175e76c4951144a29d46211361266e0e",
@@ -88,7 +88,7 @@ demo_course = CourseData(
         "simulations",
         "graded_simulations",
     ),
-    capa_problems = {
+    capa_problems={
         'd1b84dcd39b0423d9e288f27f0f7f242': {
             'inputs': {
                 '_2_1': ['choice_0'],
@@ -205,20 +205,20 @@ demo_course = CourseData(
             'showanswer': 'always',
         },
     },
-    video_module_ids = (
+    video_module_ids=(
         "5c90cffecd9b48b188cbfea176bf7fe9",
         "636541acbae448d98ab484b028c9a7f6",
         "7e9b434e6de3435ab99bd3fb25bde807",
         "edX_Introduction",
     ),
-    video_ids = (
+    video_ids=(
         "CCxmtcICYNc",
         "o2pLltkrhGM",
         "OEoXaMPEzfM",
         "oX46YqHWgyw",
         "qWxm7CA2v24",
     ),
-    discussion_ids = (  # from metadata.discussion_id, not the block id
+    discussion_ids=(  # from metadata.discussion_id, not the block id
         "d9f970a42067413cbb633f81cfb12604",
         "98d8feb5971041a085512ae22b398613",
         "1d153da210844719a1a6cc39ca09673c",
@@ -250,7 +250,7 @@ demo_course = CourseData(
         "ba12c2e0b81e4cef8e05e22049aafd63",
         "a56e406f164746d8bbff76545e6d981f",
     ),
-    courseware_paths = (
+    courseware_paths=(
         '',
         '/d8a6192ade314473a78242dfeedfbf5b/edx_introduction/',
         '/interactive_demonstrations/19a30717eff543078a5d94ae9d6c18a5/',
@@ -264,7 +264,7 @@ demo_course = CourseData(
         '/1414ffd5143b4b508f739b563ab468b7/workflow/',
         '/interactive_demonstrations/basic_questions/4',
     ),
-    html_usage_ids = (  # Note that this is not currently an exhaustive list.
+    html_usage_ids=(  # Note that this is not currently an exhaustive list.
         'i4x://edX/DemoX/html/030e35c4756a4ddc8d40b95fbbfff4d4',
     ),
 )

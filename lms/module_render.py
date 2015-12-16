@@ -57,7 +57,7 @@ class ModuleRenderTasks(LmsTasks):
             return 'input_i4x-{{course_org}}-{{course_num}}-problem-{}'.format(problem_id) + key
 
         problem_id, problem_data, problem_input = self.course_data.capa_problem
-        if handler=='problem_show' and problem_data.get('showanswer', 'never') != 'always':
+        if handler == 'problem_show' and problem_data.get('showanswer', 'never') != 'always':
             # gonna fail
             return
         if handler in ('problem_save', 'problem_check'):
@@ -77,7 +77,7 @@ class ModuleRenderTasks(LmsTasks):
         """
         self.post(
             self._handler_path('sequential', self.course_data.sequential_id, 'xmodule_handler/goto_position'),
-            data={'position': unicode(random.randint(0,10))},
+            data={'position': unicode(random.randint(0, 10))},
             name='handler:goto_position',
         )
 
@@ -108,7 +108,6 @@ class ModuleRenderTasks(LmsTasks):
         Exercise the problem_save handler.
         """
         return self._post_capa_handler('problem_save')
-
 
     @task(9)
     def get_transcript(self):
