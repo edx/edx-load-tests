@@ -91,7 +91,7 @@ class CourseImport(TaskSet):
         with open(TEST_FILE, "rb") as test_fp:
             cid = "course-v1:LocustX+Soup101+X{0:02d}".format(num)
             import_url = "/import/{0}".format(cid)
-            ifname = "some{0:08d}.tar.gz".format(int(random.random()*1e8))
+            ifname = "some{0:08d}.tar.gz".format(int(random.random() * 1e8))
             self.client.get(import_url, name="/import")
             start_time = time.time()
             resp = self.client.post(import_url,
@@ -119,14 +119,12 @@ class CourseImport(TaskSet):
             if resp.text.find("4") >= 0:
                 events.request_success.fire(request_type="http",
                                             name="course_import",
-                                            response_time=
-                                            (time.time()-start_time)*1000,
+                                            response_time=(time.time() - start_time) * 1000,
                                             response_length=0)
             else:
                 events.request_failure.fire(request_type="http",
                                             name="course_import",
-                                            response_time=
-                                            (time.time()-start_time)*1000)
+                                            response_time=(time.time() - start_time) * 1000)
 
     @task
     def import_random_course(self):
