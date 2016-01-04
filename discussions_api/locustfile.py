@@ -67,17 +67,29 @@ class DiscussionsApiTest(DiscussionsApiTasks):
         """
         params = {
             "course_id": self.course_id,
-            "staff": "true",
-            "roles": ["Administrator"]
+            "staff": "true"
         }
+        #"roles": ["Administrator"]
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
         GetThreadsTask: 5000,
         GetThreadListTask: 2500,
+        GetCommentsTask: 2000,
     }
 
-
+    #tasks = {
+        # DeleteCommentsTask: 40,
+        # DeleteThreadsTask: 40,
+        # GetCommentsTask: 2000,
+        # GetThreadsTask: 7560,
+        # PatchCommentsTask: 83,
+        #PatchThreadsTask: 92,
+        #PostCommentsTask: 194,
+        #PostThreadsTask: 220,
+    #}
+    
+    
 class GetThreadWithCommentsTest(DiscussionsApiTasks):
     """
     This test will retrieve threads and report their comment_counts
@@ -100,7 +112,7 @@ class GetThreadWithCommentsTest(DiscussionsApiTasks):
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
-        GetThreadWithCommentsTask: 1
+        #GetThreadWithCommentsTask: 1
     }
 
 
@@ -130,13 +142,13 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
-        DeleteCommentsTask: 40,
-        DeleteThreadsTask: 40,
-        GetThreadsTask: 7560,
-        PatchCommentsTask: 83,
-        PatchThreadsTask: 92,
-        PostCommentsTask: 194,
-        PostThreadsTask: 220,
+        #DeleteCommentsTask: 40,
+        #DeleteThreadsTask: 40,
+        #GetThreadsTask: 7560,
+        #PatchCommentsTask: 83,
+        #PatchThreadsTask: 92,
+        #PostCommentsTask: 194,
+        #PostThreadsTask: 220,
         #GetCommentsTask: 2000,
         #GetThreadsTask: 88000,
         #PatchCommentsTask: 92,

@@ -58,6 +58,7 @@ class CourseSeeder(object):
         login_url = '{}/login_post'.format(self.studio_url)
         print 'Logging in to {}'.format(self.studio_url)
 
+
         response = self.sess.post(
             login_url,
             data={

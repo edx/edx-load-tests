@@ -8,7 +8,7 @@ import os
 import random
 import urllib
 
-from helpers.auto_auth_tasks import AutoAuthTasks
+from helpers import auto_auth_tasks
 
 from tasks import dapi_constants
 
@@ -20,7 +20,7 @@ class UnexpectedResponse(Exception):
     pass
 
 
-class DiscussionsApiTasks(AutoAuthTasks):
+class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
     """
     Parent class of the discussion api tasks.
     """
@@ -31,7 +31,8 @@ class DiscussionsApiTasks(AutoAuthTasks):
         self.url_prefix = "/api/discussion/v1"
 
         if os.getenv('SEEDED_DATA'):
-            with open("discussions_api/" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
+            #with open("discussions_api/" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
+            with open("" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
                 self.thread_id_list = seeded_data.read().splitlines()
         else:
             self.thread_id_list = []
@@ -128,10 +129,12 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
              (dict): The thread
         """
+        course_id = "course-v1:edX+DemoX+Demo_Course"
         query_args = {
-            "course_id": urllib.quote_plus(self.course_id),
-            "following": random.choice(dapi_constants.FOLLOWING),
-            "view": random.choice(dapi_constants.VIEW),
+            #"course_id": urllib.quote_plus(self.course_id),
+            "course_id": course_id,
+            #"following": random.choice(dapi_constants.FOLLOWING),
+            #"view": random.choice(dapi_constants.VIEW),
             "page_size": page_size if page_size else random.choice(dapi_constants.PAGE_SIZE),
             "page": page if page else self.random_page_number(),
             "order_by": "comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY),
@@ -167,22 +170,27 @@ class DiscussionsApiTasks(AutoAuthTasks):
             thread (dict): The thread we are getting the comment from
             verbose (Bool): Get detailed locust request names
         """
-        # Required for question threads, set to False for discussion
-        if thread["type"] == "question":
-            endorsed = "False"  # unless set to false, no comments are returned since endorse is not seeded
-        else:
-            endorsed = "None"
-
         query_args = {
             "thread_id": thread["id"],
-            "page_size": random.choice(dapi_constants.PAGE_SIZE),
-            "endorsed": endorsed,
-            "mark_as_read": random.choice(dapi_constants.MARK_AS_READ),
-            "page": random.choice(dapi_constants.PAGE),
         }
+
+        # Required for question threads, set to False for discussion
+        if thread["type"] == "question":
+            #endorsed = "False"  # unless set to false, no comments are returned since endorse is not seeded
+            query_args["endorsed"] = "False"
+        #else:
+        #    endorsed = "None"
+
+        # query_args = {
+        #     "thread_id": thread["id"],
+        #     "page_size": random.choice(dapi_constants.PAGE_SIZE),
+        #     "endorsed": endorsed,
+        #     "mark_as_read": random.choice(dapi_constants.MARK_AS_READ),
+        #     "page": random.choice(dapi_constants.PAGE),
+        # }
         encoded_args = urllib.urlencode(query_args)
 
-        url = "{}/comments/?".format(self.url_prefix, encoded_args)
+        url = "{}/comments/?{}".format(self.url_prefix, encoded_args)
 
         # Only be useful when running task in isolation with pre-set comment data
         if verbose:

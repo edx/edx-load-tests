@@ -25,7 +25,8 @@ def get_random_thread(self, page=None, page_size=None, prioritize_comments=False
     Returns:
          (dict): The thread
     """
-    course_id = "course_id={}".format(urllib.quote_plus(self.course_id))
+    #course_id = "course_id={}".format(urllib.quote_plus(self.course_id))
+    course_id = "course_id=course-v1%3AedX%2BDemoX%2BDemo_Course"
     following = "following={}".format(random.choice(dapi_constants.FOLLOWING))
     view = "view={}".format(random.choice(dapi_constants.VIEW))
 
@@ -35,10 +36,18 @@ def get_random_thread(self, page=None, page_size=None, prioritize_comments=False
     order_by = "order_by={}".format("comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY))
     order_direction = "order_direction={}".format("desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION))
 
-    url = "/api/discussion/v1/threads/?{}&{}&{}&{}&{}&{}".format(
+    # url = "/api/discussion/v1/threads/?{}&{}&{}&{}&{}&{}".format(
+    #     course_id,
+    #     following,
+    #     # view, # causing 500 for some reason
+    #     order_by,
+    #     order_direction,
+    #     page,
+    #     page_size,
+    # )
+
+    url = "/api/discussion/v1/threads/?{}&{}&{}&{}&{}".format(
         course_id,
-        following,
-        # view, # causing 500 for some reason
         order_by,
         order_direction,
         page,
@@ -81,23 +90,31 @@ def get_random_comment(self, thread, verbose=False):
     #  These parameters did seem to affect response times 09/29/16
     page_size = "page_size={}".format(random.choice(dapi_constants.PAGE_SIZE))
 
+    url = "/api/discussion/v1/comments/?thread_id={}&{}".format(
+        thread["id"],
+        page_size,
+        # mark_as_read,
+        # page
+    )
+
     # Required for question threads, set to False for discussion
     if thread["type"] == "question":
-        endorsed = "endorsed=False"  # unless set to false, no comments are returned since endorse is not seeded
-    else:
-        endorsed = "endorsed=None"
+        #endorsed = "endorsed=False"  # unless set to false, no comments are returned since endorse is not seeded
+        url = "{}&endorsed=False".FORMAT(url)
+    #else:
+    #    endorsed = "endorsed=None"
 
     #  These parameters did not seem to affect response times 09/29/16
     # mark_as_read = "mark_as_read={}".format(random.choice(dapi_constants.MARK_AS_READ))
     # page = "page={}".format(random.choice(dapi_constants.PAGE))
 
-    url = "/api/discussion/v1/comments/?thread_id={}&{}&{}".format(
-        thread["id"],
-        page_size,
-        endorsed,
-        # mark_as_read,
-        # page
-    )
+    # url = "/api/discussion/v1/comments/?thread_id={}&{}&{}".format(
+    #     thread["id"],
+    #     page_size,
+    #     endorsed,
+    #     # mark_as_read,
+    #     # page
+    # )
 
     # Only be useful when running task in isolation with pre-set comment data
     if verbose:
