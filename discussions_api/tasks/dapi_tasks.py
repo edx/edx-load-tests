@@ -15,7 +15,7 @@ from task_helpers import (
     create_response,
     post_thread,
 )
-from discussions_api import DiscussionsApiTasks
+#from discussions_api import DiscussionsApiTasks
 import dapi_constants
 
 
@@ -36,8 +36,8 @@ class GetThreadsTask(DiscussionsApiTasks):
         choice = random.choice(self.thread_id_list)
         url = "/api/discussion/v1/threads/{}".format(choice)
         self.client.get(url=url, verify=False, name="GET_thread")
-        self.wait_then_stop()
-        #self.stop()
+        #self.wait_then_stop()
+        self.stop()
 
 
 class GetThreadListTask(DiscussionsApiTasks):
@@ -53,8 +53,8 @@ class GetThreadListTask(DiscussionsApiTasks):
         GET_thread_list
         """
         self.get_random_thread(verbose=self.verbose)
-        self.wait_then_stop()
-        #self.stop()
+        #self.wait_then_stop()
+        self.stop()
 
 
 class GetThreadWithCommentsTask(DiscussionsApiTasks):
@@ -96,10 +96,15 @@ class GetCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         GET_comment_list
         """
-        thread = self.get_random_thread(page=1, page_size=100, prioritize_comments=True)
+        #thread = self.get_random_thread(page=1, page_size=100, prioritize_comments=True)
+        #thread = self.get_random_thread(page=1, page_size=100)
+        choice = random.choice(self.thread_id_list)
+        url = "/api/discussion/v1/threads/{}".format(choice)
+        response = self.client.get(url=url, verify=False, name="GET_thread")
         self.wait()
-        self.get_random_comment(thread=thread, verbose=self.verbose)
-        self.wait_then_stop()
+        self.get_random_comment(thread=response.json(), verbose=self.verbose)
+        #self.wait_then_stop()
+        self.wait()
         
         #thread = get_random_thread(self, page=1, page_size=10, prioritize_comments=True)
         #time.sleep(1)
@@ -123,6 +128,7 @@ class GetCommentsTask(DiscussionsApiTasks):
         Returns:
             (tuple): (comment_count, response_count)
         """
+        print "in get comment and response count"
         url = "/api/discussion/v1/threads/{}/".format(thread_id)
         response = self.client.get(url, verify=False, name="GET_thread")
         if response.status_code == 200:

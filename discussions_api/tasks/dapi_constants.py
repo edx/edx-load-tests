@@ -3,7 +3,7 @@ Constants file that holds different HTTP request parameters.
 """
 FOLLOWING = [
     "true",
-    "false",
+    #"false",
 ]
 VIEW = [
     "unread",
@@ -15,8 +15,8 @@ ORDER_BY = [
     "vote_count",
 ]
 ORDER_DIRECTION = [
-    " asc",
-    #"asc",
+    #" asc",
+    "asc",
     "desc"
 ]
 PAGE = [

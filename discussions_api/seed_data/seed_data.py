@@ -60,7 +60,8 @@ def create_threads(args, course_id=None, seeder=None, save_threads=True):
         3 have a response
     Threads=10, Responses=4, comments=1
     """
-    course_id = course_id if course_id else setup_studio(args)
+    #course_id = course_id if course_id else setup_studio(args)
+    course_id = "course-v1:edX+DemoX+Demo_Course"
     seeder = seeder if seeder else setup_lms(args)
     posts = int(args.number or raw_input("How many threads in multiples of 10?"))
     seeder.seed_threads(course_id=course_id, posts=posts)
@@ -80,14 +81,17 @@ def create_comments(args, course_id=None, seeder=None, save_threads=True):
     """
     Creates comments in multiples of 20 and then returns the locust commandline
     """
-    course_id = course_id if course_id else setup_studio(args)
+    #course_id = course_id if course_id else setup_studio(args)
+    course_id = "course-v1:edX+DemoX+Demo_Course"
     seeder = seeder if seeder else setup_lms(args)
-    posts = int(args.number or raw_input("How many responses that have comments in multiples of 20"))
-    seeder.seed_comments(course_id=course_id, posts=posts)
-    file_name = args.action + str(posts * 20)
+    posts = int(args.number or raw_input("How many threads "))
+    responses = int(args.number or raw_input("How many responses for thread "))
+    child_comments = int(args.number or raw_input("How many comments for each response "))
+    thread_list = seeder.seed_comments(course_id=course_id, posts=posts, responses=responses, child_comments=child_comments)
+    file_name = args.action + str(responses * child_comments)
     if save_threads:
         print "Saving thread_ids to: {}".format(file_name)
-        seeder.create_thread_data_file(file_name=file_name, course_id=course_id)
+        seeder.create_thread_data_file(file_name=file_name, course_id=course_id, thread_id_list=thread_list)
     return "LOCUST_TASK_SET={} COURSE_ID={} SEEDED_DATA={} locust --host={} ".format(
         args.action,
         course_id,
