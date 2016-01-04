@@ -90,6 +90,7 @@ class GetCommentsTask(DiscussionsApiTasks):
         Returns:
             (tuple): (comment_count, response_count)
         """
+        print "in get comment and response count"
         url = "/api/discussion/v1/threads/{}/".format(thread_id)
         response = self.client.get(url, verify=False, name="GET_thread")
         if response.status_code == 200:

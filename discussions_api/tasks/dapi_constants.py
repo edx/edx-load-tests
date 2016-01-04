@@ -3,7 +3,7 @@ Constants file that holds different HTTP request parameters.
 """
 FOLLOWING = [
     "true",
-    "false",
+    #"false",
 ]
 VIEW = [
     "unread",

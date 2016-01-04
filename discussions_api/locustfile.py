@@ -38,20 +38,20 @@ class DiscussionsApiTest(DiscussionsApiTasks):
         """
         params = {
             "course_id": self.course_id,
-            "staff": "true",
-            "roles": ["Administrator"]
+            "staff": "true"
         }
+        #"roles": ["Administrator"]
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
         # DeleteCommentsTask: 40,
         # DeleteThreadsTask: 40,
-        # GetCommentsTask: 2000,
+        GetCommentsTask: 2000,
         GetThreadsTask: 7560,
-        PatchCommentsTask: 83,
-        PatchThreadsTask: 92,
-        PostCommentsTask: 194,
-        PostThreadsTask: 220,
+        # PatchCommentsTask: 83,
+        #PatchThreadsTask: 92,
+        #PostCommentsTask: 194,
+        #PostThreadsTask: 220,
     }
 
 class DiscussionsApiLocust(HttpLocust):
