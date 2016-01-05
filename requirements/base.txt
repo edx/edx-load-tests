@@ -9,3 +9,4 @@ edx-rest-api-client==1.2.1
 jupyter
 runipy
 seaborn
+lazy
