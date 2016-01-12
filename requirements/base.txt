@@ -3,7 +3,7 @@
 # properly.  Once they have done releases with actualy versions we should
 # pin these packages correctly.
 -e git+https://github.com/edx/locust.git@edx#egg=locustio[scipy]
--e git+https://github.com/edx/opaque-keys.git@9f07da1abf699d10bc3252d3081017e8aa37c302#egg=opaque-keys
+locustio==0.7.3
 
 edx-rest-api-client==1.2.1
 jupyter
