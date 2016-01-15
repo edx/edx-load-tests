@@ -1,0 +1,1 @@
+from course_discovery.locustfile import CourseDiscoveryApiLocust
