@@ -1,0 +1,1 @@
+from credentials.locustfile import CredentialUser
