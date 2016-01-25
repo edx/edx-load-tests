@@ -1,4 +1,4 @@
-"""Configuration for Programs load testing."""
+"""Configuration for Credential load testing."""
 import os
 
 
@@ -21,4 +21,4 @@ JWT_EXPIRATION_DELTA = int(os.environ.get('JWT_EXPIRATION_DELTA', 1))
 JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'credentials-secret')
 
 if not JWT_SECRET_KEY:
-    raise RuntimeError('A JWT secret key is required to run Programs load tests.')
+    raise RuntimeError('A JWT secret key is required to run Credential load tests.')
