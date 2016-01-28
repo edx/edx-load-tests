@@ -175,6 +175,7 @@ class DiscussionsSeeder(object):
             data=json.dumps(body),
             headers=self._post_headers(url=url)
         )
+
         if response.status_code == 500:
             raise PostCreationException(response.status_code)
 

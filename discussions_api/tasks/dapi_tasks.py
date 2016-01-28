@@ -8,6 +8,9 @@ import time
 from locust import task
 
 from dapi import DiscussionsApiTasks
+#from discussions_api.seed_data.discussions_seeder import DiscussionsSeeder
+import os
+import requests
 from task_helpers import (
     get_random_comment,
     get_random_thread,
@@ -33,6 +36,37 @@ class GetThreadsTask(DiscussionsApiTasks):
         Calls made:
         GET_thread
         """
+        #seeder = DiscussionsSeeder(lms_url="https://wjia.sandbox.edx.org/")
+        #seeder.login_to_lms("staff@example.com", "edx")
+        sess = requests.Session()
+        sess.auth = (
+            os.environ['BASIC_AUTH_USER'],
+            os.environ['BASIC_AUTH_PASSWORD']
+        )
+        signin_url = '{}/login'.format("https://wjia.sandbox.edx.org/")
+        response = sess.get(signin_url)
+        csrf = response.cookies['csrftoken']
+        #return {'X-CSRFToken': csrf, 'Referer': url}
+        #except Exception as error:  # pylint: disable=W0703
+        #    print "Error when retrieving csrf token.", error
+
+        #headers = self.get_csrf(signin_url)
+        headers =  {'X-CSRFToken': csrf, 'Referer': signin_url}
+        login_url = 'https://wjia.sandbox.edx.org/login_ajax'
+        print 'Logging in to https://wjia.sandbox.edx.org/'
+
+        response = sess.post(login_url, {
+            'email': "staff@example.com",
+            'password': "edx",
+            'honor_code': 'true'
+        }, headers=headers).json()
+
+        if not response['success']:
+            raise Exception(str(response))
+
+        print 'Login successful'
+
+
         choice = random.choice(self.thread_id_list)
         url = "/api/discussion/v1/threads/{}".format(choice)
         self.client.get(url=url, verify=False, name="GET_thread")
@@ -79,7 +113,7 @@ class GetThreadWithCommentsTask(DiscussionsApiTasks):
         name = "Comment_Range:{}-{}".format(rounded_count, rounded_count + 25)
         self.client.get(url=url, verify=False, name=name)
         self.wait_then_stop()
-        
+
 class GetCommentsTask(DiscussionsApiTasks):
     """
     Tasks for GETting comments
