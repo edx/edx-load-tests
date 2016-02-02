@@ -21,6 +21,9 @@ LMS_ROOT_URL = os.environ.get(
 # Default program_id will 3, for which we have corresponding program in programs service fixtures.
 PROGRAM_ID = os.environ.get('PROGRAM_ID', 3)
 
+# Default username will 'user1', for which we have corresponding credential in credential service fixtures.
+USERNAME = "user1"
+
 # JWT CONFIGURATION
 JWT = {
     "JWT_AUDIENCE": os.environ.get('JWT_AUDIENCE', 'credentials-key'),
