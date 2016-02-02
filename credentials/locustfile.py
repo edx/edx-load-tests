@@ -34,8 +34,13 @@ class CredentialTaskSet(AutoAuthTasks):
         )
 
     def _get_token(self):
+        username_prefix = "load-test-"
+
+        # Django's AbstractUser, subclassed by Credentials, limits usernames to 30 characters.
+        # Keep the length of the resulting username within Django's prescribed limits.
+        username_suffix = uuid.uuid4().hex[:30 - len(username_prefix)]
         payload = {
-            'preferred_username': "load-test-" + uuid.uuid4().hex,
+            'preferred_username': username_prefix + username_suffix,
             'iss': JWT["JWT_ISSUER"],
             'aud': JWT["JWT_AUDIENCE"],
             'iat': datetime.datetime.utcnow(),
