@@ -27,7 +27,8 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
 
     def __init__(self, *args, **kwargs):  # pylint: disable=super-on-old-class
         super(DiscussionsApiTasks, self).__init__(*args, **kwargs)
-        self.course_id = os.getenv('COURSE_ID')
+        #self.course_id = os.getenv('COURSE_ID')
+        self.course_id = "course-v1:edX+DemoX+Demo_Course"
         self.url_prefix = "/api/discussion/v1"
 
         if os.getenv('SEEDED_DATA'):
@@ -57,6 +58,15 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
             'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
             'Referer': self.locust.host,
             'content-type': 'application/json'
+        }
+
+    @property
+    def _put_headers(self):
+        """Standard header"""
+        return {
+            'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
+            'Referer': self.locust.host,
+            'content-type': 'application/merge-patch+json'
         }
 
     @property
@@ -146,14 +156,12 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         name = url if verbose else "GET_thread_list"
 
         response = self.client.get(url=url, verify=False, name=name)
-
         self.verify_response(response, url)
 
         if not response.json()["results"]:
             return None
-
         if prioritize_comments:
-            threads_with_comments = [thread for thread in response.json() if thread["comment_count"] > 0]
+            threads_with_comments = [thread for thread in response.json()["results"] if thread["comment_count"] > 0]
             if threads_with_comments:
                 return random.choice(threads_with_comments)
         return random.choice(response.json()["results"])
@@ -200,7 +208,6 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
             name = "GET_comment_list"
 
         response = self.client.get(url, verify=False, name=name)
-
         self.verify_response(response, url)
         if response.json()["results"]:
             return random.choice(response.json()["results"])
@@ -221,7 +228,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
             "raw_body": "This is a thread. {}".format(dapi_constants.BODY["250char"]),
         }
 
-        url = "{}/threads".format(self.url_prefix)
+        url = "{}/threads/".format(self.url_prefix)
         response = self.client.post(
             url=url,
             data=json.dumps(body),
@@ -243,7 +250,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         Returns:
             (dict): The comment.
         """
-        url = "{}/comments".format(self.url_prefix)
+        url = "{}/comments/".format(self.url_prefix)
         body = {
             "thread_id": thread_id,
             "raw_body": "Orphaned comment aka Batman. {}".format(dapi_constants.BODY["250char"]),
@@ -268,19 +275,19 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         Returns:
             (dict): The comment.
         """
-        url = "{}/comments".format(self.url_prefix)
+        url = "{}/comments/".format(self.url_prefix)
         body = {
             "parent_id": comment_id,
             "thread_id": thread_id,
             "raw_body": "Orphaned comment aka Batman. {}".format(dapi_constants.BODY["250char"]),
         }
+
         response = self.client.post(
             url=url,
             data=json.dumps(body),
             headers=self._post_headers,
             name="POST_comment_comment"
         )
-
         self.verify_response(response, url)
         return response.json()
 
@@ -321,7 +328,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
             url,
             data=json.dumps(data),
             verify=False,
-            headers=self._headers,
+            headers=self._put_headers,
             name=name
         )
         self.verify_response(response, url)
@@ -339,18 +346,18 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         Returns:
             (dict): The comment
         """
-        url = "{}/comment/{}/".format(self.url_prefix, comment_id)
+        url = "{}/comments/{}/".format(self.url_prefix, comment_id)
         response = self.client.patch(
             url,
             data=json.dumps(data),
             verify=False,
-            headers=self._headers,
+            headers=self._put_headers,
             name=name
         )
         self.verify_response(response, url)
         return response.json()
 
-    def delete_thread(self, thread_id):
+    def delete_course_thread(self, thread_id):
         """
         DELETE a thread
 
