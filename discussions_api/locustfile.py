@@ -69,25 +69,12 @@ class DiscussionsApiTest(DiscussionsApiTasks):
             "course_id": self.course_id,
             "staff": "true"
         }
-        #"roles": ["Administrator"]
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
         GetThreadsTask: 5000,
         GetThreadListTask: 2500,
-        GetCommentsTask: 2000,
     }
-
-    #tasks = {
-        # DeleteCommentsTask: 40,
-        # DeleteThreadsTask: 40,
-        # GetCommentsTask: 2000,
-        # GetThreadsTask: 7560,
-        # PatchCommentsTask: 83,
-        #PatchThreadsTask: 92,
-        #PostCommentsTask: 194,
-        #PostThreadsTask: 220,
-    #}
     
     
 class GetThreadWithCommentsTest(DiscussionsApiTasks):
@@ -112,7 +99,7 @@ class GetThreadWithCommentsTest(DiscussionsApiTasks):
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
-        #GetThreadWithCommentsTask: 1
+        GetThreadWithCommentsTask: 1
     }
 
 
@@ -136,31 +123,23 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         """
         params = {
             "course_id": self.course_id,
-            "staff": "true",
-            "roles": ["Administrator"]
+            "staff": "true"
         }
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
-        #DeleteCommentsTask: 40,
-        #DeleteThreadsTask: 40,
-        #GetThreadsTask: 7560,
-        #PatchCommentsTask: 83,
-        #PatchThreadsTask: 92,
-        #PostCommentsTask: 194,
-        #PostThreadsTask: 220,
-        #GetCommentsTask: 2000,
-        #GetThreadsTask: 88000,
-        #PatchCommentsTask: 92,
-        #PatchThreadsTask: 69,
-        #PostCommentsTask: 300,
-        #PostThreadsTask: 200,
+        GetThreadsTask: 1000,
+        GetThreadListTask: 1000,
+        GetCommentsTask: 700,
+        PostThreadsTask: 300,
+        PostCommentsTask: 300,
+        PatchThreadsTask: 200,
+        PatchCommentsTask: 200,
+        DeleteThreadsTask: 100,
+        DeleteCommentsTask: 100,
     }
 
 class DiscussionsApiLocust(HttpLocust):
-    task_set = globals()[os.getenv('LOCUST_TASK_SET', 'DiscussionsApiTest')]
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 5000))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 5000))
-    #min_wait = int(os.getenv('LOCUST_MIN_WAIT', 1000))
-    #max_wait = int(os.getenv('LOCUST_MAX_WAIT', 2000))
-    #min_wait = max_wait = 500
+    task_set = globals()[os.getenv('LOCUST_TASK_SET', 'FullDiscussionsApiTest')]
+    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 1000))
+    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 1000))
