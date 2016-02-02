@@ -9,7 +9,7 @@ from locust.clients import HttpSession
 from locust.exception import LocustError
 
 from helpers.api import LocustEdxRestApiClient
-from credentials.config import CREDENTIAL_API_URL, CREDENTIAL_SERVICE_URL, JWT, LMS_ROOT_URL, PROGRAM_ID
+from credentials.config import CREDENTIAL_API_URL, CREDENTIAL_SERVICE_URL, JWT, LMS_ROOT_URL, PROGRAM_ID, USERNAME
 from helpers.auto_auth_tasks import AutoAuthTasks
 
 
@@ -47,12 +47,12 @@ class CredentialTaskSet(AutoAuthTasks):
     @task
     def list_user_credential_with_username(self):
         """ Get all credentials for a user."""
-        self.user_credential_client.user_credentials.get(username="user1")
+        self.user_credential_client.user_credentials.get(username=USERNAME)
 
     @task
     def list_user_credential_with_username_and_status(self):
         """ Get credentials having awarded status for a user."""
-        self.user_credential_client.user_credentials.get(username="user1", status="awarded")
+        self.user_credential_client.user_credentials.get(username=USERNAME, status="awarded")
 
     @task
     def list_program_credential_with_programs_id(self):
