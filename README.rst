@@ -30,7 +30,9 @@ Tests are organized into top-level packages. For examples, see ``csm`` and ``pro
 License
 -------
 
-The code in this repository is licensed under the AGPLv3 unless otherwise noted. Please see `LICENSE.txt <https://github.com/edx/edx-load-tests/blob/master/LICENSE.txt>`_ for details.
+The code in this repository is licensed under the Apache License, Version 2.0, unless otherwise noted.
+
+Please see `LICENSE.txt <https://github.com/edx/edx-load-tests/blob/master/LICENSE.txt>`_ for details.
 
 How To Contribute
 -----------------
