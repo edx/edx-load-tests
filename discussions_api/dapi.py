@@ -32,7 +32,6 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         self.url_prefix = "/api/discussion/v1"
 
         if os.getenv('SEEDED_DATA'):
-            #with open("discussions_api/" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
             with open("" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
                 self.thread_id_list = seeded_data.read().splitlines()
         else:
@@ -62,7 +61,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
 
     @property
     def _put_headers(self):
-        """Standard header"""
+        """Headers for PUT"""
         return {
             'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
             'Referer': self.locust.host,
@@ -184,18 +183,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
 
         # Required for question threads, set to False for discussion
         if thread["type"] == "question":
-            #endorsed = "False"  # unless set to false, no comments are returned since endorse is not seeded
             query_args["endorsed"] = "False"
-        #else:
-        #    endorsed = "None"
-
-        # query_args = {
-        #     "thread_id": thread["id"],
-        #     "page_size": random.choice(dapi_constants.PAGE_SIZE),
-        #     "endorsed": endorsed,
-        #     "mark_as_read": random.choice(dapi_constants.MARK_AS_READ),
-        #     "page": random.choice(dapi_constants.PAGE),
-        # }
         encoded_args = urllib.urlencode(query_args)
 
         url = "{}/comments/?{}".format(self.url_prefix, encoded_args)
