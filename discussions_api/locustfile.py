@@ -67,7 +67,8 @@ class DiscussionsApiTest(DiscussionsApiTasks):
         """
         params = {
             "course_id": self.course_id,
-            "staff": "true"
+            "staff": "true",
+            "roles": ["Administrator"]
         }
         self.auto_auth(verify_ssl=False, params=params)
 
@@ -141,5 +142,5 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
 
 class DiscussionsApiLocust(HttpLocust):
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'FullDiscussionsApiTest')]
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 1000))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 1000))
+    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 5000))
+    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 5000))

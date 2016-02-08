@@ -8,7 +8,6 @@ import time
 from locust import task
 
 from dapi import DiscussionsApiTasks
-#from discussions_api.seed_data.discussions_seeder import DiscussionsSeeder
 import os
 import requests
 from task_helpers import (
@@ -18,7 +17,6 @@ from task_helpers import (
     create_response,
     post_thread,
 )
-#from discussions_api import DiscussionsApiTasks
 import dapi_constants
 
 
@@ -36,42 +34,10 @@ class GetThreadsTask(DiscussionsApiTasks):
         Calls made:
         GET_thread
         """
-        #seeder = DiscussionsSeeder(lms_url="https://wjia.sandbox.edx.org/")
-        #seeder.login_to_lms("staff@example.com", "edx")
-        # sess = requests.Session()
-        # sess.auth = (
-        #     os.environ['BASIC_AUTH_USER'],
-        #     os.environ['BASIC_AUTH_PASSWORD']
-        # )
-        # signin_url = '{}/login'.format("https://localhost:8000/")
-        # response = sess.get(signin_url)
-        # csrf = response.cookies['csrftoken']
-        # #return {'X-CSRFToken': csrf, 'Referer': url}
-        # #except Exception as error:  # pylint: disable=W0703
-        # #    print "Error when retrieving csrf token.", error
-        #
-        # #headers = self.get_csrf(signin_url)
-        # headers =  {'X-CSRFToken': csrf, 'Referer': signin_url}
-        # login_url = 'https://localhost:8000/login_ajax'
-        # print 'Logging in to https://localhost:8000/'
-        #
-        # response = sess.post(login_url, {
-        #     'email': "staff@example.com",
-        #     'password': "edx",
-        #     'honor_code': 'true'
-        # }, headers=headers).json()
-        #
-        # if not response['success']:
-        #     raise Exception(str(response))
-        #
-        # print 'Login successful'
-
-
         choice = random.choice(self.thread_id_list)
         url = "/api/discussion/v1/threads/{}".format(choice)
         self.client.get(url=url, verify=False, name="GET_thread")
-        #self.wait_then_stop()
-        self.stop()
+        self.wait_then_stop()
 
 
 class GetThreadListTask(DiscussionsApiTasks):
@@ -113,6 +79,7 @@ class GetThreadWithCommentsTask(DiscussionsApiTasks):
         self.client.get(url=url, verify=False, name=name)
         self.wait_then_stop()
 
+
 class GetCommentsTask(DiscussionsApiTasks):
     """
     Tasks for GETting comments
@@ -129,15 +96,12 @@ class GetCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         GET_comment_list
         """
-        #thread = self.get_random_thread(page=1, page_size=100, prioritize_comments=True)
-        #thread = self.get_random_thread(page=1, page_size=100)
         choice = random.choice(self.thread_id_list)
         url = "/api/discussion/v1/threads/{}".format(choice)
         response = self.client.get(url=url, verify=False, name="GET_thread")
         self.wait()
         self.get_random_comment(thread=response.json(), verbose=self.verbose)
-        #self.wait_then_stop()
-        self.wait()
+        self.wait_then_stop()
         
         #thread = get_random_thread(self, page=1, page_size=10, prioritize_comments=True)
         #time.sleep(1)
@@ -161,14 +125,12 @@ class GetCommentsTask(DiscussionsApiTasks):
         Returns:
             (tuple): (comment_count, response_count)
         """
-        print "in get comment and response count"
         url = "/api/discussion/v1/threads/{}/".format(thread_id)
         response = self.client.get(url, verify=False, name="GET_thread")
         if response.status_code == 200:
             response = response.json()
             return response["comment_count"], response["response_count"]
         else:
-            #print url
             print "{}: {}".format(response.status_code, response.content[0:200])
 
 
@@ -182,30 +144,25 @@ class PatchThreadsTask(DiscussionsApiTasks):
     and follow.
     """
     def _get_thread_id(self):
-        thread = self.get_random_thread()
+        thread = get_random_thread(self, page=1, page_size=100)
         self.wait()
-        #thread = get_random_thread(self, page=1, page_size=10)
         if not thread:
             self.stop()
-        #time.sleep(1)
         return thread["id"]
 
     @task(51)
     def patch_edit_thread(self):
-    #def edit_thread(self):
         """
         Edit a thread's raw_body
 
         Calls made:
-        GET_thread_list
+        POST_thread
         PATCH_thread
         """
         new_body_size = random.choice(dapi_constants.BODY.keys())
         data = {"raw_body": dapi_constants.BODY[new_body_size]}
-        #url = "/api/discussion/v1/threads/{}/".format(self._get_thread_id())
 
         name = "edit_thread_with_{}".format(new_body_size) if self.verbose else "PATCH_thread"
-        #thread_id = self._get_thread_id()
         response = self.post_thread()
         self.wait()
         if not response:
@@ -217,21 +174,6 @@ class PatchThreadsTask(DiscussionsApiTasks):
             name=name
         )
         self.wait_then_stop()
-        #url = "/api/discussion/v1/threads/{}/".format(self._get_thread_id())
-
-        #name = "edit_thread_with_{}".format(new_body_size) if self.verbose else "PATCH_thread"
-
-        #response =self.client.patch(
-        #    url,
-        #    data=json.dumps(data),
-        #    verify=False,
-        #    headers=self._headers,
-        #    name=name
-        #)
-        #if response.status_code != 200:
-        #print url
-        #print "{}: {}".format(response.status_code, response.content[0:200])
-        #self.stop()
 
     @task(3)
     def follow_thread(self):
@@ -239,12 +181,11 @@ class PatchThreadsTask(DiscussionsApiTasks):
         Follow a thread
 
         Calls made:
-        GET_thread_list
+        POST_thread
         PATCH_thread
         """
         data = {"following": random.choice(["true", "false"])}
         name = "following_thread" if self.verbose else "PATCH_thread"
-        #thread_id = self._get_thread_id()
         response = self.post_thread()
         self.wait()
         if not response:
@@ -256,23 +197,6 @@ class PatchThreadsTask(DiscussionsApiTasks):
             name=name,
         )
         self.wait_then_stop()
-        #url = "/api/discussion/v1/threads/{}/".format(self._get_thread_id())
-
-        #name = "following_thread" if self.verbose else "PATCH_thread"
-
-        #response = self.client.patch(
-        #    url,
-        #    data=json.dumps(data),
-        #    verify=False,
-        #    headers=self._headers,
-        #    name=name
-        #)
-
-        #if response.status_code != 200:
-        #    print url
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #self.stop()
 
     @task(1)
     def abuse_flag_thread(self):
@@ -280,12 +204,11 @@ class PatchThreadsTask(DiscussionsApiTasks):
         Flag a thread with
 
         Calls made:
-        GET_thread_list
+        POST_thread
         PATCH_thread
         """
         data = {"abuse_flagged": random.choice(["true", "false"])}
         name = "abuse_flag_thread" if self.verbose else "PATCH_thread"
-        #thread_id = self._get_thread_id()
         response = self.post_thread()
         self.wait()
         if not response:
@@ -297,22 +220,6 @@ class PatchThreadsTask(DiscussionsApiTasks):
             name=name,
         )
         self.wait_then_stop()
-        #url = "/api/discussion/v1/threads/{}/".format(random.choice(self._get_thread_id()))
-
-        #name = "abuse_flag_thread" if self.verbose else "PATCH_thread"
-
-        #response = self.client.patch(
-        #    url,
-        #    data=json.dumps(data),
-        #    verify=False,
-        #    headers=self._headers,
-        #    name=name
-        #)
-        #if response.status_code != 200:
-        #    print url
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #self.stop()
 
     @task(47)
     def vote_on_thread(self):
@@ -320,12 +227,11 @@ class PatchThreadsTask(DiscussionsApiTasks):
         Vote on a thread
 
         Calls made:
-        GET_thread_list
+        POST_thread
         PATCH_thread
         """
         data = {"voted": random.choice(["true", "false"])}
         name = "vote_on_thread" if self.verbose else "PATCH_thread"
-        #thread_id = self._get_thread_id()
         response = self.post_thread()
         self.wait()
         if not response:
@@ -338,23 +244,6 @@ class PatchThreadsTask(DiscussionsApiTasks):
 
         )
         self.wait_then_stop()
-        #if response.status_code != 200:
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #name = "vote_on_thread" if self.verbose else "PATCH_thread"
-
-        #response = self.client.patch(
-        #    url,
-        #    data=json.dumps(data),
-        #    verify=False,
-        #    headers=self._headers,
-        #    name=name
-        #)
-        #if response.status_code != 200:
-        #    print url
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #self.stop()
 
 
 class PatchCommentsTask(DiscussionsApiTasks):
@@ -368,9 +257,7 @@ class PatchCommentsTask(DiscussionsApiTasks):
     """
 
     def _get_comment_id(self):
-    # def _comment_id(self):
         thread = self.get_random_thread(page=1, page_size=100, prioritize_comments=True)
-        #thread = get_random_thread(self, page=1, page_size=10, prioritize_comments=True)
         self.wait()
         if not thread:
             self.stop()
@@ -378,7 +265,6 @@ class PatchCommentsTask(DiscussionsApiTasks):
         self.wait()
         if not comment:
             self.stop()
-        #time.sleep(1)
         return comment["id"]
 
     @task(30)
@@ -388,14 +274,12 @@ class PatchCommentsTask(DiscussionsApiTasks):
 
         Calls made:
         GET_thread_list
-        GET_comment_list
+        POST_comment
         PATCH_comment
         """
         new_body_size = random.choice(dapi_constants.BODY.keys())
         data = {"raw_body": dapi_constants.BODY[new_body_size]}
-        #data = {"read": True}
         name = "edit_comment_with_{}".format(new_body_size) if self.verbose else "PATCH_comment"
-        #comment_id = self._get_comment_id()
         thread = self.get_random_thread(page=1, page_size=100)
         self.wait()
         if not thread:
@@ -411,22 +295,6 @@ class PatchCommentsTask(DiscussionsApiTasks):
             name=name
         )
         self.wait_then_stop()
-        #url = "/api/discussion/v1/comments/{}/".format(self._comment_id())
-
-        #name = "edit_comment_with_{}".format(new_body_size) if self.verbose else "PATCH_comment"
-
-        #response = self.client.patch(
-        #    url,
-        #    data=json.dumps(data),
-        #    verify=False,
-        #    headers=self._headers,
-        #    name=name
-        #)
-        #if response.status_code != 200:
-        #    print url
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #self.stop()
 
     @task(50)
     def vote_on_comment(self):
@@ -435,12 +303,11 @@ class PatchCommentsTask(DiscussionsApiTasks):
 
         Calls made:
         GET_thread_list
-        GET_comment_list
+        POST_comment
         PATCH_comment
         """
         data = {"voted": random.choice(["true", "false"])}
         name = "vote_on_comment" if self.verbose else "PATCH_comment"
-        #comment_id = self._get_comment_id()
         thread = self.get_random_thread(page=1, page_size=100)
         self.wait()
         if not thread:
@@ -456,23 +323,6 @@ class PatchCommentsTask(DiscussionsApiTasks):
             name=name
         )
         self.wait_then_stop()
-        #url = "/api/discussion/v1/comments/{}/".format(self._comment_id())
-
-        #name = "vote_on_comment" if self.verbose else "PATCH_comment"
-
-        #response = self.client.patch(
-        #    url,
-        #    data=json.dumps(data),
-        #    verify=False,
-        #    headers=self._headers,
-        #    name=name
-        #)
-
-        #if response.status_code != 200:
-        #    print url
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #self.stop()
 
     @task(4)
     def abuse_flag_comment(self):
@@ -481,12 +331,11 @@ class PatchCommentsTask(DiscussionsApiTasks):
 
         Calls made:
         GET_thread_list
-        GET_comment_list
+        POST_comment
         PATCH_comment
         """
         data = {"abuse_flagged": random.choice(["true", "false"])}
         name = "abuse_flag_comment" if self.verbose else "PATCH_comment"
-        #comment_id = self._get_comment_id()
         thread = self.get_random_thread(page=1, page_size=100)
         self.wait()
         if not thread:
@@ -502,22 +351,6 @@ class PatchCommentsTask(DiscussionsApiTasks):
             name=name
         )
         self.wait_then_stop()
-        #url = "/api/discussion/v1/comments/{}/".format(self._comment_id())
-
-        #name = "abuse_flag_comment" if self.verbose else "PATCH_comment"
-
-        #response = self.client.patch(
-        #    url,
-        #    data=json.dumps(data),
-        #    verify=False,
-        #    headers=self._headers,
-        #    name=name
-        #)
-        #if response.status_code != 200:
-        #    print url
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #self.stop()
 
 
 class PostThreadsTask(DiscussionsApiTasks):
@@ -537,8 +370,6 @@ class PostThreadsTask(DiscussionsApiTasks):
         """
         self.post_thread()
         self.wait_then_stop()
-        #post_thread(self)
-        #self.stop()
 
 
 class PostCommentsTask(DiscussionsApiTasks):
@@ -558,14 +389,10 @@ class PostCommentsTask(DiscussionsApiTasks):
         POST_comment_response
         """
         thread = self.get_random_thread(page=1, page_size=100)
+        self.wait()
         if thread:
             self.create_response(thread_id=thread["id"])
         self.wait_then_stop()
-        #thread = get_random_thread(self, page=1, page_size=10)
-        #if thread:
-        #    create_response(self, thread_id=thread["id"])
-        # time.sleep(1)
-        # self.stop()
 
     @task(1)
     def post_comment(self):
@@ -577,8 +404,6 @@ class PostCommentsTask(DiscussionsApiTasks):
         POST_comment_response
         """
         thread = self.get_random_thread(page=1, page_size=100)
-        #thread = get_random_thread(self, page=1, page_size=10)
-        #time.sleep(1)
         self.wait()
         if thread:
             response = self.create_response(thread_id=thread["id"])
@@ -600,39 +425,18 @@ class DeleteThreadsTask(DiscussionsApiTasks):
         """
         DELETE a thread
 
-        A thread will be created with POST, then randomly selected with GET,
-        and then DELETED.
+        A thread will be created with POST and then DELETED.
 
         Calls made:
         POST_thread
-        GET_thread_list
         DELETE_thread
         """
-        response = self.post_thread()
+        thread = self.post_thread()
         self.wait()
-        #thread = self.get_random_thread(page=1, page_size=100)
-        #self.wait()
-        #if not thread:
-        if not response:
+        if not thread:
             self.stop()
-        #thread_id = thread["id"]
-        thread_id = response["id"]
-        self.delete_course_thread(thread_id)
+        self.delete_course_thread(thread["id"])
         self.wait_then_stop()
-
-        #url = "/api/discussion/v1/threads/{}".format(thread_id)
-        #response = self.client.delete(
-        #    url,
-        #    verify=False,
-        #    name="DELETE_thread",
-        #    headers=self._delete_headers
-        #)
-
-        #if response.status_code != 204:
-        #    print url
-        #    print "{}: {}".format(response.status_code, response.content[0:200])
-
-        #self.stop()
 
 
 class DeleteCommentsTask(DiscussionsApiTasks):
@@ -647,40 +451,24 @@ class DeleteCommentsTask(DiscussionsApiTasks):
         """
         DELETE a response
 
-        A response will be created with POST, then a response will be randomly
-        selected with GET and then DELETED.
+        A response will be created with POST for randomly selected thread
+        and then DELETED.
 
         Calls made:
-        POST_comment
         GET_thread_list
-        GET_comment_list
+        POST_response
         DELETE_response
         """
         thread = self.get_random_thread(page=1, page_size=100)
         self.wait()
         if not thread:
             self.stop()
-
         response = self.create_response(thread_id=thread["id"])
-        if response:
-            self.wait()
-        #comment = self.get_random_comment(thread=thread)
-        #self.wait()
-        #if not comment:
-           # self.stop()
-            comment_id = response["id"]
-            self.delete_comment(comment_id=comment_id)
+        self.wait()
+        if not response:
+            self.stop()
+        self.delete_comment(comment_id=response["id"])
         self.wait_then_stop()
-
-        #url = "/api/discussion/v1/comments/{}".format(comment_id)
-
-        #self.client.delete(
-        #    url,
-        #    verify=False,
-        #    name="DELETE_response",
-        #    headers=self._headers
-        #)
-        #self.stop()
 
     @task
     def delete_response_comment(self):
@@ -688,35 +476,25 @@ class DeleteCommentsTask(DiscussionsApiTasks):
         DELETE a response
 
         Retrieve threads to retrieve a response. Create a comment and then
-        delete the comment. Unlike delete_response, too many calls would be
-        required to find a random comment so instead we just delete the newly
-        created comment.
+        delete the comment.
 
         Calls made:
         GET_thread_list
-        GET_comment_list
-        POST_comment
+        GET_response_list
+        POST_response_comment
         DELETE_comment
         """
         thread = self.get_random_thread(page=1, page_size=100)
         self.wait()
         if not thread:
             self.stop()
-        comment = self.get_random_comment(thread=thread)
+        response = self.get_random_comment(thread=thread)
         self.wait()
-        if not comment:
+        if not response:
             self.stop()
-        comment_id = comment["id"]
-        new_comment = self.create_comment(comment_id=comment_id, thread_id=thread["id"])
+        new_comment = self.create_comment(comment_id=response["id"], thread_id=thread["id"])
+        self.wait()
+        if not new_comment:
+            self.stop()
         self.delete_comment(comment_id=new_comment["id"])
         self.wait_then_stop()
-        
-        #url = "/api/discussion/v1/comments/{}".format(comment_id)
-
-        #self.client.delete(
-        #    url,
-        #    verify=False,
-        #    name="DELETE_comment",
-        #    headers=self._headers
-        #)
-        #self.stop()
