@@ -1,16 +1,20 @@
 from collections import deque
 import datetime
+import os
 import random
 import uuid
+import sys
 
 import jwt
 from locust import task, HttpLocust
 from locust.clients import HttpSession
 from locust.exception import LocustError
 
-from helpers.api import LocustEdxRestApiClient
-from credentials.config import CREDENTIAL_API_URL, CREDENTIAL_SERVICE_URL, JWT, LMS_ROOT_URL, PROGRAM_ID, USERNAME
-from helpers.auto_auth_tasks import AutoAuthTasks
+sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'helpers'))
+
+from api import LocustEdxRestApiClient
+from auto_auth_tasks import AutoAuthTasks
+from config import CREDENTIAL_API_URL, CREDENTIAL_SERVICE_URL, JWT, LMS_ROOT_URL, PROGRAM_ID, USERNAME
 
 
 class CredentialTaskSet(AutoAuthTasks):
