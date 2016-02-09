@@ -49,7 +49,7 @@ class CredentialTaskSet(AutoAuthTasks):
         }
         return jwt.encode(payload, JWT["JWT_SECRET_KEY"])
 
-    @task
+    @task(1000)
     def list_user_credential_with_username(self):
         """ Get all credentials for a user."""
         self.user_credential_client.user_credentials.get(username=USERNAME)
@@ -126,7 +126,7 @@ class CredentialTaskSet(AutoAuthTasks):
             data=data, name="/api/v1/user_credentials/[id]"
         )
 
-    @task
+    @task(10)
     def render_credential(self):
         """ Render a user credential. """
         if not self._user_credentials:
