@@ -19,7 +19,13 @@ class DiscussionsApiTasks(AutoAuthTasks):
 
     def __init__(self, *args, **kwargs):  # pylint: disable=super-on-old-class
         super(DiscussionsApiTasks, self).__init__(*args, **kwargs)
-        self.course_id = os.getenv('COURSE_ID')
+        #self.course_id = os.getenv('COURSE_ID')
+        #self.course_id = "course-v1:edX+DemoX+Demo_Course"
+        #self.course_id = "course-v1:testX+LTC02+2016_LTC02"
+        #self.course_id = "course-v1:testX+LTC03+2016_LTC03"
+        #self.course_id = "course-v1:testX+LTC04+2016_LTC04"
+        self.course_id = "course-v1:testX+LTC05+2016_LTC05"
+
         if os.getenv('SEEDED_DATA'):
             #with open("discussions_api/seed_data/" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
             with open("" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:

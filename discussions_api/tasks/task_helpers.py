@@ -26,20 +26,25 @@ def get_random_thread(self, page=None, page_size=None, prioritize_comments=False
          (dict): The thread
     """
     #course_id = "course_id={}".format(urllib.quote_plus(self.course_id))
-    course_id = "course_id=course-v1%3AedX%2BDemoX%2BDemo_Course"
+    #course_id = "course_id=course-v1%3AedX%2BDemoX%2BDemo_Course"
+    #course_id = "course_id=course-v1%3AtestX%2BLTC02%2B2016_LTC02"
+    #course_id = "course_id=course-v1%3AtestX%2BLTC03%2B2016_LTC03"
+    #course_id = "course_id=course-v1%3AtestX%2BLTC04%2B2016_LTC04"
+    course_id = "course_id=course-v1%3AtestX%2BLTC05%2B2016_LTC05"
+
     #following = "following={}".format(random.choice(dapi_constants.FOLLOWING))
     #view = "view={}".format(random.choice(dapi_constants.VIEW))
 
     page_size = "page_size={}".format(page_size) if page_size else "page_size={}".format(random.choice(dapi_constants.PAGE_SIZE))
     page = "page={}".format(page) if page else "page={}".format(random.choice(dapi_constants.PAGE))
 
-    order_by = "order_by={}".format("comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY))
-    order_direction = "order_direction={}".format("desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION))
+    #order_by = "order_by={}".format("comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY))
+    #order_direction = "order_direction={}".format("desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION))
 
-    url = "/api/discussion/v1/threads/?{}&{}&{}&{}&{}".format(
+    url = "/api/discussion/v1/threads/?{}&{}&{}".format(
         course_id,
-        order_by,
-        order_direction,
+        #order_by,
+        #order_direction,
         page,
         page_size,
     )
