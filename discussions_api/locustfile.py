@@ -129,15 +129,25 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         self.auto_auth(verify_ssl=False, params=params)
 
     tasks = {
-        GetThreadsTask: 1000,
-        GetThreadListTask: 1000,
-        GetCommentsTask: 700,
-        PostThreadsTask: 300,
-        PostCommentsTask: 300,
-        PatchThreadsTask: 200,
-        PatchCommentsTask: 200,
-        DeleteThreadsTask: 100,
-        DeleteCommentsTask: 100,
+        # GetThreadsTask: 1000,
+        # GetThreadListTask: 1000,
+        # GetCommentsTask: 700,
+        # PostThreadsTask: 300,
+        # PostCommentsTask: 300,
+        # PatchThreadsTask: 200,
+        # PatchCommentsTask: 200,
+        # DeleteThreadsTask: 100,
+        # DeleteCommentsTask: 100,
+
+        GetThreadsTask: 7560,
+        GetThreadListTask: 800,
+        GetCommentsTask: 2000,
+        PostThreadsTask: 220,
+        PostCommentsTask: 194,
+        PatchThreadsTask: 92,
+        PatchCommentsTask: 83,
+        DeleteThreadsTask: 40,
+        DeleteCommentsTask: 40,
     }
 
 class DiscussionsApiLocust(HttpLocust):

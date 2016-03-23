@@ -61,7 +61,12 @@ def create_threads(args, course_id=None, seeder=None, save_threads=True):
     Threads=10, Responses=4, comments=1
     """
     #course_id = course_id if course_id else setup_studio(args)
-    course_id = "course-v1:edX+DemoX+Demo_Course"
+    #course_id = "course-v1:edX+DemoX+Demo_Course"
+    #course_id = "course-v1:testX+LTC02+2016_LTC02"
+    #course_id = "course-v1:testX+LTC03+2016_LTC03"
+    #course_id = "course-v1:testX+LTC04+2016_LTC04"
+    course_id = "course-v1:testX+LTC05+2016_LTC05"
+
     seeder = seeder if seeder else setup_lms(args)
     posts = int(args.number or raw_input("How many threads in multiples of 10?"))
     seeder.seed_threads(course_id=course_id, posts=posts)
@@ -82,7 +87,12 @@ def create_comments(args, course_id=None, seeder=None, save_threads=True):
     Creates comments in multiples of 20 and then returns the locust commandline
     """
     #course_id = course_id if course_id else setup_studio(args)
-    course_id = "course-v1:edX+DemoX+Demo_Course"
+    #course_id = "course-v1:edX+DemoX+Demo_Course"
+    #course_id = "course-v1:testX+LTC02+2016_LTC02"
+    #course_id = "course-v1:testX+LTC03+2016_LTC03"
+    #course_id = "course-v1:testX+LTC04+2016_LTC04"
+    course_id = "course-v1:testX+LTC05+2016_LTC05"
+
     seeder = seeder if seeder else setup_lms(args)
     posts = int(args.number or raw_input("How many threads "))
     responses = int(args.number or raw_input("How many responses for thread "))
