@@ -1,6 +1,6 @@
 import json
 import os
-from locust import task, TaskSet
+from locust import TaskSet
 
 
 BASIC_AUTH_CREDENTIALS = None
