@@ -27,7 +27,7 @@ class LmsTest(LmsTasks):
     ALL YOUR TASK ARE BELONG TO US
     """
 
-    tasks = CoursewareViewsTasks
+    tasks = [CoursewareViewsTasks]
 
 
 class LmsLocust(HttpLocust):
