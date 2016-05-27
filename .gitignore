@@ -4,3 +4,10 @@
 *.log
 results/
 data/
+.Python
+bin/
+include/
+lib/
+pip-selfcheck.json
+share/
+src/
