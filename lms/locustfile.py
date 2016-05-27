@@ -32,5 +32,5 @@ class LmsTest(LmsTasks):
 
 class LmsLocust(HttpLocust):
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'LmsTest')]
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 7500))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 15000))
+    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 0))
+    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 500))
