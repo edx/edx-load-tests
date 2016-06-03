@@ -30,7 +30,7 @@ def get_random_thread(self, page=None, page_size=None, prioritize_comments=False
     #course_id = "course_id=course-v1%3AtestX%2BLTC02%2B2016_LTC02"
     #course_id = "course_id=course-v1%3AtestX%2BLTC03%2B2016_LTC03"
     #course_id = "course_id=course-v1%3AtestX%2BLTC04%2B2016_LTC04"
-    course_id = "course_id=course-v1%3AtestX%2BLTC05%2B2016_LTC05"
+    course_id = "course_id=course-v1%3AtestX%2BC1%2B2016_C1"
 
     #following = "following={}".format(random.choice(dapi_constants.FOLLOWING))
     #view = "view={}".format(random.choice(dapi_constants.VIEW))

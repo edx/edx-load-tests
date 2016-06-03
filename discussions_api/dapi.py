@@ -32,7 +32,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         #self.course_id = "course-v1:testX+LTC02+2016_LTC02"
         #self.course_id = "course-v1:testX+LTC03+2016_LTC03"
         #self.course_id = "course-v1:testX+LTC04+2016_LTC04"
-        self.course_id = "course-v1:testX+LTC05+2016_LTC05"
+        self.course_id = "course-v1:testX+C1+2016_C1"
 
         self.url_prefix = "/api/discussion/v1"
 
@@ -147,7 +147,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         #course_id = "course-v1:testX+LTC02+2016_LTC02"
         #course_id = "course-v1:testX+LTC03+2016_LTC03"
         #course_id = "course-v1:testX+LTC04+2016_LTC04"
-        course_id = "course-v1:testX+LTC05+2016_LTC05"
+        course_id = "course-v1:testX+C1+2016_C1"
 
         query_args = {
             #"course_id": urllib.quote_plus(self.course_id),
