@@ -140,14 +140,14 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         # DeleteCommentsTask: 100,
 
         GetThreadsTask: 7560,
-        GetThreadListTask: 800,
+        GetThreadListTask: 500,
         GetCommentsTask: 2000,
         PostThreadsTask: 220,
-        PostCommentsTask: 194,
+        PostCommentsTask: 500,
         PatchThreadsTask: 92,
         PatchCommentsTask: 83,
         DeleteThreadsTask: 40,
-        DeleteCommentsTask: 40,
+        DeleteCommentsTask: 300,
     }
 
 class DiscussionsApiLocust(HttpLocust):
