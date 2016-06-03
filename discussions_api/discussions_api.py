@@ -24,7 +24,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         #self.course_id = "course-v1:testX+LTC02+2016_LTC02"
         #self.course_id = "course-v1:testX+LTC03+2016_LTC03"
         #self.course_id = "course-v1:testX+LTC04+2016_LTC04"
-        self.course_id = "course-v1:testX+LTC05+2016_LTC05"
+        self.course_id = "course-v1:testX+C1+2016_C1"
 
         if os.getenv('SEEDED_DATA'):
             #with open("discussions_api/seed_data/" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
