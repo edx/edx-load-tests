@@ -51,6 +51,7 @@ from tasks.dapi_tasks import (
 
 requests.packages.urllib3.disable_warnings()
 
+
 class DiscussionsApiTest(DiscussionsApiTasks):
     """
     This is a repeatable baseline test which utilizes the most used requests.
@@ -76,8 +77,8 @@ class DiscussionsApiTest(DiscussionsApiTasks):
         GetThreadsTask: 5000,
         GetThreadListTask: 2500,
     }
-    
-    
+
+
 class GetThreadWithCommentsTest(DiscussionsApiTasks):
     """
     This test will retrieve threads and report their comment_counts
@@ -111,7 +112,7 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
     This test will use all the available discussion API endpoints. Over time
     test will change the response time of the course as it POSTs more threads
     than it DELETEs. As the course becomes larger, the response times become
-    slower (assuming
+    slower.
 
     Note: Currently GET_thread grabs its thread ids from a static list. POST
     does not add to this list. Over time, as more DELETE are done, more 404s
@@ -128,17 +129,9 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         }
         self.auto_auth(verify_ssl=False, params=params)
 
+    # TODO: Document updated numbers in wiki and update here following example in
+    # - https://openedx.atlassian.net/wiki/display/MA/Goals+and+setup
     tasks = {
-        # GetThreadsTask: 1000,
-        # GetThreadListTask: 1000,
-        # GetCommentsTask: 700,
-        # PostThreadsTask: 300,
-        # PostCommentsTask: 300,
-        # PatchThreadsTask: 200,
-        # PatchCommentsTask: 200,
-        # DeleteThreadsTask: 100,
-        # DeleteCommentsTask: 100,
-
         GetThreadsTask: 7560,
         GetThreadListTask: 500,
         GetCommentsTask: 2000,
@@ -149,6 +142,7 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         DeleteThreadsTask: 40,
         DeleteCommentsTask: 300,
     }
+
 
 class DiscussionsApiLocust(HttpLocust):
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'FullDiscussionsApiTest')]

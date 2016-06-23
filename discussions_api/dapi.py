@@ -27,12 +27,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
 
     def __init__(self, *args, **kwargs):  # pylint: disable=super-on-old-class
         super(DiscussionsApiTasks, self).__init__(*args, **kwargs)
-        #self.course_id = os.getenv('COURSE_ID')
-        #self.course_id = "course-v1:edX+DemoX+Demo_Course"
-        #self.course_id = "course-v1:testX+LTC02+2016_LTC02"
-        #self.course_id = "course-v1:testX+LTC03+2016_LTC03"
-        #self.course_id = "course-v1:testX+LTC04+2016_LTC04"
-        self.course_id = "course-v1:testX+C1+2016_C1"
+        self.course_id = os.getenv('COURSE_ID')
 
         self.url_prefix = "/api/discussion/v1"
 
@@ -61,7 +56,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         return {
             'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
             'Referer': self.locust.host,
-            'content-type': 'application/json'
+            'Content-Type': 'application/json'
         }
 
     @property
@@ -70,7 +65,7 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         return {
             'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
             'Referer': self.locust.host,
-            'content-type': 'application/merge-patch+json'
+            'Content-Type': 'application/merge-patch+json'
         }
 
     @property
@@ -143,21 +138,18 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
         Returns:
              (dict): The thread
         """
-        #course_id = "course-v1:edX+DemoX+Demo_Course"
-        #course_id = "course-v1:testX+LTC02+2016_LTC02"
-        #course_id = "course-v1:testX+LTC03+2016_LTC03"
-        #course_id = "course-v1:testX+LTC04+2016_LTC04"
-        course_id = "course-v1:testX+C1+2016_C1"
 
+        # The following are additional query_args that we should consider
+        # load testing against:
+        #
+        # "following": random.choice(dapi_constants.FOLLOWING),
+        # "view": random.choice(dapi_constants.VIEW),
+        # "order_by": "comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY),
+        # "order_direction": "desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION),
         query_args = {
-            #"course_id": urllib.quote_plus(self.course_id),
-            "course_id": course_id,
-            #"following": random.choice(dapi_constants.FOLLOWING),
-            #"view": random.choice(dapi_constants.VIEW),
+            "course_id": self.course_id,
             "page_size": page_size if page_size else random.choice(dapi_constants.PAGE_SIZE),
             "page": page if page else self.random_page_number(),
-            #"order_by": "comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY),
-            #"order_direction": "desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION),
         }
         encoded_args = urllib.urlencode(query_args)
 

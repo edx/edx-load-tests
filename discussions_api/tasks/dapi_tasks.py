@@ -7,7 +7,7 @@ import time
 
 from locust import task
 
-from dapi import DiscussionsApiTasks
+from ..dapi import DiscussionsApiTasks
 import os
 import requests
 from task_helpers import (
