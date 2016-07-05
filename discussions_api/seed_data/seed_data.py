@@ -60,10 +60,11 @@ def save_threads_to_file(seeder, file_name, course_id, thread_id_list=None):
     Handles printing necessary output when writing threads to a file.
 
     Arguments:
-        seeder: The DiscussionSeeder.
-        file_name: The filename to be written to.
-        course_id: The course containing the threads.
-        thread_id_list: The thread list, which will be retrieved from the course if None is supplied.
+        seeder (DiscussionSeeder): The DiscussionSeeder.
+        file_name (str): The filename to be written to.
+        course_id (str): The course containing the threads.
+        thread_id_list (list): A list of thread ids, or None to read all
+            thread ids from the course.
 
     """
     print "Saving thread_ids to: {}".format(file_name)
@@ -148,28 +149,9 @@ def return_course(args, course_id=None):
     course_id = get_course_id(args, course_id)
 
 
-def setup_flow_test(args):
-    """
-    Predefined test for running a loadtest against all endpoints.
-
-    Median Posts in a course is ~2000
-    Average comments on a thread ~1.5
-    """
-    course_id = get_course_id(args)
-    seeder = setup_discussion_seeder(args)
-    args.batches = 100
-    create_threads(args, course_id, seeder, False)
-    args.threads = 6
-    args.responses = 6
-    args.comments = 6
-    # TODO: This is not saving the earlier threads to the file. Does this need to be enhanced?
-    create_comments(args, course_id, seeder, True)
-
-
 def main():
 
     actions = OrderedDict([
-        ("FlowTest", setup_flow_test),
         ("GetCommentsTasks", create_comments),
         ("GetThreadsTask", create_threads),
         ("PatchThreadsTask", create_threads),

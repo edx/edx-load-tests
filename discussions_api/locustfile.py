@@ -125,7 +125,8 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
         """
         params = {
             "course_id": self.course_id,
-            "staff": "true"
+            "staff": "true",
+            "roles": ["Administrator"],
         }
         self.auto_auth(verify_ssl=False, params=params)
 

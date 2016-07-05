@@ -138,6 +138,9 @@ class DiscussionsSeeder(Seeder):
         if response.status_code == 500:
             raise PostCreationException(response.status_code)
 
+        if 'id' not in response.json():
+            pass
+
         return response.json()["id"]
 
     def create_thread_data_file(self, file_name, course_id, thread_id_list):
@@ -147,6 +150,9 @@ class DiscussionsSeeder(Seeder):
         Args:
             course_id (str): ID of the course we want all the thread_ids from
             file_name (str): Name of the file to save to
+            thread_id_list (list): A list of thread ids, or None to read all
+                thread ids from the course.
+
         """
         if not thread_id_list:
             course_id = urllib.quote_plus(course_id)

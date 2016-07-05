@@ -1,13 +1,9 @@
 """
 Constants file that holds different HTTP request parameters.
 """
-FOLLOWING = [
-    "true",
-    #"false",
-]
 VIEW = [
     "unread",
-    # "unanswered",
+    "unanswered",
 ]
 ORDER_BY = [
     "last_activity_at",
@@ -15,10 +11,10 @@ ORDER_BY = [
     "vote_count",
 ]
 ORDER_DIRECTION = [
-    #" asc",
-    "asc",
     "desc"
 ]
+
+
 PAGE = [
     "1",
     "2",
@@ -29,23 +25,16 @@ PAGE = [
     "7",
     "8",
     "9",
-    "10"
+    "10",
+    "20",
 ]
-PAGE_SIZE = ["50"]
-
-#PAGE = [
-#    "1",
-#    "2",
-#    "10",
-#    "20"
-#]
-#PAGE_SIZE = [
-#    "1",
-#    "25",
-#    "50",
-#    "75",
-#    "100",
-#]
+PAGE_SIZE = [
+    "1",
+    "25",
+    "50",
+    "75",
+    "100",
+]
 
 MARK_AS_READ = [
     "True",

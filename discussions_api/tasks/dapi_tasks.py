@@ -1,22 +1,11 @@
 """
 This file holds the different tasks used for the Discussion API tests
 """
-import json
 import random
-import time
 
 from locust import task
 
 from ..dapi import DiscussionsApiTasks
-import os
-import requests
-from task_helpers import (
-    get_random_comment,
-    get_random_thread,
-    create_comment,
-    create_response,
-    post_thread,
-)
 import dapi_constants
 
 
@@ -96,10 +85,6 @@ class GetCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         GET_comment_list
         """
-        #choice = random.choice(self.thread_id_list)
-        #url = "/api/discussion/v1/threads/{}".format(choice)
-        #response = self.client.get(url=url, verify=False, name="GET_thread")
-        #self.wait()
         thread = self.get_random_thread(page=1, page_size=10, prioritize_comments=True)
         self.wait()
         self.get_random_comment(thread=thread, verbose=self.verbose)
@@ -141,6 +126,9 @@ class PatchThreadsTask(DiscussionsApiTasks):
     and follow.
     """
     def _get_thread_id(self):
+        """
+        Returns the id of a random thread.
+        """
         thread = self.get_random_thread(page=1, page_size=10)
         self.wait()
         if not thread:
@@ -153,18 +141,13 @@ class PatchThreadsTask(DiscussionsApiTasks):
         Edit a thread's raw_body
 
         Calls made:
-        POST_thread
+        GET_thread_list
         PATCH_thread
         """
         new_body_size = random.choice(dapi_constants.BODY.keys())
         data = {"raw_body": dapi_constants.BODY[new_body_size]}
 
         name = "edit_thread_with_{}".format(new_body_size) if self.verbose else "PATCH_thread"
-        # response = self.post_thread()
-        # self.wait()
-        # if not response:
-        #     self.stop()
-        #thread_id = response["id"]
 
         self.patch_thread(
             thread_id=self._get_thread_id(),
@@ -179,16 +162,11 @@ class PatchThreadsTask(DiscussionsApiTasks):
         Follow a thread
 
         Calls made:
-        POST_thread
+        GET_thread_list
         PATCH_thread
         """
         data = {"following": random.choice(["true", "false"])}
         name = "following_thread" if self.verbose else "PATCH_thread"
-        # response = self.post_thread()
-        # self.wait()
-        # if not response:
-        #     self.stop()
-        # thread_id = response["id"]
         self.patch_thread(
             thread_id=self._get_thread_id(),
             data=data,
@@ -202,16 +180,11 @@ class PatchThreadsTask(DiscussionsApiTasks):
         Flag a thread with
 
         Calls made:
-        POST_thread
+        GET_thread_list
         PATCH_thread
         """
         data = {"abuse_flagged": random.choice(["true", "false"])}
         name = "abuse_flag_thread" if self.verbose else "PATCH_thread"
-        # response = self.post_thread()
-        # self.wait()
-        # if not response:
-        #     self.stop()
-        # thread_id = response["id"]
         self.patch_thread(
             thread_id=self._get_thread_id(),
             data=data,
@@ -225,16 +198,11 @@ class PatchThreadsTask(DiscussionsApiTasks):
         Vote on a thread
 
         Calls made:
-        POST_thread
+        GET_thread_list
         PATCH_thread
         """
         data = {"voted": random.choice(["true", "false"])}
         name = "vote_on_thread" if self.verbose else "PATCH_thread"
-        # response = self.post_thread()
-        # self.wait()
-        # if not response:
-        #     self.stop()
-        # thread_id = response["id"]
         self.patch_thread(
             thread_id=self._get_thread_id(),
             data=data,
@@ -255,7 +223,13 @@ class PatchCommentsTask(DiscussionsApiTasks):
     """
 
     def _get_comment_id(self):
-        thread = self.get_random_thread(page=1, page_size=10, prioritize_comments=True)
+        """
+        Returns the id of a random comment from a random thread (of a random
+        page).
+
+        """
+        page_size = random.choice(dapi_constants.PAGE_SIZE)
+        thread = self.get_random_thread(page_size=page_size, prioritize_comments=True)
         self.wait()
         if not thread:
             self.stop()
@@ -272,21 +246,12 @@ class PatchCommentsTask(DiscussionsApiTasks):
 
         Calls made:
         GET_thread_list
-        POST_comment
+        GET_comment_list
         PATCH_comment
         """
         new_body_size = random.choice(dapi_constants.BODY.keys())
         data = {"raw_body": dapi_constants.BODY[new_body_size]}
         name = "edit_comment_with_{}".format(new_body_size) if self.verbose else "PATCH_comment"
-        # thread = self.get_random_thread(page=1, page_size=100)
-        # self.wait()
-        # if not thread:
-        #     self.stop()
-        # response = self.create_response(thread_id=thread["id"])
-        # self.wait()
-        # if not response:
-        #     self.stop()
-        # comment_id = response["id"]
         self.patch_comment(
             comment_id=self._get_comment_id(),
             data=data,
@@ -301,20 +266,11 @@ class PatchCommentsTask(DiscussionsApiTasks):
 
         Calls made:
         GET_thread_list
-        POST_comment
+        GET_comment_list
         PATCH_comment
         """
         data = {"voted": random.choice(["true", "false"])}
         name = "vote_on_comment" if self.verbose else "PATCH_comment"
-        # thread = self.get_random_thread(page=1, page_size=100)
-        # self.wait()
-        # if not thread:
-        #     self.stop()
-        # response = self.create_response(thread_id=thread["id"])
-        # self.wait()
-        # if not response:
-        #     self.stop()
-        # comment_id = response["id"]
         self.patch_comment(
             comment_id=self._get_comment_id(),
             data=data,
@@ -329,20 +285,11 @@ class PatchCommentsTask(DiscussionsApiTasks):
 
         Calls made:
         GET_thread_list
-        POST_comment
+        GET_comment_list
         PATCH_comment
         """
         data = {"abuse_flagged": random.choice(["true", "false"])}
         name = "abuse_flag_comment" if self.verbose else "PATCH_comment"
-        # thread = self.get_random_thread(page=1, page_size=100)
-        # self.wait()
-        # if not thread:
-        #     self.stop()
-        # response = self.create_response(thread_id=thread["id"])
-        # self.wait()
-        # if not response:
-        #     self.stop()
-        # comment_id = response["id"]
         self.patch_comment(
             comment_id=self._get_comment_id(),
             data=data,
@@ -386,7 +333,8 @@ class PostCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         POST_comment_response
         """
-        thread = self.get_random_thread(page=1, page_size=10)
+        page_size = random.choice(dapi_constants.PAGE_SIZE)
+        thread = self.get_random_thread(page_size=page_size)
         self.wait()
         if not thread:
             self.stop()
@@ -402,7 +350,8 @@ class PostCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         POST_comment_response
         """
-        thread = self.get_random_thread(page=1, page_size=10)
+        page_size = random.choice(dapi_constants.PAGE_SIZE)
+        thread = self.get_random_thread(page_size=page_size)
         self.wait()
         if not thread:
             self.stop()

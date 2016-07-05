@@ -137,20 +137,17 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
 
         Returns:
              (dict): The thread
-        """
 
-        # The following are additional query_args that we should consider
-        # load testing against:
-        #
-        # "following": random.choice(dapi_constants.FOLLOWING),
-        # "view": random.choice(dapi_constants.VIEW),
-        # "order_by": "comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY),
-        # "order_direction": "desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION),
+        """
         query_args = {
             "course_id": self.course_id,
             "page_size": page_size if page_size else random.choice(dapi_constants.PAGE_SIZE),
             "page": page if page else self.random_page_number(),
+            "order_by": "comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY),
+            "order_direction": "desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION),
+            "view": random.choice(dapi_constants.VIEW),
         }
+
         encoded_args = urllib.urlencode(query_args)
 
         url = "{}/threads/?{}".format(self.url_prefix, encoded_args)
