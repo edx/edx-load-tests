@@ -12,11 +12,28 @@ locust and a virtual env in edx-load-tests/README.rst.
 
 Once locust is set up, configure and start your environment as follows:
 
-#. Set AUTOMATIC_AUTH_FOR_TESTING to true in ``/edx/app/edxapp/lms.env.json``.
-#. Start up LMS
-#. Start up Studio (for seeding)
-#. Start up forums comment service
+#. Set AUTOMATIC_AUTH_FOR_TESTING to true in ``/edx/app/edxapp/lms.env.json``. (for load testing)
+#. Verify mongo indexes (see below).
+#. Start up Studio (for seeding).
+#. Start up LMS.
+#. Start up forums comment service.
 
+Verify Mongo Indexes
+~~~~~~~~~~~~~~~~~~~~
+
+For now, the indexes probably don't exist on your devstack or a sandbox.
+
+First, you'll need to copy the create index script from edx-load-tests/discussions_api/db/create_indexes.js to cs_comments_service/scripts/db/create_indexes.js.
+
+Next, from the mongo shell, you can run the following to see what indexes exist::
+
+    > show dbs
+    > use cs_comments_service_development
+    > db.contents.getIndexes()
+
+After the above setup, you can run the following script from the mongo shell to ensure the indexes have all been created::
+
+    > load("/edx/app/forum/cs_comments_service/scripts/db/create_indexes.js")
 
 Seeding Data
 ------------
