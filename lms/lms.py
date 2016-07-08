@@ -25,7 +25,7 @@ class EdxAppTasks(AutoAuthTasks):
         """
         The complete id of the course we're configured to test with.
         """
-        return os.getenv('COURSE_ID', 'edX/DemoX/Demo_Course')
+        return os.getenv('COURSE_ID', 'course-v1:edX+DemoX+Demo_Course')
 
     @lazy
     def course_key(self):
