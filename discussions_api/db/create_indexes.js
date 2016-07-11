@@ -1,5 +1,5 @@
 // output of db.contents.getIndexes() from PROD
-var all_indexes = [
+var contentsIndexes = [
     {
         "v" : 1,
         "key" : {
@@ -262,23 +262,134 @@ var all_indexes = [
     }
 ];
 
-print('Getting list of indexes...');
-var current_indexes = db.contents.getIndexes();
 
-print('Current list of indexes:');
-var list_of_current_index_names = [];
-for (index = 0; index < current_indexes.length; index++) {
-    print(current_indexes[index].name)
-}
-
-print('Ensuring indexes...');
-var index,
-    options;
-for (index = 0; index < all_indexes.length; index++) {
-    options = {
-        background: (all_indexes[index].background === true),
-        sparse: (all_indexes[index].sparse === true)
+// output of db.subscriptions.getIndexes() from PROD
+var subscriptionsIndexes = [
+    {
+        "v" : 1,
+        "key" : {
+            "_id" : 1
+        },
+        "ns" : "comments-prod.subscriptions",
+        "name" : "_id_"
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "subscriber_id" : 1,
+            "source_id" : 1,
+            "source_type" : 1
+        },
+        "ns" : "comments-prod.subscriptions",
+        "name" : "subscriber_id_1_source_id_1_source_type_1"
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "subscriber_id" : 1,
+            "source_type" : 1
+        },
+        "ns" : "comments-prod.subscriptions",
+        "name" : "subscriber_id_1_source_type_1"
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "subscriber_id" : 1
+        },
+        "ns" : "comments-prod.subscriptions",
+        "name" : "subscriber_id_1"
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "source_id" : 1,
+            "source_type" : 1
+        },
+        "ns" : "comments-prod.subscriptions",
+        "name" : "source_id_1_source_type_1",
+        "background" : true,
+        "safe" : true
     }
-    print('Ensuring ' + all_indexes[index].name);
-    db.contents.ensureIndex(all_indexes[index].key, options);
-}
+]
+
+
+// output of db.users.getIndexes() from PROD
+var usersIndexes = [
+    {
+        "v" : 1,
+        "key" : {
+            "_id" : 1
+        },
+        "ns" : "comments-prod.users",
+        "name" : "_id_"
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "external_id" : 1
+        },
+        "unique" : true,
+        "ns" : "comments-prod.users",
+        "name" : "external_id_1",
+        "background" : true
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "username" : 1
+        },
+        "ns" : "comments-prod.users",
+        "name" : "username_1",
+        "background" : true
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "email" : 1
+        },
+        "ns" : "comments-prod.users",
+        "name" : "email_1",
+        "background" : true
+    },
+    {
+        "v" : 1,
+        "key" : {
+            "external_id" : 1,
+            "_id" : 1
+        },
+        "name" : "external_id_1__id_1",
+        "background" : true,
+        "ns" : "comments-prod.users"
+    }
+]
+
+
+updateIndexes = function (collectionName, collectionIndexes) {
+    print('Getting list of indexes for ' + collectionName + '...');
+    var current_indexes = db[collectionName].getIndexes();
+
+    print('Current list of indexes for ' + collectionName + ':');
+    for (index = 0; index < current_indexes.length; index++) {
+        print(current_indexes[index].name);
+    }
+
+    print('Dropping existing indexes...');
+    db[collectionName].dropIndexes();
+
+    print('Ensuring indexes for ' + collectionName + '...');
+    var index,
+        options;
+    for (index = 0; index < collectionIndexes.length; index++) {
+        options = {
+            background: (collectionIndexes[index].background === true),
+            sparse: (collectionIndexes[index].sparse === true)
+        };
+        print('Ensuring ' + collectionIndexes[index].name);
+        db[collectionName].ensureIndex(collectionIndexes[index].key, options);
+    }
+};
+
+updateIndexes('contents', contentsIndexes);
+updateIndexes('subscriptions', subscriptionsIndexes);
+updateIndexes('users', usersIndexes);
