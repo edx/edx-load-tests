@@ -154,6 +154,9 @@ class DiscussionsSeeder(Seeder):
                 thread ids from the course.
 
         """
+        # TODO: Consider splitting the case of reading all threads for a course
+        # into a list into a separate function that is more explicit.  This
+        # function would simply be for writing the list to a file.
         if not thread_id_list:
             course_id = urllib.quote_plus(course_id)
             url = "{}/api/discussion/v1/threads/?course_id={}&page_size=100".format(self.lms_url, course_id)
