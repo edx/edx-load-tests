@@ -52,7 +52,7 @@ class CourseSeeder(Seeder):
         headers = self.get_post_headers(url)
         headers.pop("Content-Type")
 
-        with open(os.path.dirname(__file__) + '/' + tarfile, 'rb') as upload:
+        with open(os.path.join(os.path.dirname(__file__), tarfile), 'rb') as upload:
             filename = os.path.basename(tarfile)
             upload.seek(0, 2)
             end = upload.tell()
