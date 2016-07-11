@@ -177,7 +177,7 @@ class DiscussionsSeeder(Seeder):
                     response = self.sess.get(next_page_url)
                 response = response.json()
                 if response["pagination"]["next"]:
-                    print "GETting page {}".format(response["next"].split("&page=")[1])
+                    print "GETting page {}".format(response["pagination"]["next"].split("&page=")[1])
                 for thread in response["results"]:
                     thread_id_list.append(thread["id"])
 

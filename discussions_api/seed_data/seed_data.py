@@ -2,6 +2,7 @@ import argparse
 from collections import OrderedDict
 import getpass
 import sys
+import textwrap
 import uuid
 
 from course_seeder import CourseSeeder
@@ -142,21 +143,21 @@ def create_comments(args, course_id=None, seeder=None, save_threads=True):
         save_threads_to_file(seeder, file_name, course_id, thread_id_list=thread_list)
 
 
-def return_course(args, course_id=None):
-    """
-    Returns the commandline for locust with the given course_id
-    """
-    course_id = get_course_id(args, course_id)
-
-
 def main():
 
     actions = OrderedDict([
-        ("GetCommentsTasks", create_comments),
-        ("GetThreadsTask", create_threads),
-        ("PatchThreadsTask", create_threads),
-        ("PostThreadsTask", return_course),
-        ("SaveThreads", save_course_thread_list_to_file),
+        ("CreateThreads", {
+            'function': create_comments,
+            'help': 'Creates threads with the specified number of responses and comments.',
+        }),
+        ("CreateThreadBatches", {
+            'function': create_threads,
+            'help': 'Creates batches of 10 threads with random numbers of responses and comments and random anttributes.',
+        }),
+        ("DumpCourseThreads", {
+            'function': save_course_thread_list_to_file,
+            'help': 'Dumps all threads in a course to a file to use with the locust tests.',
+        }),
     ])
 
     parser = argparse.ArgumentParser(
@@ -179,6 +180,10 @@ def main():
     parser.epilog = "script actions/tasks:"
     for action in actions:
         parser.epilog += "\n    {}".format(action)
+        LINE_LENGTH = 80;
+        TWO_INDENTS = 8;
+        for line in textwrap.wrap(actions[action]['help'], LINE_LENGTH - TWO_INDENTS):
+            parser.epilog += "\n        {}".format(line)
 
     args = parser.parse_args()
 
@@ -186,7 +191,7 @@ def main():
         parser.print_usage()
         return -1
 
-    actions[args.action](args)
+    actions[args.action]['function'](args)
 
 if __name__ == "__main__":
     sys.exit(main())
