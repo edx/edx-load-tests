@@ -1,10 +1,6 @@
 """
 Constants file that holds different HTTP request parameters.
 """
-VIEW = [
-    "unread",
-    "unanswered",
-]
 ORDER_BY = [
     "last_activity_at",
     "comment_count",

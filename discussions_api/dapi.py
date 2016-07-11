@@ -145,7 +145,6 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
             "page": page if page else self.random_page_number(),
             "order_by": "comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY),
             "order_direction": "desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION),
-            "view": random.choice(dapi_constants.VIEW),
         }
 
         encoded_args = urllib.urlencode(query_args)
