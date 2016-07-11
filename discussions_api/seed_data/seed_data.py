@@ -188,7 +188,7 @@ def main():
     args = parser.parse_args()
 
     if args.action not in actions:
-        parser.print_usage()
+        parser.print_help()
         return -1
 
     actions[args.action]['function'](args)
