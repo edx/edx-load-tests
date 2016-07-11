@@ -349,6 +349,7 @@ class PostCommentsTask(DiscussionsApiTasks):
         Calls made:
         GET_thread_list
         POST_comment_response
+        POST_comment_comment
         """
         page_size = random.choice(dapi_constants.PAGE_SIZE)
         thread = self.get_random_thread(page_size=page_size)
@@ -432,7 +433,7 @@ class DeleteCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         GET_response_list
         POST_response_comment
-        DELETE_comment
+        DELETE_response_comment
         """
         thread = self.get_random_thread(page=1, page_size=10)
         self.wait()

@@ -180,8 +180,8 @@ def main():
     parser.epilog = "script actions/tasks:"
     for action in actions:
         parser.epilog += "\n    {}".format(action)
-        LINE_LENGTH = 80;
-        TWO_INDENTS = 8;
+        LINE_LENGTH = 80
+        TWO_INDENTS = 8
         for line in textwrap.wrap(actions[action]['help'], LINE_LENGTH - TWO_INDENTS):
             parser.epilog += "\n        {}".format(line)
 
