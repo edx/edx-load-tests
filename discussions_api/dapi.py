@@ -8,7 +8,7 @@ import os
 import random
 import urllib
 
-from helpers.auto_auth_tasks import AutoAuthTasks
+from helpers import auto_auth_tasks
 
 from tasks import dapi_constants
 
@@ -20,7 +20,7 @@ class UnexpectedResponse(Exception):
     pass
 
 
-class DiscussionsApiTasks(AutoAuthTasks):
+class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
     """
     Parent class of the discussion api tasks.
     """
@@ -28,10 +28,11 @@ class DiscussionsApiTasks(AutoAuthTasks):
     def __init__(self, *args, **kwargs):  # pylint: disable=super-on-old-class
         super(DiscussionsApiTasks, self).__init__(*args, **kwargs)
         self.course_id = os.getenv('COURSE_ID')
+
         self.url_prefix = "/api/discussion/v1"
 
         if os.getenv('SEEDED_DATA'):
-            with open("discussions_api/" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
+            with open("" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
                 self.thread_id_list = seeded_data.read().splitlines()
         else:
             self.thread_id_list = []
@@ -55,7 +56,16 @@ class DiscussionsApiTasks(AutoAuthTasks):
         return {
             'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
             'Referer': self.locust.host,
-            'content-type': 'application/json'
+            'Content-Type': 'application/json'
+        }
+
+    @property
+    def _put_headers(self):
+        """Headers for PUT"""
+        return {
+            'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
+            'Referer': self.locust.host,
+            'Content-Type': 'application/merge-patch+json'
         }
 
     @property
@@ -127,30 +137,28 @@ class DiscussionsApiTasks(AutoAuthTasks):
 
         Returns:
              (dict): The thread
+
         """
         query_args = {
-            "course_id": urllib.quote_plus(self.course_id),
-            "following": random.choice(dapi_constants.FOLLOWING),
-            "view": random.choice(dapi_constants.VIEW),
+            "course_id": self.course_id,
             "page_size": page_size if page_size else random.choice(dapi_constants.PAGE_SIZE),
             "page": page if page else self.random_page_number(),
             "order_by": "comment_count" if prioritize_comments else random.choice(dapi_constants.ORDER_BY),
             "order_direction": "desc" if prioritize_comments else random.choice(dapi_constants.ORDER_DIRECTION),
         }
+
         encoded_args = urllib.urlencode(query_args)
 
         url = "{}/threads/?{}".format(self.url_prefix, encoded_args)
         name = url if verbose else "GET_thread_list"
 
         response = self.client.get(url=url, verify=False, name=name)
-
         self.verify_response(response, url)
 
         if not response.json()["results"]:
             return None
-
         if prioritize_comments:
-            threads_with_comments = [thread for thread in response.json() if thread["comment_count"] > 0]
+            threads_with_comments = [thread for thread in response.json()["results"] if thread["comment_count"] > 0]
             if threads_with_comments:
                 return random.choice(threads_with_comments)
         return random.choice(response.json()["results"])
@@ -167,22 +175,16 @@ class DiscussionsApiTasks(AutoAuthTasks):
             thread (dict): The thread we are getting the comment from
             verbose (Bool): Get detailed locust request names
         """
-        # Required for question threads, set to False for discussion
-        if thread["type"] == "question":
-            endorsed = "False"  # unless set to false, no comments are returned since endorse is not seeded
-        else:
-            endorsed = "None"
-
         query_args = {
             "thread_id": thread["id"],
-            "page_size": random.choice(dapi_constants.PAGE_SIZE),
-            "endorsed": endorsed,
-            "mark_as_read": random.choice(dapi_constants.MARK_AS_READ),
-            "page": random.choice(dapi_constants.PAGE),
         }
+
+        # Required for question threads, set to False for discussion
+        if thread["type"] == "question":
+            query_args["endorsed"] = "False"
         encoded_args = urllib.urlencode(query_args)
 
-        url = "{}/comments/?".format(self.url_prefix, encoded_args)
+        url = "{}/comments/?{}".format(self.url_prefix, encoded_args)
 
         # Only be useful when running task in isolation with pre-set comment data
         if verbose:
@@ -192,7 +194,6 @@ class DiscussionsApiTasks(AutoAuthTasks):
             name = "GET_comment_list"
 
         response = self.client.get(url, verify=False, name=name)
-
         self.verify_response(response, url)
         if response.json()["results"]:
             return random.choice(response.json()["results"])
@@ -213,7 +214,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
             "raw_body": "This is a thread. {}".format(dapi_constants.BODY["250char"]),
         }
 
-        url = "{}/threads".format(self.url_prefix)
+        url = "{}/threads/".format(self.url_prefix)
         response = self.client.post(
             url=url,
             data=json.dumps(body),
@@ -235,7 +236,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (dict): The comment.
         """
-        url = "{}/comments".format(self.url_prefix)
+        url = "{}/comments/".format(self.url_prefix)
         body = {
             "thread_id": thread_id,
             "raw_body": "Orphaned comment aka Batman. {}".format(dapi_constants.BODY["250char"]),
@@ -260,19 +261,19 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (dict): The comment.
         """
-        url = "{}/comments".format(self.url_prefix)
+        url = "{}/comments/".format(self.url_prefix)
         body = {
             "parent_id": comment_id,
             "thread_id": thread_id,
             "raw_body": "Orphaned comment aka Batman. {}".format(dapi_constants.BODY["250char"]),
         }
+
         response = self.client.post(
             url=url,
             data=json.dumps(body),
             headers=self._post_headers,
             name="POST_comment_comment"
         )
-
         self.verify_response(response, url)
         return response.json()
 
@@ -313,7 +314,7 @@ class DiscussionsApiTasks(AutoAuthTasks):
             url,
             data=json.dumps(data),
             verify=False,
-            headers=self._headers,
+            headers=self._put_headers,
             name=name
         )
         self.verify_response(response, url)
@@ -331,18 +332,18 @@ class DiscussionsApiTasks(AutoAuthTasks):
         Returns:
             (dict): The comment
         """
-        url = "{}/comment/{}/".format(self.url_prefix, comment_id)
+        url = "{}/comments/{}/".format(self.url_prefix, comment_id)
         response = self.client.patch(
             url,
             data=json.dumps(data),
             verify=False,
-            headers=self._headers,
+            headers=self._put_headers,
             name=name
         )
         self.verify_response(response, url)
         return response.json()
 
-    def delete_thread(self, thread_id):
+    def delete_course_thread(self, thread_id):
         """
         DELETE a thread
 

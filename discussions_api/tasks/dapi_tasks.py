@@ -5,7 +5,7 @@ import random
 
 from locust import task
 
-from dapi import DiscussionsApiTasks
+from ..dapi import DiscussionsApiTasks
 import dapi_constants
 
 
@@ -73,6 +73,7 @@ class GetCommentsTask(DiscussionsApiTasks):
     """
     Tasks for GETting comments
     """
+
     @task
     def get_comment_list(self):
         """
@@ -84,10 +85,35 @@ class GetCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         GET_comment_list
         """
-        thread = self.get_random_thread(page=1, page_size=100, prioritize_comments=True)
+        thread = self.get_random_thread(page=1, page_size=10, prioritize_comments=True)
         self.wait()
         self.get_random_comment(thread=thread, verbose=self.verbose)
         self.wait_then_stop()
+
+    def _get_comment_and_response_count(self, thread_id):
+        """
+        Returns the comment_count and response_count for a Thread
+
+        This helper method is used when requiring verbose outputs for threads
+        that have high comment_counts. For example, a response with
+        1000 comment.
+
+        Calls made:
+        GET_thread
+
+        Args:
+            thread_id (str): Thread to get the comment_count and response_count
+
+        Returns:
+            (tuple): (comment_count, response_count)
+        """
+        url = "/api/discussion/v1/threads/{}/".format(thread_id)
+        response = self.client.get(url, verify=False, name="GET_thread")
+        if response.status_code == 200:
+            response = response.json()
+            return response["comment_count"], response["response_count"]
+        else:
+            print "{}: {}".format(response.status_code, response.content[0:200])
 
 
 class PatchThreadsTask(DiscussionsApiTasks):
@@ -100,7 +126,10 @@ class PatchThreadsTask(DiscussionsApiTasks):
     and follow.
     """
     def _get_thread_id(self):
-        thread = self.get_random_thread(self, page=1, page_size=100)
+        """
+        Returns the id of a random thread.
+        """
+        thread = self.get_random_thread(page=1, page_size=10)
         self.wait()
         if not thread:
             self.stop()
@@ -117,10 +146,11 @@ class PatchThreadsTask(DiscussionsApiTasks):
         """
         new_body_size = random.choice(dapi_constants.BODY.keys())
         data = {"raw_body": dapi_constants.BODY[new_body_size]}
+
         name = "edit_thread_with_{}".format(new_body_size) if self.verbose else "PATCH_thread"
-        thread_id = self._get_thread_id()
+
         self.patch_thread(
-            thread_id=thread_id,
+            thread_id=self._get_thread_id(),
             data=data,
             name=name
         )
@@ -137,9 +167,8 @@ class PatchThreadsTask(DiscussionsApiTasks):
         """
         data = {"following": random.choice(["true", "false"])}
         name = "following_thread" if self.verbose else "PATCH_thread"
-        thread_id = self._get_thread_id()
-        self.edit_thread(
-            thread_id=thread_id,
+        self.patch_thread(
+            thread_id=self._get_thread_id(),
             data=data,
             name=name,
         )
@@ -156,9 +185,8 @@ class PatchThreadsTask(DiscussionsApiTasks):
         """
         data = {"abuse_flagged": random.choice(["true", "false"])}
         name = "abuse_flag_thread" if self.verbose else "PATCH_thread"
-        thread_id = self._get_thread_id()
-        self.edit_thread(
-            thread_id=thread_id,
+        self.patch_thread(
+            thread_id=self._get_thread_id(),
             data=data,
             name=name,
         )
@@ -175,9 +203,8 @@ class PatchThreadsTask(DiscussionsApiTasks):
         """
         data = {"voted": random.choice(["true", "false"])}
         name = "vote_on_thread" if self.verbose else "PATCH_thread"
-        thread_id = self._get_thread_id()
-        self.edit_thread(
-            thread_id=thread_id,
+        self.patch_thread(
+            thread_id=self._get_thread_id(),
             data=data,
             name=name,
 
@@ -196,7 +223,13 @@ class PatchCommentsTask(DiscussionsApiTasks):
     """
 
     def _get_comment_id(self):
-        thread = self.get_random_thread(page=1, page_size=100, prioritize_comments=True)
+        """
+        Returns the id of a random comment from a random thread (of a random
+        page).
+
+        """
+        page_size = random.choice(dapi_constants.PAGE_SIZE)
+        thread = self.get_random_thread(page_size=page_size, prioritize_comments=True)
         self.wait()
         if not thread:
             self.stop()
@@ -219,9 +252,8 @@ class PatchCommentsTask(DiscussionsApiTasks):
         new_body_size = random.choice(dapi_constants.BODY.keys())
         data = {"raw_body": dapi_constants.BODY[new_body_size]}
         name = "edit_comment_with_{}".format(new_body_size) if self.verbose else "PATCH_comment"
-        comment_id = self._get_comment_id()
         self.patch_comment(
-            comment_id=comment_id,
+            comment_id=self._get_comment_id(),
             data=data,
             name=name
         )
@@ -239,9 +271,8 @@ class PatchCommentsTask(DiscussionsApiTasks):
         """
         data = {"voted": random.choice(["true", "false"])}
         name = "vote_on_comment" if self.verbose else "PATCH_comment"
-        comment_id = self._get_comment_id()
         self.patch_comment(
-            comment_id=comment_id,
+            comment_id=self._get_comment_id(),
             data=data,
             name=name
         )
@@ -259,9 +290,8 @@ class PatchCommentsTask(DiscussionsApiTasks):
         """
         data = {"abuse_flagged": random.choice(["true", "false"])}
         name = "abuse_flag_comment" if self.verbose else "PATCH_comment"
-        comment_id = self._get_comment_id()
         self.patch_comment(
-            comment_id=comment_id,
+            comment_id=self._get_comment_id(),
             data=data,
             name=name
         )
@@ -303,9 +333,12 @@ class PostCommentsTask(DiscussionsApiTasks):
         GET_thread_list
         POST_comment_response
         """
-        thread = self.get_random_thread(page=1, page_size=100)
-        if thread:
-            self.create_response(thread_id=thread["id"])
+        page_size = random.choice(dapi_constants.PAGE_SIZE)
+        thread = self.get_random_thread(page_size=page_size)
+        self.wait()
+        if not thread:
+            self.stop()
+        self.create_response(thread_id=thread["id"])
         self.wait_then_stop()
 
     @task(1)
@@ -318,13 +351,16 @@ class PostCommentsTask(DiscussionsApiTasks):
         POST_comment_response
         POST_comment_comment
         """
-        thread = self.get_random_thread(page=1, page_size=100)
+        page_size = random.choice(dapi_constants.PAGE_SIZE)
+        thread = self.get_random_thread(page_size=page_size)
         self.wait()
-        if thread:
-            response = self.create_response(thread_id=thread["id"])
-            self.wait()
-            if response:
-                self.create_comment(comment_id=response["id"], thread_id=response["thread_id"])
+        if not thread:
+            self.stop()
+        response = self.create_response(thread_id=thread["id"])
+        self.wait()
+        if not response:
+            self.stop()
+        self.create_comment(comment_id=response["id"], thread_id=response["thread_id"])
         self.wait_then_stop()
 
 
@@ -340,22 +376,17 @@ class DeleteThreadsTask(DiscussionsApiTasks):
         """
         DELETE a thread
 
-        A thread will be created with POST, then randomly selected with GET,
-        and then DELETED.
+        A thread will be created with POST and then DELETED.
 
         Calls made:
         POST_thread
-        GET_thread_list
         DELETE_thread
         """
-        self.post_thread()
-        self.wait()
-        thread = self.get_random_thread(page=1, page_size=100)
+        thread = self.post_thread()
         self.wait()
         if not thread:
             self.stop()
-        thread_id = thread["id"]
-        self.delete_thread(thread_id)
+        self.delete_course_thread(thread["id"])
         self.wait_then_stop()
 
 
@@ -371,54 +402,50 @@ class DeleteCommentsTask(DiscussionsApiTasks):
         """
         DELETE a response
 
-        A response will be created with POST, then a response will be randomly
-        selected with GET and then DELETED.
+        A response will be created with POST for randomly selected thread
+        and then DELETED.
 
         Calls made:
-        POST_comment
         GET_thread_list
-        GET_comment_list
+        POST_response
         DELETE_response
         """
-        thread = self.get_random_thread(page=1, page_size=100)
+        thread = self.get_random_thread(page=1, page_size=10)
         self.wait()
         if not thread:
             self.stop()
-        self.create_response(thread_id=thread["id"])
+        response = self.create_response(thread_id=thread["id"])
         self.wait()
-        comment = self.get_random_comment(thread=thread)
-        self.wait()
-        if not comment:
+        if not response:
             self.stop()
-        comment_id = comment["id"]
-        self.delete_comment(comment_id=comment_id)
+        self.delete_comment(comment_id=response["id"])
         self.wait_then_stop()
 
     @task
-    def delete_comment(self):
+    def delete_response_comment(self):
         """
         DELETE a response
 
         Retrieve threads to retrieve a response. Create a comment and then
-        delete the comment. Unlike delete_response, too many calls would be
-        required to find a random comment so instead we just delete the newly
-        created comment.
+        delete the comment.
 
         Calls made:
         GET_thread_list
-        GET_comment_list
-        POST_comment
-        DELETE_comment
+        GET_response_list
+        POST_response_comment
+        DELETE_response_comment
         """
-        thread = self.get_random_thread(page=1, page_size=100)
+        thread = self.get_random_thread(page=1, page_size=10)
         self.wait()
         if not thread:
             self.stop()
-        comment = self.get_random_comment(thread=thread)
+        response = self.get_random_comment(thread=thread)
         self.wait()
-        if not comment:
+        if not response:
             self.stop()
-        comment_id = comment["id"]
-        new_comment = self.create_comment(comment_id=comment_id, thread_id=thread["id"])
+        new_comment = self.create_comment(comment_id=response["id"], thread_id=thread["id"])
+        self.wait()
+        if not new_comment:
+            self.stop()
         self.delete_comment(comment_id=new_comment["id"])
         self.wait_then_stop()
