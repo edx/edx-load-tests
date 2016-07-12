@@ -4,6 +4,7 @@
 # pin these packages correctly.
 -e git+https://github.com/edx/opaque-keys.git@9f07da1abf699d10bc3252d3081017e8aa37c302#egg=opaque-keys
 
+gevent==1.0.1
 locustio==0.7.3
 edx-rest-api-client==1.4.0
 jupyter
