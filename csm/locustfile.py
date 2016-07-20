@@ -29,10 +29,22 @@ import MySQLdb as Database
 from helpers.raw_logs import RawLogger
 from helpers import datadog_reporting
 
+# load the test settings BEFORE django settings where they are used for
+# database configuration
+from helpers import settings
+settings.init(__name__, required=[
+    'DB_ENGINE',
+    'DB_HOST',
+    'DB_NAME',
+    'DB_PORT',
+    'DB_USER',
+    'DB_PASSWORD',
+])
+
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
-# Load settings here to trigger edx-platform sys.path manipulations
-from django.conf import settings  # noqa
-settings.INSTALLED_APPS
+# Load django settings here to trigger edx-platform sys.path manipulations
+from django.conf import settings as django_settings  # noqa
+django_settings.INSTALLED_APPS
 
 import courseware.user_state_client as user_state_client  # noqa
 from student.tests.factories import UserFactory  # noqa
@@ -229,9 +241,9 @@ def set_params():
     database parameters when locust's web interface is enabled.'''
     if web.request.method == 'POST':
         if len(web.request.form['PASSWORD']) > 0:
-            settings.DATABASES['default']['PASSWORD'] \
+            django_settings.DATABASES['default']['PASSWORD'] \
                 = web.request.form['PASSWORD']
         for key in ['USER', 'PORT', 'NAME', 'HOST']:
-            settings.DATABASES['default'][key] = web.request.form[key]
+            django_settings.DATABASES['default'][key] = web.request.form[key]
     return web.render_template('set_params.html',
-                               **settings.DATABASES['default'])
+                               **django_settings.DATABASES['default'])

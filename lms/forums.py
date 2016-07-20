@@ -5,7 +5,7 @@ import random
 import string
 
 from lazy import lazy
-from lms import LmsTasks
+from lms.base import LmsTasks
 from locust import task
 
 logging.basicConfig(level=logging.INFO)

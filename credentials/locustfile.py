@@ -10,10 +10,11 @@ from locust import task, HttpLocust
 from locust.clients import HttpSession
 from locust.exception import LocustError
 
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'helpers'))
+from helpers.api import LocustEdxRestApiClient
+from helpers.auto_auth_tasks import AutoAuthTasks
 
-from api import LocustEdxRestApiClient
-from auto_auth_tasks import AutoAuthTasks
+# FIXME: This load test does not yet implement the settings interface in
+# helpers/settings.py.
 from config import CREDENTIAL_API_URL, CREDENTIAL_SERVICE_URL, JWT, LMS_ROOT_URL, PROGRAM_ID, USERNAME
 
 

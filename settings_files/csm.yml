@@ -1,0 +1,14 @@
+---
+# ansible vars file containing the DATADOG_API_KEY
+ANSIBLE_VARS: /edx/app/edx_ansible/server-vars.yml
+
+# Directly override the datadog API key, instead of reading from the
+# file speicifed by ANSIBLE_VARS.
+#DATADOG_API_KEY:
+
+DB_ENGINE: django.db.backends.mysql
+DB_HOST: 127.0.0.1
+DB_NAME: wwc
+DB_PORT: 3306
+DB_USER: # REQUIRED
+DB_PASSWORD: # REQUIRED

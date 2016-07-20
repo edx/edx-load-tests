@@ -1,6 +1,8 @@
 Programs Load Testing
 =====================
 
+WARNING: the programs service is officially being retired as of 2016-08-02.
+
 This directory contains Locust tasks designed to exercise the `edX Programs Service <https://github.com/edx/programs>`_.
 
 Getting Started

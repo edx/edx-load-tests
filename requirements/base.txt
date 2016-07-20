@@ -10,3 +10,4 @@ jupyter
 runipy
 seaborn
 lazy
+PyYAML==3.11

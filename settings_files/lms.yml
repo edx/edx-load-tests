@@ -1,0 +1,22 @@
+---
+# Course ID that we're running these tests against.  The default
+# targets a course which currently exists on courses-loadtest.edx.org.
+COURSE_ID: edX/DemoX/Demo_Course
+
+# The name of the course data variable which corresponds to the
+# COURSE_ID specified above.  Must be defined in the lms.course_data
+# module.
+COURSE_DATA: demo_course
+
+# Run the specified TaskSet (must be imported into the lms/locustfile.py
+# file):
+LOCUST_TASK_SET: LmsTest
+
+# Minimum/Maximum waiting time between the execution of locust tasks:
+LOCUST_MIN_WAIT: 7500
+LOCUST_MAX_WAIT: 15000
+
+# Use the following keys to optionally specify basic auth credentials to
+# access the target:
+#BASIC_AUTH_USER:
+#BASIC_AUTH_PASS:

@@ -1,0 +1,12 @@
+---
+# ID of a course which has the teams feature enabled and teams created.
+COURSE_ID: # REQUIRED
+
+# Minimum/Maximum waiting time between the execution of locust tasks:
+LOCUST_MIN_WAIT: 500
+LOCUST_MAX_WAIT: 1000
+
+# Use the following keys to optionally specify basic auth credentials to
+# access the target:
+#BASIC_AUTH_USER:
+#BASIC_AUTH_PASS:

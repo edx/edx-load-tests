@@ -25,7 +25,7 @@ Start Locust by providing the Locust CLI with a target host and pointing it to t
 Repository Structure
 --------------------
 
-Tests are organized into top-level packages. For examples, see ``csm`` and ``programs``. A module called ``locustfile.py`` is included inside each test package, within which a subclass of the `Locust class <http://docs.locust.io/en/latest/writing-a-locustfile.html#the-locust-class>`_ is defined. This subclass is imported into the test package's ``__init__.py`` to facilitate discovery at runtime.
+Tests are organized into top-level packages. For examples, see ``csm`` and ``programs``. A module called ``locustfile.py`` is included inside each test package, within which a subclass of the `Locust class <http://docs.locust.io/en/latest/writing-a-locustfile.html#the-locust-class>`_ is defined. This subclass is imported into the test package's ``__init__.py`` to facilitate discovery at runtime.  Settings for each test are stored under the ``settings_files`` directory; ``<testname>`` reads settings data from ``settings_files/<testname>.yml``.
 
 License
 -------

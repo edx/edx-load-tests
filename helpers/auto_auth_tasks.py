@@ -1,14 +1,7 @@
 import json
-import os
-from locust import task, TaskSet
+from locust import TaskSet
 
-
-BASIC_AUTH_CREDENTIALS = None
-if 'BASIC_AUTH_USER' in os.environ and 'BASIC_AUTH_PASSWORD' in os.environ:
-    BASIC_AUTH_CREDENTIALS = (
-        os.environ['BASIC_AUTH_USER'],
-        os.environ['BASIC_AUTH_PASSWORD']
-    )
+from helpers import settings
 
 
 class AutoAuthTasks(TaskSet):
@@ -21,8 +14,12 @@ class AutoAuthTasks(TaskSet):
         Add basic auth credentials to our client object when specified.
         """
         super(AutoAuthTasks, self).__init__(*args, **kwargs)
-        if BASIC_AUTH_CREDENTIALS:
-            self.client.auth = BASIC_AUTH_CREDENTIALS
+
+        if settings.data.get('BASIC_AUTH_USER') is not None:
+            self.client.auth = (
+                settings.data['BASIC_AUTH_USER'],
+                settings.data['BASIC_AUTH_PASS'],
+            )
 
         self._user_id = None
         self._anonymous_user_id = None

@@ -1,0 +1,15 @@
+---
+# The URL for the service itself, not the API
+COURSE_DISCOVERY_SERVICE_URL: http://localhost:18381
+
+# The API base path
+COURSE_DISCOVERY_API_PATH: /api/v1/
+
+# TODO: the following JWT parameters are completely unused in the code,
+# so either make use of them or delete this comment.  These parameters
+# were carried over from the original course_discovery/conf.py
+# configuration file.
+#JWT_AUDIENCE: course-discovery
+#JWT_EXPIRATION_DELTA: 1
+#JWT_ISSUER: course-discovery
+#JWT_SECRET_KEY: course-discovery-jwt-secret-key
