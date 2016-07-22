@@ -19,7 +19,7 @@ import os
 from locust import HttpLocust
 
 from courseware_views import CoursewareViewsTasks
-from forums import ForumsTasks
+from forums import ForumsTasks, SeedForumsTasks
 from lms import LmsTasks
 from module_render import ModuleRenderTasks
 

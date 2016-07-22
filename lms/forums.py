@@ -1,16 +1,15 @@
 from collections import deque
+import logging
+import os
 import random
 import string
 
+from lazy import lazy
+from lms import LmsTasks
 from locust import task
 
-from lms import LmsTasks
-
-
-# keep track of thread ids created during a test, so they can be used to formulate read requests and replies.
-# a deque is used instead of a list in order to enforce maximum length.
-_thread_ids = deque(maxlen=1000)
-
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
 _dummy_chars = string.lowercase + '      '
 
@@ -23,79 +22,72 @@ def _dummy_text(minlen, maxlen):
     return ''.join(random.choice(_dummy_chars) for _ in xrange(minlen, random.randrange(minlen + 1, maxlen)))
 
 
-class ForumsTasks(LmsTasks):
+class BaseForumsTasks(LmsTasks):
     """
-    Simulate traffic for endpoints in lms.djangoapps.django_comment_client.base and .views
+    Base class for Forums (LMS) TaskSets.
 
-    Traffic Distribution on courses.edx.org (last 7d as of 2014-02-24):
+    This class supports environment-based configuration to override default
+    values for the following:
 
-    /django_comment_client.base.views:create_comment            17205     1.73%
-    /django_comment_client.base.views:create_sub_comment        8489      0.85%
-    /django_comment_client.base.views:create_thread             31984     3.22%
-    /django_comment_client.base.views:delete_comment            434       0.04%
-    /django_comment_client.base.views:delete_thread             368       0.04%
-    /django_comment_client.base.views:endorse_comment           1032      0.10%
-    /django_comment_client.base.views:flag_abuse_for_comment    69        0.01%
-    /django_comment_client.base.views:flag_abuse_for_thread     62        0.01%
-    /django_comment_client.base.views:follow_thread             2895      0.29%
-    /django_comment_client.base.views:openclose_thread          27        0.00%
-    /django_comment_client.base.views:pin_thread                177       0.02%
-    /django_comment_client.base.views:un_flag_abuse_for_comment 35        0.00%
-    /django_comment_client.base.views:un_flag_abuse_for_thread  36        0.00%
-    /django_comment_client.base.views:un_pin_thread             70        0.01%
-    /django_comment_client.base.views:undo_vote_for_comment     285       0.03%
-    /django_comment_client.base.views:undo_vote_for_thread      490       0.05%
-    /django_comment_client.base.views:unfollow_thread           567       0.06%
-    /django_comment_client.base.views:update_comment            2483      0.25%
-    /django_comment_client.base.views:update_thread             1891      0.19%
-    /django_comment_client.base.views:upload                    1051      0.11%
-    /django_comment_client.base.views:users                     13678     1.38%
-    /django_comment_client.base.views:vote_for_comment          4691      0.47%
-    /django_comment_client.base.views:vote_for_thread           7012      0.71%
-    /django_comment_client.forum.views:followed_threads         7910      0.80%
-    /django_comment_client.forum.views:forum_form_discussion    184475    18.55%
-    /django_comment_client.forum.views:inline_discussion        150204    15.11%
-    /django_comment_client.forum.views:single_thread            547876    55.10%
-    /django_comment_client.forum.views:user_profile             8765      0.88%
+    * LARGE_TOPIC_ID: Topic id for the large thread.
+    * LARGE_THREAD_ID: Thread id for the large thread.
+    See subclasses for usage.
+
     """
 
-    @task(19)
-    def forum_form_discussion(self):
-        """
-        Visit the discussion tab.
-        """
-        self.get('discussion/forum', name="forums:forum_form_discussion")
+    # class variables used to share across locust users.
+    # track the large thread tuple (topic_id, thread_id).
+    _large_thread = None
+    _all_topic_ids = None
 
-    @task(5)
-    def search_topic(self):
+    def random_topic_id(self):
         """
-        Load a randomly-selected topic from the discussion tab sidebar.
-        Uses ES, but not actually a search from the user perspective.
+        randomly choose the topic_id (aka discussion_id or commentable_id)
         """
-        self.get(
-            'discussion/forum/search',
-            params={
-                'commentable_ids': self.course_data.discussion_id,
-                'page': '1',
-            },
-            name='forums:search_topic',
-        )
+        return random.choice(self.topic_ids())
 
-    @task(15)
-    def inline_discussion(self):
-        """
-        Load a randomly-selected inline discussion.
-        """
-        self.get(
-            'discussion/forum/{}/inline'.format(self.course_data.discussion_id),
-            params={'page': '1'},
-            name='forums:inline_discussion',
-        )
+    def topic_ids(self):
+        # use Discussion API to load topics
+        if not BaseForumsTasks._all_topic_ids:
+            url = '/api/discussion/v1/course_topics/{}/'.format(self.course_key)
+            response = self.client.get(url, verify=False, name='forums:get_topics')
+            response_json = response.json()
 
-    @task(4)
-    def create_thread(self):
+            BaseForumsTasks._all_topic_ids = []
+            for topic in response_json['non_courseware_topics']:
+                BaseForumsTasks._all_topic_ids.append(topic['id'])
+            for topic in response_json['courseware_topics']:
+                for child in topic['children']:
+                    BaseForumsTasks._all_topic_ids.append(child['id'])
+
+        return BaseForumsTasks._all_topic_ids
+
+    @lazy
+    def large_topic_id(self):
         """
-        create a new thread in a randomly-selected topic
+        The topic id of the large thread.
+        """
+        if BaseForumsTasks._large_thread:
+            return BaseForumsTasks._large_thread[0]
+        else:
+            return os.getenv('LARGE_TOPIC_ID', None)
+
+    @lazy
+    def large_thread_id(self):
+        """
+        The thread id of the large thread.
+        """
+        if BaseForumsTasks._large_thread:
+            return BaseForumsTasks._large_thread[1]
+        else:
+            return os.getenv('LARGE_THREAD_ID', None)
+
+    def create_thread(self, topic_id, name):
+        """
+        Create a new thread in the topic_id.
+
+        Returns:
+            Tuple: (topic_id, thread_id)
         """
         thread_data = {
             'body': _dummy_text(100, 2000),  # NB size range not based on actual data.
@@ -105,24 +97,140 @@ class ForumsTasks(LmsTasks):
             'anonymous': 'false',
             'auto_subscribe': 'true',
         }
-        discussion_id = self.course_data.discussion_id
 
         response = self.post(
-            'discussion/{}/threads/create'.format(discussion_id),
+            'discussion/{}/threads/create'.format(topic_id),
             data=thread_data,
-            name='forums:create_thread',
+            name=name,
         )
 
-        _thread_ids.append((discussion_id, response.json()['id']))
+        thread_id = response.json()['id']
+        return (topic_id, thread_id)
 
-    @task(55)
+    def large_thread(self):
+        """
+        Read the large thread.
+        """
+        if not self.large_topic_id or not self.large_thread_id:
+            return
+
+        skip_limit = random.choice((('0', '25'), ('25', '100'), ('125', '100')))
+
+        self.get(
+            'discussion/forum/{}/threads/{}'.format(self.large_topic_id, self.large_thread_id),
+            params={
+                'resp_skip': skip_limit[0],
+                'resp_limit': skip_limit[1],
+            },
+            name='forums:large_thread',
+        )
+
+    def create_response(self, thread_id):
+        """
+        Post a response to an existing thread.
+        """
+        thread_data = {
+            'body': _dummy_text(100, 2000),  # NB size range not based on actual data.
+        }
+        response = self.post(
+            'discussion/threads/{}/reply'.format(thread_id),
+            data=thread_data,
+            name='forums:create_response',
+        )
+
+        return response.json()['id']
+
+    def create_comment(self, response_id):
+        """
+        Post a response to an existing thread.
+        """
+        thread_data = {
+            'body': _dummy_text(100, 2000),  # NB size range not based on actual data.
+        }
+        self.post(
+            'discussion/comments/{}/reply'.format(response_id),
+            data=thread_data,
+            name='forums:create_comment',
+        )
+
+
+class ForumsTasks(BaseForumsTasks):
+    """
+    Forums (LMS) TaskSet.
+
+    This class supports environment-based configuration to override default
+    values for the following:
+
+    * LARGE_TOPIC_ID: Topic id for the large thread.  If blank, all reads
+        will be against normal sized threads.
+    * LARGE_THREAD_ID: Thread id for the large thread.  If blank, all reads
+        will be against normal sized threads.
+
+    """
+
+    # class variable used to share across locust users.
+    # keep track of thread ids created during a test, so they can be used to formulate read requests and replies.
+    # a deque is used instead of a list in order to enforce maximum length.
+    _thread_ids = deque(maxlen=1000)
+
+    """
+    Traffic distribution must come from LMS/discussions calls, not from comment
+    service calls directly, in case the LMS calls make non-obvious comment
+    service calls.
+
+    For more up to date details on choosing weightings, see:
+    https://openedx.atlassian.net/wiki/display/TNL/Forums+Performance
+
+    """
+    @task(10)
+    def forum_form_discussion(self):
+        """
+        Visit the discussion tab.
+        """
+        self.get('discussion/forum', name="forums:forum_form_discussion")
+
+    @task(4)
+    def search_topic(self):
+        """
+        Load a randomly-selected topic from the discussion tab sidebar.
+        Uses ES, but not actually a search from the user perspective.
+        """
+        self.get(
+            'discussion/forum/search',
+            params={
+                'commentable_ids': self.random_topic_id(),
+                'page': '1',
+            },
+            name='forums:search_topic',
+        )
+
+    @task(10)
+    def inline_discussion(self):
+        """
+        Load a randomly-selected inline discussion.
+        """
+        self.get(
+            'discussion/forum/{}/inline'.format(self.random_topic_id()),
+            params={'page': '1'},
+            name='forums:inline_discussion',
+        )
+
+    @task(4)
+    def create_thread(self):
+        """
+        create a new thread in a randomly-selected topic
+        """
+        thread = super(ForumsTasks, self).create_thread(self.random_topic_id(), name='forums:create_thread')
+        ForumsTasks._thread_ids.append(thread)
+
+    @task(36)
     def single_thread(self):
         """
         Read a specific thread.
         """
-        if not _thread_ids:
+        if not ForumsTasks._thread_ids:
             return
-        discussion_id, thread_id = random.choice(_thread_ids)
+        discussion_id, thread_id = random.choice(ForumsTasks._thread_ids)
 
         self.get(
             'discussion/forum/{}/threads/{}'.format(discussion_id, thread_id),
@@ -133,24 +241,29 @@ class ForumsTasks(LmsTasks):
             name='forums:single_thread',
         )
 
-    @task(3)
-    def create_comment(self):
+    @task(23)
+    def large_thread(self):
+        """
+        Read the large thread.
+        """
+        if self.large_topic_id and self.large_thread_id:
+            super(ForumsTasks, self).large_thread()
+
+        else:
+            # Fall back to regular read if not configured for long thread test
+            self.single_thread()
+
+    @task(4)
+    def create_response(self):
         """
         Post a response to an existing thread.
         """
-        if not _thread_ids:
+        if not ForumsTasks._thread_ids:
             # Skip if we haven't created any threads yet during this test.
             return
-        discussion_id, thread_id = random.choice(_thread_ids)
+        discussion_id, thread_id = random.choice(ForumsTasks._thread_ids)
 
-        thread_data = {
-            'body': _dummy_text(100, 2000),  # NB size range not based on actual data.
-        }
-        self.post(
-            'discussion/threads/{}/reply'.format(thread_id),
-            data=thread_data,
-            name='forums:create_comment',
-        )
+        super(ForumsTasks, self).create_response(thread_id)
 
     @task(1)
     def user_profile(self):
@@ -172,3 +285,83 @@ class ForumsTasks(LmsTasks):
             headers={"X-Requested-With": "XMLHttpRequest"},  # non-ajax requests don't work here.
             name='forums:followed_threads',
         )
+
+    def on_start(self):
+        """
+        This on_start method performs the following actions:
+        1. Logs in and enrolls (using super)
+        2. Loads the course's topic ids
+        """
+        super(ForumsTasks, self).on_start()
+        self.topic_ids()
+
+
+class SeedForumsTasks(BaseForumsTasks):
+    """
+    Seed large thread for Forums (LMS) TaskSet.
+
+    This class supports environment-based configuration to override default
+    values for the following:
+
+    * LARGE_TOPIC_ID: Topic id for the large thread to be extended.  If blank,
+        a new thread will be created and the topic id will be printed.
+    * LARGE_THREAD_ID: Thread id for the large thread to be extended.  If blank,
+        a new thread will be created and the thread id will be printed.
+
+    """
+
+    # class variable used to share across locust users.
+    # track responses on the large thread.
+    _large_thread_response_ids = deque(maxlen=100)
+
+    @task(10)
+    def create_response(self):
+        """
+        Post a response to an existing thread.
+        """
+        if SeedForumsTasks._large_thread is None:
+            return
+
+        discussion_id, thread_id = SeedForumsTasks._large_thread
+
+        response_id = super(SeedForumsTasks, self).create_response(thread_id)
+
+        # clump comments on a few responses
+        if (
+            not SeedForumsTasks._large_thread_response_ids or
+            random.randint(1, len(SeedForumsTasks._large_thread_response_ids)) <= 1
+        ):
+            SeedForumsTasks._large_thread_response_ids.append(response_id)
+
+    @task(1)
+    def create_comment(self):
+        """
+        Post a response to an existing thread.
+        """
+        if not SeedForumsTasks._large_thread_response_ids:
+            return
+        response_id = random.choice(SeedForumsTasks._large_thread_response_ids)
+
+        super(SeedForumsTasks, self).create_comment(response_id)
+
+    def on_start(self):
+        """
+        This on_start method performs the following actions:
+        1. Logs in and enrolls (using super)
+        2. Loads the course's topic ids
+        3. Creates a thread (seed for large thread)
+        4. Outputs log messages with details for running other tasks
+        """
+        super(SeedForumsTasks, self).on_start()
+        if SeedForumsTasks._large_thread is None:
+            # Are we extending an existing long thread?
+            if self.large_topic_id and self.large_thread_id:
+                SeedForumsTasks._large_thread = (self.large_topic_id, self.large_thread_id)
+
+            # Otherwise, create a new thread.
+            else:
+                SeedForumsTasks._large_thread = self.create_thread(self.random_topic_id(), name='forums:create_large_thread')
+
+            LOGGER.info('To run ForumsTasks with this large thread, use:\nLARGE_TOPIC_ID={} LARGE_THREAD_ID={}'.format(
+                SeedForumsTasks._large_thread[0], SeedForumsTasks._large_thread[1]
+            ))
