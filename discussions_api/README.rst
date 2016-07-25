@@ -86,3 +86,10 @@ Troubleshooting
 
 If you see any authorization or other errors, you can `follow instructions in
 the wiki <https://openedx.atlassian.net/wiki/display/EdxOps/How+to+Run+Performance+Tests>`_.
+
+If you are getting CSRF Token errors that are not covered above, be sure to
+include environment variables BASIC_AUTH_USER=XXX BASIC_AUTH_PASSWORD=YYY if you
+are running against a protected sandbox.
+
+If you are getting 500 errors, check that the comment service is up and running
+and the Discussions tab is working through the browser.
