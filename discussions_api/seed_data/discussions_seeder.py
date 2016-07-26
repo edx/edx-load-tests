@@ -102,7 +102,7 @@ class DiscussionsSeeder(Seeder):
             headers=self.get_post_headers(url=url)
         )
         if response.status_code == 500:
-            raise PostCreationException(response.status_code + ":" + response.content)
+            raise PostCreationException(response.status_code)
         return response.json()["id"]
 
     def create_toggled_field(self, field, post_type, id):
