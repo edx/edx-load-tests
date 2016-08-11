@@ -3,6 +3,7 @@ import os
 from locust import HttpLocust, TaskSet
 
 from ecommerce.baskets import BasketsTasks
+from ecommerce.coupon_offer import CouponOfferTasks
 from ecommerce.payment import CybersourcePaymentTasks
 
 
@@ -19,6 +20,11 @@ class EcommerceTest(TaskSet):
     }
 
 
+class CouponsTest(TaskSet):
+    """Load test excercising coupon-related operations on Otto."""
+    tasks = [CouponOfferTasks]
+
+
 class EcommerceUser(HttpLocust):
     """Representation of an HTTP "user".
 
@@ -26,5 +32,7 @@ class EcommerceUser(HttpLocust):
     well as which TaskSet class should define the user's behavior.
     """
     task_set = globals()[os.getenv('LOCUST_TASK_SET', 'EcommerceTest')]
+    if os.getenv('COUPON_CODE'):
+        task_set = CouponsTest
     min_wait = 3 * 1000
     max_wait = 5 * 1000
