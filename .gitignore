@@ -4,3 +4,5 @@
 *.log
 results/
 data/
+
+settings_files/course_discovery.yml

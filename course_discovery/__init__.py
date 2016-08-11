@@ -1,1 +1,1 @@
-from course_discovery.locustfile import CourseDiscoveryApiLocust
+from course_discovery.locustfile import CourseDiscoveryLocust

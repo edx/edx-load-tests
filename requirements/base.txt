@@ -1,13 +1,8 @@
-# Packages required to run load tests
-# Using -e for now because none of these packages have released code
-# properly.  Once they have done releases with actualy versions we should
-# pin these packages correctly.
--e git+https://github.com/edx/opaque-keys.git@9f07da1abf699d10bc3252d3081017e8aa37c302#egg=opaque-keys
-
-locustio==0.7.3
-edx-rest-api-client==1.4.0
+edx-opaque-keys==0.3.2
+edx-rest-api-client==1.6.0
 jupyter
+lazy
+locustio==0.7.3
+PyYAML==3.11
 runipy
 seaborn
-lazy
-PyYAML==3.11
