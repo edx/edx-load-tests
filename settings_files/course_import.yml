@@ -1,0 +1,15 @@
+---
+# Existing user in the CMS
+CMS_USER_EMAIL: # REQUIRED
+CMS_USER_PASSWORD: # REQUIRED
+
+# The course tarball to import
+TEST_FILE: course_import/Demo_Course.0_c9xL.tar.gz
+
+# TODO: This variable needs a description
+NUM_PARALLEL_COURSES: 5
+
+# Use the following keys to optionally specify basic auth credentials to
+# access the target:
+#BASIC_AUTH_USER:
+#BASIC_AUTH_PASS:

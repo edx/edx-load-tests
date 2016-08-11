@@ -9,6 +9,7 @@ import random
 import urllib
 
 from helpers import auto_auth_tasks
+from helpers import settings
 
 from tasks import dapi_constants
 
@@ -27,17 +28,17 @@ class DiscussionsApiTasks(auto_auth_tasks.AutoAuthTasks):
 
     def __init__(self, *args, **kwargs):  # pylint: disable=super-on-old-class
         super(DiscussionsApiTasks, self).__init__(*args, **kwargs)
-        self.course_id = os.getenv('COURSE_ID')
+        self.course_id = settings.data['COURSE_ID']
 
         self.url_prefix = "/api/discussion/v1"
 
-        if os.getenv('SEEDED_DATA'):
-            with open("" + os.getenv('SEEDED_DATA'), 'r') as seeded_data:
+        if settings.data.get('SEEDED_DATA') is not None:
+            with open("" + settings.data['SEEDED_DATA'], 'r') as seeded_data:
                 self.thread_id_list = seeded_data.read().splitlines()
         else:
             self.thread_id_list = []
 
-        self.verbose = True if (os.getenv('VERBOSE') == "true") else False
+        self.verbose = True if (settings.data['VERBOSE']) else False
         self.pages = len(self.thread_id_list) / int(dapi_constants.PAGE_SIZE[0])
         if self.pages == 0:
             self.pages = 1

@@ -1,0 +1,28 @@
+---
+# Course ID that we're running these tests against.  The default
+# targets a course which currently exists on courses-loadtest.edx.org.
+COURSE_ID: edX/DemoX/Demo_Course
+
+# Required for any test that uses GET Thread.  It specifies the filename
+# for the seeded data.  See the discussions_api/seed_data/seed_data.py
+# utility for more information.
+SEEDED_DATA:
+
+# true/false flag which controls specificity of request names used for
+# logging.  E.g. "PATCH_thread" is not verbose, whereas
+# "following_thread" is verbose (more specific).  This should have no
+# effect on the test run, just the output.
+VERBOSE: true
+
+# Run the specified TaskSet (must be imported into the
+# discussions_api/locustfile.py file):
+LOCUST_TASK_SET: FullDiscussionsApiTest
+
+# Minimum/Maximum waiting time between the execution of locust tasks:
+LOCUST_MIN_WAIT: 5000
+LOCUST_MAX_WAIT: 5000
+
+# Use the following keys to optionally specify basic auth credentials to
+# access the target:
+#BASIC_AUTH_USER:
+#BASIC_AUTH_PASS:

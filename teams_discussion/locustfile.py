@@ -1,14 +1,5 @@
 """
 Load test to test the performance of teams discussions.
-
-Usage:
-
-  $ locust --host="http://localhost:18080"
-
-Supported Environment Variables:
-
-  TEAM_COURSE_ID - course id that we're running these tests against
-
 """
 from collections import deque
 import json
@@ -19,6 +10,13 @@ import string
 from locust import HttpLocust, task
 
 from helpers.auto_auth_tasks import AutoAuthTasks
+
+from helpers import settings
+settings.init(__name__, required=[
+    'COURSE_ID',
+    'LOCUST_MIN_WAIT',
+    'LOCUST_MAX_WAIT',
+])
 
 
 _dummy_chars = string.lowercase + ' '
@@ -40,7 +38,7 @@ class TeamsDiscussionTasks(AutoAuthTasks):
     def __init__(self, *args, **kwargs):
         super(TeamsDiscussionTasks, self).__init__(*args, **kwargs)
 
-        self.course_id = os.getenv('TEAM_COURSE_ID', 'edX/DemoX/Demo_Course')
+        self.course_id = settings.data['COURSE_ID']
         self._thread_ids = deque(maxlen=100)
 
     def on_start(self):
@@ -189,5 +187,5 @@ class TeamsDiscussionTasks(AutoAuthTasks):
 
 class TeamsDiscussionLocust(HttpLocust):
     task_set = TeamsDiscussionTasks
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 500))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 1000))
+    min_wait = settings.data['LOCUST_MIN_WAIT']
+    max_wait = settings.data['LOCUST_MAX_WAIT']

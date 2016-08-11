@@ -15,28 +15,14 @@ FullDiscussionsApiTest is a ramping test with all the requests. This is meant to
 simulate forums over time. Unfortunately, over time, the course will get slower
 and slower because there will be more POSTs than DELETEs.
 
-
-Usage:
-
-  $ locust --host="http://localhost:8000"
-
-Supported Environment Variables:
-
-  BASIC_AUTH_USER, BASIC_AUTH_PASS - if set, will use for HTTP Authentication
-  LOCUST_TASK_SET - if set, will run the specified TaskSet (must be imported in this module)
-  COURSE_ID - course that will be tested on the target host, default is set in lms.LmsTasks
-  SEEDED_DATA - required for the any test that uses GET Thread
-  LOCUST_MIN_WAIT - Minimum wait time
-  LOCUST_MAX_WAIT = Maximum wait time
-
 """
 import os
 import requests
 
 from locust import HttpLocust
 
-from dapi import DiscussionsApiTasks
-from tasks.dapi_tasks import (
+from discussions_api.dapi import DiscussionsApiTasks
+from discussions_api.tasks.dapi_tasks import (
     DeleteCommentsTask,
     DeleteThreadsTask,
     GetThreadsTask,
@@ -50,6 +36,15 @@ from tasks.dapi_tasks import (
 )
 
 requests.packages.urllib3.disable_warnings()
+
+from helpers import settings
+settings.init(__name__, required=[
+    'COURSE_ID',
+    'VERBOSE',
+    'LOCUST_TASK_SET',
+    'LOCUST_MIN_WAIT',
+    'LOCUST_MAX_WAIT',
+])
 
 
 class DiscussionsApiTest(DiscussionsApiTasks):
@@ -146,6 +141,6 @@ class FullDiscussionsApiTest(DiscussionsApiTasks):
 
 
 class DiscussionsApiLocust(HttpLocust):
-    task_set = globals()[os.getenv('LOCUST_TASK_SET', 'FullDiscussionsApiTest')]
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 5000))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 5000))
+    task_set = globals()[settings.data['LOCUST_TASK_SET']]
+    min_wait = settings.data['LOCUST_MIN_WAIT']
+    max_wait = settings.data['LOCUST_MAX_WAIT']

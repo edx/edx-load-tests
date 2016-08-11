@@ -1,6 +1,6 @@
 from locust import task
 
-from lms import LmsTasks
+from lms.base import LmsTasks
 
 
 class CoursewareViewsTasks(LmsTasks):

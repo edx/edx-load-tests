@@ -25,6 +25,9 @@ one as a "Free (Honor)" course, and the second as a "Verified" course.
 Configuration
 -------------
 
+FIXME: this load test does not yet implement the settings interface in
+helpers/settings.py.
+
 The load tests rely on configuration which can be specified using
 environment variables.
 

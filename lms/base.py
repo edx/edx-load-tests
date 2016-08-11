@@ -8,9 +8,8 @@ import sys
 from lazy import lazy
 from opaque_keys.edx.keys import CourseKey
 
-# Work around the fact that this code doesn't live in a proper Python package.
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'helpers'))
-from auto_auth_tasks import AutoAuthTasks
+from helpers.auto_auth_tasks import AutoAuthTasks
+from helpers import settings
 
 import course_data
 
@@ -25,7 +24,7 @@ class EdxAppTasks(AutoAuthTasks):
         """
         The complete id of the course we're configured to test with.
         """
-        return os.getenv('COURSE_ID', 'edX/DemoX/Demo_Course')
+        return settings.data['COURSE_ID']
 
     @lazy
     def course_key(self):
@@ -60,7 +59,7 @@ class EdxAppTasks(AutoAuthTasks):
         """
         Accessor for the CourseData instance we're configured to test with.
         """
-        course_data_name = os.getenv('COURSE_DATA', 'demo_course')
+        course_data_name = settings.data['COURSE_DATA']
         return getattr(course_data, course_data_name)
 
     @property
@@ -78,8 +77,7 @@ class LmsTasks(EdxAppTasks):
     """
     Base class for course-specific LMS TaskSets.
 
-    This class supports environment-based configuration to override default
-    values for the following:
+    This class supports the following settings:
 
     * COURSE_ID: pass the course_id against which requests should be made.
     * COURSE_DATA: pass the name of a CourseData object, which should be

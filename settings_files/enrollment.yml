@@ -1,0 +1,13 @@
+---
+# List of course IDs which this load test will use to enroll/unenroll
+# students.  Make sure enrollment is open on each course.  The default
+# courses below exist on new sandbox instances.
+COURSE_ID_LIST:
+- course-v1:edX+DemoX+Demo_Course
+- course-v1:edX+Test101+course
+- course-v1:DemoX+PERF101+course
+
+# Use the following keys to optionally specify basic auth credentials to
+# access the target:
+#BASIC_AUTH_USER:
+#BASIC_AUTH_PASS:

@@ -1,27 +1,23 @@
 """
 Load test for the edx-platform LMS.
-
-Usage:
-
-  $ locust --host="http://localhost:8000"
-
-Supported Environment Variables:
-
-  BASIC_AUTH_USER, BASIC_AUTH_PASS - if set, will use for HTTP Authentication
-  LOCUST_TASK_SET - if set, will run the specified TaskSet (must be imported in this module)
-  LOCUST_MIN_WAIT, LOCUST_MAX_WAIT - use to override defaults set in this module
-  COURSE_ID - course that will be tested on the target host, default is set in lms.LmsTasks
-  COURSE_DATA - course_data module that will be used for parameters, default is set in lms.LmsTasks
-
 """
 import os
 
 from locust import HttpLocust
 
-from courseware_views import CoursewareViewsTasks
-from forums import ForumsTasks, SeedForumsTasks
-from lms import LmsTasks
-from module_render import ModuleRenderTasks
+from lms.courseware_views import CoursewareViewsTasks
+from lms.forums import ForumsTasks, SeedForumsTasks
+from lms.base import LmsTasks
+from lms.module_render import ModuleRenderTasks
+
+from helpers import settings
+settings.init(__name__, required=[
+    'COURSE_ID',
+    'COURSE_DATA',
+    'LOCUST_TASK_SET',
+    'LOCUST_MIN_WAIT',
+    'LOCUST_MAX_WAIT',
+])
 
 
 class LmsTest(LmsTasks):
@@ -103,6 +99,6 @@ class LmsTest(LmsTasks):
 
 
 class LmsLocust(HttpLocust):
-    task_set = globals()[os.getenv('LOCUST_TASK_SET', 'LmsTest')]
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 7500))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 15000))
+    task_set = globals()[settings.data['LOCUST_TASK_SET']]
+    min_wait = settings.data['LOCUST_MIN_WAIT']
+    max_wait = settings.data['LOCUST_MAX_WAIT']

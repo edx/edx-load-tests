@@ -1,1 +1,1 @@
-from locustfile import DiscussionsApiLocust
+from discussions_api.locustfile import DiscussionsApiLocust
