@@ -12,20 +12,32 @@ If you have not already done so, create and activate a `virtualenv <https://virt
 
 Next, install load testing requirements.
 
-.. code-block:: bash
+.. code-block::
 
     $ pip install -r requirements.txt
 
+If the load test in question has additional requirements, install those too:
+
+.. code-block::
+
+    $ pip install -r <test-name>/requirements.txt (consult the <test-name> directory)
+
+Configure load test inputs. For example:
+
+.. code-block::
+
+    $ editor settings_files/<test-name>.yml
+
 Start Locust by providing the Locust CLI with a target host and pointing it to the location of your desired locustfile. For example,
 
-.. code-block:: bash
+.. code-block::
 
-    $ locust --host=http://localhost:8009 -f programs
+    $ locust --host=http://localhost:8009 -f <test-name>
 
 Repository Structure
 --------------------
 
-Tests are organized into top-level packages. For examples, see ``csm`` and ``programs``. A module called ``locustfile.py`` is included inside each test package, within which a subclass of the `Locust class <http://docs.locust.io/en/latest/writing-a-locustfile.html#the-locust-class>`_ is defined. This subclass is imported into the test package's ``__init__.py`` to facilitate discovery at runtime.  Settings for each test are stored under the ``settings_files`` directory; ``<testname>`` reads settings data from ``settings_files/<testname>.yml``.
+Tests are organized into top-level packages. For examples, see ``csm`` or ``enrollment``. A module called ``locustfile.py`` is included inside each test package, within which a subclass of the `Locust class <http://docs.locust.io/en/latest/writing-a-locustfile.html#the-locust-class>`_ is defined. This subclass is imported into the test package's ``__init__.py`` to facilitate discovery at runtime.  Settings for each test are stored under the ``settings_files`` directory; ``<testname>`` reads settings data from ``settings_files/<testname>.yml``.
 
 License
 -------
@@ -52,6 +64,7 @@ Please do not report security issues in public. Please email security@edx.org.
 Mailing List and IRC Channel
 ----------------------------
 
-You can discuss this code in the `edx-code Google Group`__ or in the ``#edx-code`` IRC channel on Freenode.
+You can discuss this code in the `edx-code Google Group` or in the ``#general`` slack channel.
 
-__ https://groups.google.com/forum/#!forum/edx-code
+* https://groups.google.com/forum/#!forum/edx-code
+* http://openedx-slack-invite.herokuapp.com/

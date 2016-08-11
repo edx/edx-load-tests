@@ -73,12 +73,13 @@ The following give an example of creating some threads, comments and responses.
 Running Load Test
 -----------------
 
-Run tests with something like:
+#. Update `settings_files/discussions_api.yml` with the provided COURSE_ID and
+   SEEDED_DATA output from seed_data.py script
+#. Run tests with something like:
 
 .. code-block:: bash
 
-    # Use COURSE_ID and SEEDED_DATA output from seed_data.py script
-    $ COURSE_ID=course-v1:testX+C1+2016_C1 SEEDED_DATA=GetCommentsTasks6 LOCUST_MIN_WAIT=1000 LOCUST_MAX_WAIT=1000 locust -f discussions_api -c 2 -r 10 -n 200 -H http://localhost:8000 --no-web
+    $ locust -f discussions_api -c 2 -r 10 -n 200 -H http://localhost:8000 --no-web
 
 
 Troubleshooting
@@ -88,7 +89,7 @@ If you see any authorization or other errors, you can `follow instructions in
 the wiki <https://openedx.atlassian.net/wiki/display/EdxOps/How+to+Run+Performance+Tests>`_.
 
 If you are getting CSRF Token errors that are not covered above, be sure to
-include environment variables BASIC_AUTH_USER=XXX BASIC_AUTH_PASSWORD=YYY if you
+include settings variables BASIC_AUTH_USER BASIC_AUTH_PASSWORD if you
 are running against a protected sandbox.
 
 If you are getting 500 errors, check that the comment service is up and running
