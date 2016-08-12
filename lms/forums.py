@@ -8,6 +8,8 @@ from lazy import lazy
 from lms.base import LmsTasks
 from locust import task
 
+from helpers import settings
+
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
@@ -26,11 +28,11 @@ class BaseForumsTasks(LmsTasks):
     """
     Base class for Forums (LMS) TaskSets.
 
-    This class supports environment-based configuration to override default
-    values for the following:
+    This class reads the following optional settings:
 
     * LARGE_TOPIC_ID: Topic id for the large thread.
     * LARGE_THREAD_ID: Thread id for the large thread.
+
     See subclasses for usage.
 
     """
@@ -70,7 +72,7 @@ class BaseForumsTasks(LmsTasks):
         if BaseForumsTasks._large_thread:
             return BaseForumsTasks._large_thread[0]
         else:
-            return os.getenv('LARGE_TOPIC_ID', None)
+            return settings.data.get('LARGE_TOPIC_ID')
 
     @lazy
     def large_thread_id(self):
@@ -80,7 +82,7 @@ class BaseForumsTasks(LmsTasks):
         if BaseForumsTasks._large_thread:
             return BaseForumsTasks._large_thread[1]
         else:
-            return os.getenv('LARGE_THREAD_ID', None)
+            return settings.data.get('LARGE_THREAD_ID')
 
     def create_thread(self, topic_id, name):
         """
@@ -158,12 +160,11 @@ class ForumsTasks(BaseForumsTasks):
     """
     Forums (LMS) TaskSet.
 
-    This class supports environment-based configuration to override default
-    values for the following:
+    This class uses the following optional settings:
 
-    * LARGE_TOPIC_ID: Topic id for the large thread.  If blank, all reads
+    * LARGE_TOPIC_ID: Topic id for the large thread.  If absent, all reads
         will be against normal sized threads.
-    * LARGE_THREAD_ID: Thread id for the large thread.  If blank, all reads
+    * LARGE_THREAD_ID: Thread id for the large thread.  If absent, all reads
         will be against normal sized threads.
 
     """
