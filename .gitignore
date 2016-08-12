@@ -5,4 +5,5 @@
 results/
 data/
 
-settings_files/course_discovery.yml
+# ignore all settings (which might contain secrets)
+settings_files/*.yml
