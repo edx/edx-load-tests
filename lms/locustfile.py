@@ -9,6 +9,7 @@ from lms.courseware_views import CoursewareViewsTasks
 from lms.forums import ForumsTasks, SeedForumsTasks
 from lms.base import LmsTasks
 from lms.module_render import ModuleRenderTasks
+from lms.wiki_views import WikiViewTask
 
 from helpers import settings
 settings.init(__name__, required=[
