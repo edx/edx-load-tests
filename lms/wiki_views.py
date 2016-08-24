@@ -4,7 +4,6 @@ from locust import task
 from lms.base import LmsTasks
 
 from helpers import settings
-settings.init(__name__)
 
 
 class WikiViewTask(LmsTasks):
