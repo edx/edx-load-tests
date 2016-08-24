@@ -1,8 +1,14 @@
-edx-opaque-keys==0.3.3
-edx-rest-api-client==1.6.0
-jupyter
-lazy
+# bare minimum for running load tests.  Individual load test requirements files
+# should import this file.
+
+# load testing software
 locustio==0.7.3
+
+# common loadtest requirements
+edx-opaque-keys==0.3.3
+lazy
+
+# helpers use these
+edx-rest-api-client==1.6.0
 PyYAML==3.11
-runipy
-seaborn
+dogapi==1.2.1
