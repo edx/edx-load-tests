@@ -2,3 +2,4 @@
 
 pymysql==0.6.6
 -r platform-requirements.txt
+-r ../../requirements/base.txt

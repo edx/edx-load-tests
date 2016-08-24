@@ -10,27 +10,27 @@ Getting Started
 
 If you have not already done so, create and activate a `virtualenv <https://virtualenvwrapper.readthedocs.org/en/latest/>`_. Unless otherwise stated, assume all commands below are executed within said virtualenv.
 
-Next, install load testing requirements.
+Prepare a load test using its make target.  This should install pip
+dependencies and a settings file. For example:
 
 .. code-block::
 
-    $ pip install -r requirements.txt
+    $ make <test-name>
 
-If the load test in question has additional requirements, install those too:
-
-.. code-block::
-
-    $ pip install -r loadtests/<test-name>/test-requirements.txt
-
-Configure load test inputs. For example:
+If you are testing against a specific environment, such as devstack:
 
 .. code-block::
 
-    $ cp settings_files/<test-name>.yml.sandbox-example settings_files/<test-name>.yml
+    $ LT_ENV=devstack make <test-name>
+
+Optionally modify the settings:
+
+.. code-block::
+
     $ editor settings_files/<test-name>.yml
 
-Start Locust by providing the Locust CLI with a target host and pointing it to
-the location of your desired load test module:
+Start Locust by supplying a target host and pointing it to the location of your
+desired load test module:
 
 .. code-block::
 
@@ -39,17 +39,21 @@ the location of your desired load test module:
 Repository Structure
 --------------------
 
-+------------------------------------+----------------------------------------------------+
-| path                               | description                                        |
-+====================================+====================================================+
-| ``helpers/*``                      | *generally* helpful modules for writing load tests |
-+------------------------------------+----------------------------------------------------+
-| ``util/*``                         | standalone scripts and data                        |
-+------------------------------------+----------------------------------------------------+
-| ``loadtests/<test-name>/*``        | a load test module                                 |
-+------------------------------------+----------------------------------------------------+
-| ``settings_files/<test-name>.yml`` | settings for ``<test-name>``                       |
-+------------------------------------+----------------------------------------------------+
++--------------------------------------------+----------------------------------------------------+
+| path                                       | description                                        |
++============================================+====================================================+
+| ``helpers/*``                              | *generally* helpful modules for writing load tests |
++--------------------------------------------+----------------------------------------------------+
+| ``util/*``                                 | standalone scripts and data                        |
++--------------------------------------------+----------------------------------------------------+
+| ``loadtests/<test-name>/*``                | a load test module                                 |
++--------------------------------------------+----------------------------------------------------+
+| ``loadtests/<test-name>/__init__.py``      | contains code which exposes a Locust subclass      |
++--------------------------------------------+----------------------------------------------------+
+| ``loadtests/<test-name>/requirements.txt`` | all pip requirements for running this load test    |
++--------------------------------------------+----------------------------------------------------+
+| ``settings_files/<test-name>.yml``         | settings for ``<test-name>``                       |
++--------------------------------------------+----------------------------------------------------+
 
 Load test modules are organized under the top level ``loadtests`` directory. A
 ``locustfile.py`` is included inside each load test module, within which a
