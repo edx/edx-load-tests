@@ -1,0 +1,23 @@
+---
+# Course ID that we're running these tests against.  The default
+# targets a course which currently exists on {your_sandbox}.sandbox.edx.org.
+COURSE_ID: course-v1:edX+DemoX+Demo_Course
+
+# The name of the course data variable which corresponds to the
+# COURSE_ID specified above.  Must be defined in the lms.course_data
+# module.
+COURSE_DATA: demo_course
+
+# Run the specified TaskSet (must be imported into the lms/locustfile.py
+# file):
+LOCUST_TASK_SET: LmsTasks
+
+# Minimum/Maximum waiting time between the execution of locust tasks:
+LOCUST_MIN_WAIT: 500
+LOCUST_MAX_WAIT: 1500
+
+# For the WikiViewTask that currently exists, wiki articles are assumed to
+# exist with path '/wiki/{num}/', where {num} is randomly chosen from range
+# (LOW_WIKI_SLUG, HIGH_WIKI_SLUG)
+# LOW_WIKI_SLUG = 100
+# HIGH_WIKI_SLUG = 13000
