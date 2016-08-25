@@ -1,4 +1,4 @@
-edx-opaque-keys==0.3.2
+edx-opaque-keys==0.3.3
 edx-rest-api-client==1.6.0
 jupyter
 lazy
