@@ -8,14 +8,14 @@ LOG = logging.getLogger(__name__)
 data = None
 
 
-def init(test_module_full_name, required=[]):
+def init(locustfile_path, required=[]):
     """
     This initializes the global settings_dict, and loads settings from the
     correct settings file.  To use this module for your load tests, include the
     following two lines in your locustfile.py:
 
       from helpers import settings
-      settings.init(__name__)
+      settings.init(__file__)
 
     Then, create a settings file: "settings_files/<TEST MODULE NAME>.yml"
 
@@ -31,9 +31,10 @@ def init(test_module_full_name, required=[]):
 
     # Find the correct settings file under the "settings_files" directory of
     # this package.  The name of the settings file corresponds to the
-    # name of the directory containing the locustfile. E.g. "lms/locustfile.py"
-    # reads settings data from "settings_files/lms.yml".
-    test_module_name = test_module_full_name.split('.')[0]
+    # name of the directory containing the locustfile. E.g.
+    # "loadtests/lms/locustfile.py" reads settings data from
+    # "settings_files/lms.yml".
+    test_module_name = os.path.basename(os.path.dirname(locustfile_path))
     settings_filename = \
         resource_filename('settings_files', '{}.yml'.format(test_module_name))
     settings_filename = os.path.abspath(settings_filename)
