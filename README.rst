@@ -20,25 +20,44 @@ If the load test in question has additional requirements, install those too:
 
 .. code-block::
 
-    $ pip install -r <test-name>/requirements.txt (consult the <test-name> directory)
+    $ pip install -r loadtests/<test-name>/test-requirements.txt
 
 Configure load test inputs. For example:
 
 .. code-block::
 
-    $ cp settings_files/<test-name>.yml.example settings_files/<test-name>.yml
+    $ cp settings_files/<test-name>.yml.sandbox-example settings_files/<test-name>.yml
     $ editor settings_files/<test-name>.yml
 
-Start Locust by providing the Locust CLI with a target host and pointing it to the location of your desired locustfile. For example,
+Start Locust by providing the Locust CLI with a target host and pointing it to
+the location of your desired load test module:
 
 .. code-block::
 
-    $ locust --host=http://localhost:8009 -f <test-name>
+    $ locust --host=http://localhost:8009 -f loadtests/<test-name>
 
 Repository Structure
 --------------------
 
-Tests are organized into top-level packages. For examples, see ``csm`` or ``enrollment``. A module called ``locustfile.py`` is included inside each test package, within which a subclass of the `Locust class <http://docs.locust.io/en/latest/writing-a-locustfile.html#the-locust-class>`_ is defined. This subclass is imported into the test package's ``__init__.py`` to facilitate discovery at runtime.  Settings for each test are read from ``settings_files/<testname>.yml``, and examples are provided.
++------------------------------------+----------------------------------------------------+
+| path                               | description                                        |
++====================================+====================================================+
+| ``helpers/*``                      | *generally* helpful modules for writing load tests |
++------------------------------------+----------------------------------------------------+
+| ``util/*``                         | standalone scripts and data                        |
++------------------------------------+----------------------------------------------------+
+| ``loadtests/<test-name>/*``        | a load test module                                 |
++------------------------------------+----------------------------------------------------+
+| ``settings_files/<test-name>.yml`` | settings for ``<test-name>``                       |
++------------------------------------+----------------------------------------------------+
+
+Load test modules are organized under the top level ``loadtests`` directory. A
+``locustfile.py`` is included inside each load test module, within which a
+subclass of the `Locust class
+<http://docs.locust.io/en/latest/writing-a-locustfile.html#the-locust-class>`_
+is defined. This subclass is imported into the test package's ``__init__.py``
+to facilitate discovery at runtime.  Settings for each test are read from
+``settings_files/<testname>.yml``, and examples are provided.
 
 License
 -------
@@ -62,7 +81,7 @@ Reporting Security Issues
 
 Please do not report security issues in public. Please email security@edx.org.
 
-Mailing List and IRC Channel
+Mailing List and Slack Channel
 ----------------------------
 
 You can discuss this code in the `edx-code Google Group` or in the ``#general`` slack channel.
