@@ -1,0 +1,12 @@
+# tells invoke to always show the commands to be run
+run:
+    echo: True
+
+# hardcoded paths to directories
+settings_dir: 'settings_files'
+
+# list of valid environments to use as load test targets
+environments:
+  - loadtest
+  - sandbox
+  - devstack

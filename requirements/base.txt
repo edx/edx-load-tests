@@ -6,3 +6,4 @@ locustio==0.7.3
 PyYAML==3.11
 runipy
 seaborn
+invoke==0.13.0

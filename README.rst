@@ -29,6 +29,13 @@ Configure load test inputs. For example:
     $ cp settings_files/<test-name>.yml.sandbox-example settings_files/<test-name>.yml
     $ editor settings_files/<test-name>.yml
 
+Or use invoke to initialize the settings file:
+
+.. code-block::
+
+    $ invoke settings <test-name> --environment=sandbox
+    $ editor settings_files/<test-name>.yml
+
 Start Locust by providing the Locust CLI with a target host and pointing it to
 the location of your desired load test module:
 
