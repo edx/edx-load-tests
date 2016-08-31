@@ -4,7 +4,7 @@ import json
 from locust import task
 
 from ecommerce.commerce import CommerceTasks
-from ecommerce.config import FREE_COURSE_ID
+from helpers import settings
 
 
 class BasketsTasks(CommerceTasks):
@@ -18,6 +18,6 @@ class BasketsTasks(CommerceTasks):
         self.auto_auth()
 
         post_data = {
-            'course_id': FREE_COURSE_ID,
+            'course_id': settings.data['ecommerce']['free_course_id'],
         }
         self.post('/api/commerce/v0/baskets/', data=json.dumps(post_data))
