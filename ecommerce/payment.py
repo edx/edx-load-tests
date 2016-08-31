@@ -5,16 +5,7 @@ import hmac
 
 from locust import task
 
-from ecommerce.config import (
-    PAID_SKU,
-    ECOMMERCE_SERVICE_URL,
-    ECOMMERCE_API_URL,
-    ECOMMERCE_JWT_SECRET_KEY,
-    ECOMMERCE_JWT_ISSUER,
-    ECOMMERCE_ORDER_OFFSET,
-    ECOMMERCE_ORDER_PREFIX,
-    CYBERSOURCE_SECRET_KEY,
-)
+from helpers import settings
 from helpers.api import LocustEdxRestApiClient
 from helpers.auto_auth_tasks import AutoAuthTasks
 
@@ -44,8 +35,8 @@ def sign(message, secret):
 class CybersourcePaymentTasks(AutoAuthTasks):
     def __init__(self, *args, **kwargs):
         super(CybersourcePaymentTasks, self).__init__(*args, **kwargs)
-        self.ecommerce_service_url = ECOMMERCE_SERVICE_URL
-        self.cybersource_secret_key = CYBERSOURCE_SECRET_KEY
+        self.ecommerce_service_url = settings.data['ecommerce']['url']['service']
+        self.cybersource_secret_key = settings.data['ecommerce']['cybersource_secret_key']
 
     @task
     def payment_process(self):
@@ -58,10 +49,10 @@ class CybersourcePaymentTasks(AutoAuthTasks):
         self.auto_auth()
 
         self.api_client = LocustEdxRestApiClient(
-            ECOMMERCE_API_URL,
+            settings.data['ecommerce']['url']['api'],
             session=self.client,
-            signing_key=ECOMMERCE_JWT_SECRET_KEY,
-            issuer=ECOMMERCE_JWT_ISSUER,
+            signing_key=settings.data['jwt']['secret_key'],
+            issuer=settings.data['jwt']['issuer'],
             username=self._username,
             email=self._email,
         )
@@ -99,7 +90,7 @@ class CybersourcePaymentTasks(AutoAuthTasks):
         Contacts Otto directly to create the user's basket.
         """
         basket = self.api_client.baskets.post({
-            'products': [{'sku': PAID_SKU}],
+            'products': [{'sku': settings.data['ecommerce']['paid_sku']}],
             'checkout': True,
             'payment_processor_name': 'cybersource'
         })
@@ -107,9 +98,9 @@ class CybersourcePaymentTasks(AutoAuthTasks):
 
     def _get_cybersource_notification_data(self, basket_id, amount):
         """Returns a dict simulating a CyberSource payment response."""
-        order_id = basket_id + ECOMMERCE_ORDER_OFFSET
+        order_id = basket_id + settings.data['ecommerce']['order']['offset']
         order_number = u'{prefix}-{order_id}'.format(
-            prefix=ECOMMERCE_ORDER_PREFIX,
+            prefix=settings.data['ecommerce']['order']['prefix'],
             order_id=order_id
         )
 

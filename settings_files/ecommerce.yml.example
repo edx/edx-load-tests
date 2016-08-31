@@ -1,0 +1,16 @@
+ecommerce:
+  cybersource_secret_key: set-me-please
+  # ID of a course with a free course seat.
+  free_course_id: edX/DemoX/Demo_Course
+  order:
+    offset: 100000
+    prefix: OSCR
+  # SKU corresponding to a product with a non-zero price.
+  # Must be associated with a paid course seat.
+  paid_sku: set-me-please
+  url:
+    api: https://localhost:8002/api/v2/
+    service: https://localhost:8002
+jwt:
+  secret_key: set-me-please
+  issuer: https://127.0.0.1:8000/oauth2
