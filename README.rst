@@ -14,7 +14,7 @@ Next, install load testing requirements.
 
 .. code-block::
 
-    $ pip install -r requirements.txt
+    $ make requirements
 
 If the load test in question has additional requirements, install those too:
 
@@ -29,11 +29,17 @@ Configure load test inputs. For example:
     $ cp settings_files/<test-name>.yml.example settings_files/<test-name>.yml
     $ editor settings_files/<test-name>.yml
 
-Start Locust by providing the Locust CLI with a target host and pointing it to the location of your desired locustfile. For example,
+Start Locust by a target host and the name of your test. For example,
 
 .. code-block::
 
-    $ locust --host=http://localhost:8009 -f <test-name>
+    $ HOST=http://localhost:8009 make <test-name>
+
+You can also provide extra arguments by invoking locust directly:
+
+.. code-block::
+
+    $ locust --host=http://localhost:8009 -f <test-name> --no-web --clients=20 --hatch-rate=2
 
 Repository Structure
 --------------------
