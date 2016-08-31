@@ -22,11 +22,20 @@ If the load test in question has additional requirements, install those too:
 
     $ pip install -r loadtests/<test-name>/test-requirements.txt
 
-Configure load test inputs. For example:
+Initialize and configure load test inputs.  This assumes the default
+environment (loadtest):
 
 .. code-block::
 
-    $ cp settings_files/<test-name>.yml.sandbox-example settings_files/<test-name>.yml
+    $ paver settings --loadtest-name=<test-name>
+    $ editor settings_files/<test-name>.yml
+
+If you are targetting a sandbox or a devstack, try using the --environment
+option:
+
+.. code-block::
+
+    $ paver settings --loadtest-name=<test-name> --environment=sandbox
     $ editor settings_files/<test-name>.yml
 
 Start Locust by providing the Locust CLI with a target host and pointing it to
@@ -58,6 +67,35 @@ subclass of the `Locust class
 is defined. This subclass is imported into the test package's ``__init__.py``
 to facilitate discovery at runtime.  Settings for each test are read from
 ``settings_files/<testname>.yml``, and examples are provided.
+
+Settings
+--------
+
+Test authors are responsible for creating the following YAML files:
+
+* ``settings_files/<test-name>.yml.example``
+* ``settings_files/<test-name>.yml.sandbox-example`` (optional)
+* ``settings_files/<test-name>.yml.devstack-example`` (optional)
+
+The first is the default and the most important.  It should be designed to work
+with courses-loadtest.edx.org out of the box.  The other two should have sane
+defaults for sandbox and devstack respectively.
+
+To run a test, use paver to initialize the settings file for your test:
+
+.. code-block::
+
+    paver settings --loadtest-name=<test-name> [--environment=<environment>] [--force]
+
+      --loadtest-name=<test-name>  the name of the loadtests to setup (REQUIRED)
+      --environment=<environment>  the target environment for which to choose settings
+      --force                      force the overwrite of pre-existing settings
+
+This task will create the ``settings_files/<test-name>.yml`` necessary for
+running <test-name>.  Secret keys may need to be provided, or you may want to
+change the default settings---do so by editing this file.  All
+``settings_files/*.yml`` files are ignored by ``.gitignore`` in order to
+protect secrets.
 
 License
 -------
