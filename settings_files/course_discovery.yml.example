@@ -4,3 +4,12 @@ oauth:
   # From the course discovery client.
   client_id: set-me-please
   client_secret: set-me-please
+programs:
+  # These will come from the catalog service.
+  types:
+    - XSeries
+    - MicroMasters
+  uuids:
+    - foo
+    - bar
+    - baz

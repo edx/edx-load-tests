@@ -7,7 +7,7 @@ from helpers import settings
 from helpers.api import LocustEdxRestApiClient
 
 
-settings.init(__name__, required=['oauth'])
+settings.init(__name__, required=['oauth', 'programs'])
 
 
 class SelfInterruptingTaskSet(TaskSet):
@@ -69,9 +69,31 @@ class SearchTaskSet(SelfInterruptingTaskSet):
         self.client.search.all.facets.get(selected_query_facets=query_facet)
 
 
+class ProgramTaskSet(SelfInterruptingTaskSet):
+    @task(1)
+    def list_marketable_programs(self):
+        """List the full set of marketable programs."""
+        self.client.programs.get(marketable=1)
+
+    @task(5)
+    def filter_marketable_programs(self):
+        """Filter the set of marketable programs."""
+        program_types = settings.data['programs']['types']
+        program_type = random.choice(program_types)
+        self.client.programs.get(marketable=1, type=program_type)
+
+    @task(1)
+    def get_single_program(self):
+        """Get a single program."""
+        program_uuids = settings.data['programs']['uuids']
+        program_uuid = random.choice(program_uuids)
+        self.client.programs(program_uuid).get()
+
+
 class CourseDiscoveryTaskSet(TaskSet):
     tasks = {
         CatalogTaskSet: 1,
+        ProgramTaskSet: 5,
         SearchTaskSet: 10,
     }
 
