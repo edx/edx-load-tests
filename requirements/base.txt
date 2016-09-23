@@ -3,6 +3,7 @@ edx-rest-api-client==1.6.0
 jupyter
 lazy
 locustio==0.7.3
+Paver==1.2.4
 PyYAML==3.11
 runipy
 seaborn
