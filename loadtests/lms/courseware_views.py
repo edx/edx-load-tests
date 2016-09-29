@@ -1,4 +1,5 @@
 from locust import task
+from helpers.interrupt_after import interrupt_after
 
 from base import LmsTasks
 
@@ -23,6 +24,7 @@ class CoursewareViewsTasks(LmsTasks):
     """
 
     @task(50)
+    @interrupt_after
     def index(self):
         """
         Request a randomly-chosen top-level page in the course.
@@ -31,6 +33,7 @@ class CoursewareViewsTasks(LmsTasks):
         self.get(path, name='courseware:index')
 
     @task(33)
+    @interrupt_after
     def mktg_course_about(self):
         """
         Request the marketing about view (rendered as a button in the marketing site).
@@ -38,6 +41,7 @@ class CoursewareViewsTasks(LmsTasks):
         self.get('mktg-about', name='courseware:mktg_course_about')
 
     @task(10)
+    @interrupt_after
     def info(self):
         """
         Request the course info tab.
@@ -45,6 +49,7 @@ class CoursewareViewsTasks(LmsTasks):
         self.get('info', name='courseware:course_info')
 
     @task(4)
+    @interrupt_after
     def progress(self):
         """
         Request the progress tab.
@@ -52,6 +57,7 @@ class CoursewareViewsTasks(LmsTasks):
         self.get('progress', name='courseware:progress')
 
     @task(1)
+    @interrupt_after
     def about(self):
         """
         Request the LMS' internal about page for this course.
