@@ -25,6 +25,9 @@ help :
 	@echo '         Install only the pip requirements for running the <testname> loadtest.'
 	@echo '    requirements: Install development pip requirements.'
 	@echo '    util-requirements: Install data analysis pip requirements only.'
+	@echo '    test: run unit tests'
+	@echo '    quality: check code quality'
+	@echo '    validate: run tests and quality checks'
 	@echo ''
 	@echo 'Environment Variables:'
 	@echo '    LT_ENV:'
@@ -38,6 +41,17 @@ help :
 	@echo '        Prepare to run the lms load test against a sandbox, given that the'
 	@echo '        sandbox-specific settings are present under'
 	@echo '        settings_files/lms.sandbox-example.'
+
+clean :
+	find . -name '*.pyc' -delete
+
+test : clean
+	py.test tests
+
+quality :
+	pep8 --config=.pep8 helpers loadtests tests
+
+validate : quality test
 
 requirements :
 	@echo 'NOTE: installing minimal pip requirements needed for development'
@@ -76,5 +90,5 @@ $(LOADTESTS) : % : %-requirements settings_files/%.yml
 	@echo "HINT: Run the $@ load test with:"
 	@echo "    locust --host=<HOST> -f loadtests/$@"
 
-.PHONY: help requirements util-requirements $(LOADTESTS) $(LOADTEST_REQUIREMENTS)
+.PHONY: help requirements util-requirements clean test quality validate $(LOADTESTS) $(LOADTEST_REQUIREMENTS)
 .DEFAULT: help
