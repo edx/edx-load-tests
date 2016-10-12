@@ -46,7 +46,7 @@ clean :
 	find . -name '*.pyc' -delete
 
 test : clean
-	py.test
+	py.test tests
 
 quality :
 	pep8 --config=.pep8 helpers loadtests tests
