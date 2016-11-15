@@ -17,6 +17,14 @@ LOCUST_TASK_SET: LmsTest
 #LARGE_TOPIC_ID:
 #LARGE_THREAD_ID:
 
+# Used to determine how 'active' users are in timed and proctored exams.
+# This is the multiplying factor for how often proctoring-specific tasks happen (default is 1):
+PROCTORED_EXAM_MODIFIER: 1
+
+# Used to determine how 'active' users are in timed and proctored exams.
+# This is the multiplying factor for how often CAPA-interactions happen (default is 1):
+MODULE_RENDER_MODIFIER: 1
+
 # Minimum/Maximum waiting time between the execution of locust tasks:
 LOCUST_MIN_WAIT: 7500
 LOCUST_MAX_WAIT: 15000
