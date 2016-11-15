@@ -66,6 +66,15 @@ class CourseData(dict):
         """
         return random.choice(self['html_usage_ids'])
 
+    @property
+    def exam_id(self):
+        """
+        Randomly select an exam id from all known special exams in this course.
+
+        Special exams are either timed exams or proctored exams.
+        """
+        return random.choice(self['special_exam_ids'])
+
 
 # data extracted from edX/DemoX/Demo_Course as of Feb. 2015
 demo_course = CourseData(
