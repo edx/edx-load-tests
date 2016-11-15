@@ -12,6 +12,7 @@ from locust import HttpLocust
 from courseware_views import CoursewareViewsTasks
 from forums import ForumsTasks, SeedForumsTasks
 from base import LmsTasks
+from proctoring import ProctoredExamTasks
 from module_render import ModuleRenderTasks
 from wiki_views import WikiViewTask
 
@@ -99,7 +100,8 @@ class LmsTest(LmsTasks):
     tasks = {
         CoursewareViewsTasks: 9,
         ForumsTasks: 2,
-        ModuleRenderTasks: 27,
+        ModuleRenderTasks: 27 * float(settings.data.get('MODULE_RENDER_MODIFIER', 1)),
+        ProctoredExamTasks: 1 * float(settings.data.get('PROCTORED_EXAM_MODIFIER', 1)),
     }
 
 
