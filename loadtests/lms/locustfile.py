@@ -15,6 +15,7 @@ from base import LmsTasks
 from proctoring import ProctoredExamTasks
 from module_render import ModuleRenderTasks
 from wiki_views import WikiViewTask
+from tracking import TrackingTasks
 
 from helpers import settings
 settings.init(__name__, required=[
@@ -102,6 +103,7 @@ class LmsTest(LmsTasks):
         ForumsTasks: 2,
         ModuleRenderTasks: 27 * float(settings.data.get('MODULE_RENDER_MODIFIER', 1)),
         ProctoredExamTasks: 1 * float(settings.data.get('PROCTORED_EXAM_MODIFIER', 1)),
+        TrackingTasks: 1,
     }
 
 
