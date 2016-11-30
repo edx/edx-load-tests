@@ -15,6 +15,9 @@
 #
 # 3. Copy the output and paste it into correct place in
 # loadtests/lms/locustfile.py for future reference.
+#
+# TODO: Convert me to python.  See lms_xb_tx_distribution.py for a starting
+# point.
 
 
 # specifies which field number is the transaction count
