@@ -90,12 +90,19 @@ class LmsTasks(EdxAppTasks):
         """
         Enrolls the test's user in the course under test.
         """
-        self.client.post(
+        with self.client.post(
             '/change_enrollment',
             data={'course_id': self.course_id, 'enrollment_action': 'enroll'},
             headers=self.post_headers,
             name='enroll',
-        )
+            catch_response=True
+        ) as response:
+            if response.status_code == 400:
+                response.failure(
+                    "Enrollment failed. Check to make sure that the course key is \
+                    correct, that the course is open for enrollment, and that that the course \
+                    enrollment isn't full."
+                )
 
     def _request(self, method, path, *args, **kwargs):
         """
