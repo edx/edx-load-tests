@@ -53,6 +53,7 @@ class CatalogTaskSet(SelfInterruptingTaskSet):
 
 class SearchTaskSet(SelfInterruptingTaskSet):
     queries = ['math', 'biology', 'history']
+    typeahead_queries = ['mat', 'biolog', 'histor']
     facets = ['subjects_exact:Medicine', 'organizations_exact:HarvardX: Harvard University', 'level_type_exact:Intermediate']
     query_facets = ['availability_archived', 'availability_current', 'availability_upcoming']
 
@@ -73,6 +74,12 @@ class SearchTaskSet(SelfInterruptingTaskSet):
         """Filter content types using a query (computed) facet."""
         query_facet = random.choice(self.query_facets)
         self.client.search.all.facets.get(selected_query_facets=query_facet)
+
+    @task(10)
+    def search_typeahead(self):
+        """Search typeahead with random query."""
+        query = random.choice(self.typeahead_queries)
+        self.client.search.typeahead.get(q=query)
 
 
 class ProgramTaskSet(SelfInterruptingTaskSet):
