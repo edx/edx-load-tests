@@ -11,7 +11,11 @@ from payment import CybersourcePaymentTasks
 from helpers import settings
 
 
-settings.init(__name__, required=['ecommerce', 'jwt'])
+settings.init(
+    __name__,
+    required_data=['ecommerce'],
+    required_secrets=['ecommerce', 'jwt'],
+)
 
 
 class EcommerceTest(TaskSet):
