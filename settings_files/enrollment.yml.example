@@ -7,6 +7,9 @@ COURSE_ID_LIST:
 - course-v1:edX+Test101+course
 - course-v1:DemoX+PERF101+course
 
+---
+# secrets below
+
 # Use the following keys to optionally specify basic auth credentials to
 # access the target:
 #BASIC_AUTH_USER:

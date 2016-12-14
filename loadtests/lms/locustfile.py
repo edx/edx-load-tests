@@ -18,7 +18,7 @@ from wiki_views import WikiViewTask
 from tracking import TrackingTasks
 
 from helpers import settings
-settings.init(__name__, required=[
+settings.init(__name__, required_data=[
     'COURSE_ID',
     'COURSE_DATA',
     'LOCUST_TASK_SET',

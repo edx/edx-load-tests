@@ -1,5 +1,4 @@
 ecommerce:
-  cybersource_secret_key: set-me-please
   # ID of a course with a free course seat.
   free_course_id: edX/DemoX/Demo_Course
   order:
@@ -11,6 +10,13 @@ ecommerce:
   url:
     api: https://localhost:8002/api/v2/
     service: https://localhost:8002
+
+---
+# secrets below
+
+ecommerce:
+  cybersource_secret_key: set-me-please
+
 jwt:
   secret_key: set-me-please
   issuer: https://127.0.0.1:8000/oauth2

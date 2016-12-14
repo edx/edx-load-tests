@@ -1,9 +1,3 @@
-oauth:
-  # Typically the LMS.
-  provider_url: https://localhost:8000
-  # From the course discovery client.
-  client_id: set-me-please
-  client_secret: set-me-please
 programs:
   # These will come from the catalog service.
   types:
@@ -13,3 +7,13 @@ programs:
     - foo
     - bar
     - baz
+
+---
+# secrets below
+
+oauth:
+  # Typically the LMS.
+  provider_url: https://localhost:8000
+  # From the course discovery client.
+  client_id: set-me-please
+  client_secret: set-me-please

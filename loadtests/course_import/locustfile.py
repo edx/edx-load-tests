@@ -16,12 +16,17 @@ import time
 from locust import HttpLocust, TaskSet, task, events
 
 from helpers import settings
-settings.init(__name__, required=[
-    'CMS_USER_EMAIL',
-    'CMS_USER_PASSWORD',
-    'TEST_FILE',
-    'NUM_PARALLEL_COURSES',
-])
+settings.init(
+    __name__,
+    required_data=[
+        'CMS_USER_EMAIL',
+        'TEST_FILE',
+        'NUM_PARALLEL_COURSES',
+    ],
+    required_secrets=[
+        'CMS_USER_PASSWORD',
+    ],
+)
 
 
 class CourseImport(TaskSet):
@@ -47,7 +52,7 @@ class CourseImport(TaskSet):
         self.client.get("/signin")
         response = self.client.post("/login_post",
                                     data={'email': settings.data['CMS_USER_EMAIL'],
-                                          'password': settings.data['CMS_USER_PASSWORD'],
+                                          'password': settings.secrets['CMS_USER_PASSWORD'],
                                           'honor_code': 'true',
                                           'csrfmiddlewaretoken':
                                           self.client.cookies['csrftoken']},
