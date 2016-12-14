@@ -2,7 +2,6 @@ import random
 import re
 
 from locust import task
-from helpers.interrupt_after import interrupt_after
 
 from base import LmsTasks
 
@@ -274,7 +273,6 @@ class ModuleRenderTasks(LmsTasks):
         )
 
     @task(16)
-    @interrupt_after
     def goto_position(self):
         """
         POST to goto_position in our course, using random inputs based on course data.
@@ -286,7 +284,6 @@ class ModuleRenderTasks(LmsTasks):
         )
 
     @task(1)
-    @interrupt_after
     def capa_problem_get(self):
         """
         Exercise the problem_get handler.
@@ -294,7 +291,6 @@ class ModuleRenderTasks(LmsTasks):
         self._post_capa_handler('problem_get')
 
     @task(2)
-    @interrupt_after
     def capa_problem_show(self):
         """
         Exercise the problem_show handler.
@@ -302,7 +298,6 @@ class ModuleRenderTasks(LmsTasks):
         self._post_capa_handler('problem_show')
 
     @task(10)
-    @interrupt_after
     def capa_problem_check(self):
         """
         Exercise the problem_check handler.
@@ -310,7 +305,6 @@ class ModuleRenderTasks(LmsTasks):
         self._post_capa_handler('problem_check')
 
     @task(1)
-    @interrupt_after
     def capa_problem_save(self):
         """
         Exercise the problem_save handler.
@@ -318,7 +312,6 @@ class ModuleRenderTasks(LmsTasks):
         self._post_capa_handler('problem_save')
 
     @task(30)
-    @interrupt_after
     def get_transcript(self):
         """
         Exercises transcript retrieval, using random inputs based on course data.
@@ -330,7 +323,6 @@ class ModuleRenderTasks(LmsTasks):
         )
 
     @task(22)
-    @interrupt_after
     def save_user_state(self):
         """
         Exercises user state persistence, using random inputs based on course data.
