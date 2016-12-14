@@ -1,6 +1,11 @@
 """
 This file defines the interrupt_after decorator for locusts tasks.
 
+WARNING: This decorator currently does not function correctly since it causes
+on_start to run after every reqeust.  on_start normally contains setup code
+such as auto_auth and enrollment.  Do not use this decorator until this bug is
+fixed.
+
 If your load test only has one TaskSet, ignore this utility.  Else, read on...
 
 Normally the locust client gets captured by a TaskSet class, preventing it from
@@ -43,6 +48,6 @@ def interrupt_after(func):
         # Before interrupting, make sure that there is a parent task set to
         # escape to.  Otherwise locust will crash.
         if not is_root(self):
-            self.interrupt()
+            self.interrupt(False)  # False parameter forces locust to enter wait
 
     return _interrupt_after

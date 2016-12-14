@@ -1,6 +1,5 @@
 from random import randint
 from locust import task
-from helpers.interrupt_after import interrupt_after
 
 from base import LmsTasks
 
@@ -14,7 +13,6 @@ class WikiViewTask(LmsTasks):
     """
 
     @task
-    @interrupt_after
     def view_article(self):
         """
         Request one of the articles known to exist.
