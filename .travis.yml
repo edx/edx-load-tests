@@ -12,6 +12,7 @@ cache:
 install:
     - pip install --upgrade pip wheel
     - make requirements
+    - pip install -e .
 script:
     - make validate
 branches:
