@@ -31,7 +31,6 @@ class ProctoredExamTasks(LmsTasks):
         self.attempt_id = response_data.get('exam_attempt_id')
 
     @task(1)
-    @interrupt_after
     def exam_poll_attempt(self):
         """
         Retrieves the status of an existing exam attempt.

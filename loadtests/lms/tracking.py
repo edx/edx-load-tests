@@ -29,7 +29,6 @@ class TrackingTasks(LmsTasks):
         return ''.join(random_chars)
 
     @task(1)
-    @interrupt_after
     def report_event(self):
         """
         POST a user tracking event.  This simulates event reports such as
