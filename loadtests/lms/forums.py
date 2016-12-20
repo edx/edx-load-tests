@@ -185,7 +185,6 @@ class ForumsTasks(BaseForumsTasks):
 
     """
     @task(10)
-    @interrupt_after
     def forum_form_discussion(self):
         """
         Visit the discussion tab.
@@ -193,7 +192,6 @@ class ForumsTasks(BaseForumsTasks):
         self.get('discussion/forum', name="forums:forum_form_discussion")
 
     @task(4)
-    @interrupt_after
     def search_topic(self):
         """
         Load a randomly-selected topic from the discussion tab sidebar.
@@ -209,7 +207,6 @@ class ForumsTasks(BaseForumsTasks):
         )
 
     @task(10)
-    @interrupt_after
     def inline_discussion(self):
         """
         Load a randomly-selected inline discussion.
@@ -221,7 +218,6 @@ class ForumsTasks(BaseForumsTasks):
         )
 
     @task(4)
-    @interrupt_after
     def create_thread(self):
         """
         create a new thread in a randomly-selected topic
@@ -230,7 +226,6 @@ class ForumsTasks(BaseForumsTasks):
         ForumsTasks._thread_ids.append(thread)
 
     @task(36)
-    @interrupt_after
     def single_thread(self):
         """
         Read a specific thread.
@@ -249,7 +244,6 @@ class ForumsTasks(BaseForumsTasks):
         )
 
     @task(23)
-    @interrupt_after
     def large_thread(self):
         """
         Read the large thread.
@@ -262,7 +256,6 @@ class ForumsTasks(BaseForumsTasks):
             self.single_thread()
 
     @task(4)
-    @interrupt_after
     def create_response(self):
         """
         Post a response to an existing thread.
@@ -275,7 +268,6 @@ class ForumsTasks(BaseForumsTasks):
         super(ForumsTasks, self).create_response(thread_id)
 
     @task(1)
-    @interrupt_after
     def user_profile(self):
         """
         Request the user profile endpoint.
@@ -286,7 +278,6 @@ class ForumsTasks(BaseForumsTasks):
         )
 
     @task(1)
-    @interrupt_after
     def followed_threads(self):
         """
         Request the followed threads endpoint.
@@ -326,7 +317,6 @@ class SeedForumsTasks(BaseForumsTasks):
     _large_thread_response_ids = deque(maxlen=100)
 
     @task(10)
-    @interrupt_after
     def create_response(self):
         """
         Post a response to an existing thread.
@@ -346,7 +336,6 @@ class SeedForumsTasks(BaseForumsTasks):
             SeedForumsTasks._large_thread_response_ids.append(response_id)
 
     @task(1)
-    @interrupt_after
     def create_comment(self):
         """
         Post a response to an existing thread.

@@ -1,5 +1,6 @@
 import json
 from locust import task
+from helpers.interrupt_after import interrupt_after
 
 from base import LmsTasks
 

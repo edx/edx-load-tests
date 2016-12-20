@@ -43,6 +43,6 @@ def interrupt_after(func):
         # Before interrupting, make sure that there is a parent task set to
         # escape to.  Otherwise locust will crash.
         if not is_root(self):
-            self.interrupt()
+            self.interrupt(False)
 
     return _interrupt_after

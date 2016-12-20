@@ -75,6 +75,85 @@ class CourseData(dict):
         """
         return random.choice(self['special_exam_ids'])
 
+supply_chain_course = CourseData(
+    sequential_ids=(
+        "b09855f469bc46349d7862b150b3b2a9",
+        "2f13faff8401411aa0616b6905b75993",
+        "a4b61eabadb54daa836edd2ee940dbc9",
+        "9dce5d1fb07b4730bd7b6d3a56d11cd7",
+        "ee07b83d538a4509965fb5d332204c28",
+        "d776a19428d94498b5e5e396a315355e",
+        "356015240c9b492995b2361a9f902a64",
+        "ddf53b38a1a9407ba90d0b66e63e1113",
+    ),
+    capa_problems={
+        "0a46790a5ea742c396dc0d9229388e42": {
+            "inputs": {
+                "_2_1": "0.5"
+            }
+        },
+        "0af64bf8f0b5445aa9ff5b77620c07e6": {
+            "inputs": {
+                '_2_1': ['choice_0'],
+            }
+        },
+        "0b4fb1d885e348bf9ddfe02a1aa60206": {
+            "inputs": {
+                "_2_1": "0.5"
+            }
+        },
+        "0c3d4a913c9844db95e3b24b5b05b652": {
+            "inputs": {
+                "_2_1": "x1+x2+x3+x4+x5"
+            }
+        },
+        "00c57622e1d547ec834f570ccf645aa0": {
+            "inputs": {
+                "_2_1": "$sol1m"
+            },
+            "showanswer": "true"
+        },
+        "0d47d3e4ba0e43248d0bb81bfeb0bc34": {
+            "inputs": {
+                '_2_1': ['choice_0'],
+            }
+        },
+    },
+    video_module_ids=(
+        "0e34cb2b4b9244a88220bb5fbcc7ad68",
+        "0b16f38a981a4443ab51134fee813f2b",
+        "0ed410ebec5d42c6ae28c639b28bf91e",
+        "1f3d9d52f0914664a8ab44cc0a12fe1e",
+        "1f87f85c62604d078c3ac8d262824939",
+        "3fe45b6696824c9b93ba9412da542734",
+    ),
+    video_ids=(
+        "zSrHxycDHYE",
+        "PNlRpat9veM",
+        "BEq6hm43edY",
+        "yhq6Fo5lXqs",
+        "y1-gSPWurrU",
+        "TgDA67-oWp4",
+    ),
+    courseware_paths=(
+        '',
+        '/6a31d02d958e45a398d8a5f1592bdd78/8ae83e7f0f29416e9f5c4585bd13df9c/',
+        '/30aa25e282524bb3b7ce30d6045a9416/ee07b83d538a4509965fb5d332204c28/',
+        '/30aa25e282524bb3b7ce30d6045a9416/9bdc86fedf76410db0d5e069adf0be40/',
+        '/30aa25e282524bb3b7ce30d6045a9416/0f47fd2fbf93464d9984d10076762e87/',
+        '/30aa25e282524bb3b7ce30d6045a9416/ddf53b38a1a9407ba90d0b66e63e1113/',
+    ),
+    html_usage_ids=(
+        'block-v1:testX+SupplyChain+SupplyChain+type@html+block@113b34dbdfcf4a2f91ece60097535541',
+        'block-v1:testX+SupplyChain+SupplyChain+type@html+block@cb931c12d0344912a786ebdc0e6558ed',
+        'block-v1:testX+SupplyChain+SupplyChain+type@html+block@4861eb670fcb40cab17a2890e70511ee',
+    ),
+    special_exam_ids=(
+        '18',
+        '19',
+        '20',
+    ),
+)
 
 # data extracted from edX/DemoX/Demo_Course as of Feb. 2015
 demo_course = CourseData(

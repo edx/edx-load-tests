@@ -14,7 +14,6 @@ class WikiViewTask(LmsTasks):
     """
 
     @task
-    @interrupt_after
     def view_article(self):
         """
         Request one of the articles known to exist.
