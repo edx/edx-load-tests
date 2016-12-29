@@ -2,7 +2,7 @@
 # should import this file.
 
 # load testing software
-locustio==0.7.3
+locustio==0.7.5
 
 # common loadtest requirements
 edx-opaque-keys==0.3.3
