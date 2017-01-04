@@ -11,4 +11,8 @@ DB_HOST: 127.0.0.1
 DB_NAME: wwc
 DB_PORT: 3306
 DB_USER: # REQUIRED
+
+---
+# secrets below
+
 DB_PASSWORD: # REQUIRED

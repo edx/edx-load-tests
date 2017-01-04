@@ -9,6 +9,9 @@ TEST_FILE: course_import/Demo_Course.0_c9xL.tar.gz
 # TODO: This variable needs a description
 NUM_PARALLEL_COURSES: 5
 
+---
+# secrets below
+
 # Use the following keys to optionally specify basic auth credentials to
 # access the target:
 #BASIC_AUTH_USER:

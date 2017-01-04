@@ -15,10 +15,10 @@ class AutoAuthTasks(TaskSet):
         """
         super(AutoAuthTasks, self).__init__(*args, **kwargs)
 
-        if settings.data.get('BASIC_AUTH_USER') is not None:
+        if settings.secrets.get('BASIC_AUTH_USER') is not None:
             self.client.auth = (
-                settings.data['BASIC_AUTH_USER'],
-                settings.data['BASIC_AUTH_PASS'],
+                settings.secrets['BASIC_AUTH_USER'],
+                settings.secrets['BASIC_AUTH_PASS'],
             )
 
         self._user_id = None
