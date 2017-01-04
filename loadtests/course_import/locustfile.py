@@ -23,7 +23,7 @@ settings.init(
         'TEST_FILE',
         'NUM_PARALLEL_COURSES',
     ],
-    required_secrets=[
+    secrets_required=[
         'CMS_USER_PASSWORD',
     ])
 

@@ -14,7 +14,7 @@ from helpers import settings
 settings.init(
     __name__,
     required=['ecommerce', 'jwt'],
-    required_secrets=['ecommerce', 'jwt']
+    secrets_required=['ecommerce', 'jwt']
 )
 
 

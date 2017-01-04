@@ -13,7 +13,7 @@ from helpers import settings
 from helpers.api import LocustEdxRestApiClient
 
 
-settings.init(__name__, required=['oauth', 'programs'], required_secrets=['oauth'])
+settings.init(__name__, required=['oauth', 'programs'], secrets_required=['oauth'])
 
 
 class SelfInterruptingTaskSet(TaskSet):
