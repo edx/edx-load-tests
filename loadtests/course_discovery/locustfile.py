@@ -13,7 +13,7 @@ from helpers import settings
 from helpers.api import LocustEdxRestApiClient
 
 
-settings.init(__name__, required=['oauth', 'programs'])
+settings.init(__name__, required=['oauth', 'programs'], required_secrets=['oauth'])
 
 
 class SelfInterruptingTaskSet(TaskSet):
@@ -124,7 +124,7 @@ class CourseDiscoveryLocust(HttpLocust):
         access_token, __ = LocustEdxRestApiClient.get_oauth_access_token(
             access_token_endpoint,
             settings.data['oauth']['client_id'],
-            settings.data['oauth']['client_secret'],
+            settings.secrets['oauth']['client_secret'],
         )
 
         api_url = '{}/api/v1/'.format(self.host.strip('/'))

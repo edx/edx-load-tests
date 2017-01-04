@@ -14,3 +14,11 @@ ecommerce:
 jwt:
   secret_key: set-me-please
   issuer: https://127.0.0.1:8000/oauth2
+
+---
+# secrets below
+
+ecommerce:
+  cybersource_secret_key: set-me-please
+jwt:
+  secret_key: set-me-please
