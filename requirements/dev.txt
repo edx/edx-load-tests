@@ -4,3 +4,4 @@
 mock==2.0.0
 pep8==1.6.2
 pytest==3.0.3
+pytest-xdist==1.15.0
