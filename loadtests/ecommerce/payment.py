@@ -52,7 +52,7 @@ class CybersourcePaymentTasks(AutoAuthTasks):
             settings.data['ecommerce']['url']['api'],
             session=self.client,
             signing_key=settings.secrets['jwt']['secret_key'],
-            issuer=settings.data['jwt']['issuer'],
+            issuer=settings.secrets['jwt']['issuer'],
             username=self._username,
             email=self._email,
         )
