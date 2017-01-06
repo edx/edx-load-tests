@@ -13,7 +13,7 @@ import random
 from locust import HttpLocust, TaskSet, task
 
 from helpers import settings
-settings.init(__name__, required=[
+settings.init(__name__, required_data=[
     'COURSE_ID_LIST',
 ])
 

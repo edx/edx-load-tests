@@ -41,7 +41,7 @@ def test_load_settings_missing_required_data(mock_resource_filename):
     mock_resource_filename.return_value = 'tests/foo.yml'
 
     with pytest.raises(settings.MissingRequiredSettingError):
-        settings.init('loadtests.foo.locustfile', required=['MISSING_REQUIRED_KEY'])
+        settings.init('loadtests.foo.locustfile', required_data=['MISSING_REQUIRED_KEY'])
 
 
 @pytest.mark.usefixtures("reset_settings")
@@ -53,7 +53,7 @@ def test_load_settings_missing_required_secrets(mock_resource_filename):
     mock_resource_filename.return_value = 'tests/foo.yml'
 
     with pytest.raises(settings.MissingRequiredSettingError):
-        settings.init('loadtests.foo.locustfile', secrets_required=['MISSING_REQUIRED_KEY'])
+        settings.init('loadtests.foo.locustfile', required_secrets=['MISSING_REQUIRED_KEY'])
 
 
 @pytest.mark.usefixtures("reset_settings")

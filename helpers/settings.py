@@ -46,7 +46,7 @@ class MissingRequiredSettingError(Exception):
     pass
 
 
-def init(test_module_full_name, required=[], secrets_required=[]):
+def init(test_module_full_name, required_data=[], required_secrets=[]):
     """
     This is the primary entrypoint for this module.  In short, it initializes
     the global data dict, finds/loads the settings files, and validates the
@@ -85,7 +85,7 @@ def init(test_module_full_name, required=[], secrets_required=[]):
     ))
 
     # check that the required settings are present
-    for key in required:
+    for key in required_data:
         if data.get(key) is None:
             raise MissingRequiredSettingError(
                 'the setting {} is absent, but required for the {} load tests.'.format(
@@ -95,7 +95,7 @@ def init(test_module_full_name, required=[], secrets_required=[]):
             )
 
     # check that the required secrets are present
-    for key in secrets_required:
+    for key in required_secrets:
         if secrets.get(key) is None:
             raise MissingRequiredSettingError(
                 'the secret setting {} is absent, but required for the {} load tests.'.format(

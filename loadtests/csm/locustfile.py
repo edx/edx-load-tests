@@ -36,7 +36,7 @@ from helpers import datadog_reporting
 # load the test settings BEFORE django settings where they are used for
 # database configuration
 from helpers import settings
-settings.init(__name__, required=[
+settings.init(__name__, required_data=[
     'DB_ENGINE',
     'DB_HOST',
     'DB_NAME',

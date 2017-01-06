@@ -18,14 +18,15 @@ from locust import HttpLocust, TaskSet, task, events
 from helpers import settings
 settings.init(
     __name__,
-    required=[
+    required_data=[
         'CMS_USER_EMAIL',
         'TEST_FILE',
         'NUM_PARALLEL_COURSES',
     ],
-    secrets_required=[
+    required_secrets=[
         'CMS_USER_PASSWORD',
-    ])
+    ],
+)
 
 
 class CourseImport(TaskSet):
