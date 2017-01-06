@@ -10,9 +10,11 @@ cache:
   directories:
     - $HOME/.cache/pip
 install:
-    - pip install --upgrade pip wheel pep8
+    - pip install --upgrade pip wheel
+    - make requirements
+    - pip install -e .
 script:
-    - pep8 --config=.pep8 .
+    - make validate
 branches:
     only:
         - master

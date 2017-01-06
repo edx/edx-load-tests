@@ -29,3 +29,11 @@ LOCUST_MAX_WAIT: 1500
 # (LOW_WIKI_SLUG, HIGH_WIKI_SLUG)
 # LOW_WIKI_SLUG = 100
 # HIGH_WIKI_SLUG = 13000
+
+---
+# secrets below
+
+# Use the following keys to optionally specify basic auth credentials to
+# access the target:
+#BASIC_AUTH_USER:
+#BASIC_AUTH_PASS:

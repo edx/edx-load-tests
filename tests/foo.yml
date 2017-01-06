@@ -1,0 +1,6 @@
+---
+hello: world
+REQUIRED_KEY: 1
+---
+a_secret: 2
+REQUIRED_SECRET_KEY: 3

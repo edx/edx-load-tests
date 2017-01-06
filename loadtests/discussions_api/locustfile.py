@@ -43,7 +43,7 @@ from discussions_api.tasks.dapi_tasks import (
 requests.packages.urllib3.disable_warnings()
 
 from helpers import settings
-settings.init(__name__, required=[
+settings.init(__name__, required_data=[
     'COURSE_ID',
     'VERBOSE',
     'LOCUST_TASK_SET',

@@ -36,7 +36,7 @@ class CybersourcePaymentTasks(AutoAuthTasks):
     def __init__(self, *args, **kwargs):
         super(CybersourcePaymentTasks, self).__init__(*args, **kwargs)
         self.ecommerce_service_url = settings.data['ecommerce']['url']['service']
-        self.cybersource_secret_key = settings.data['ecommerce']['cybersource_secret_key']
+        self.cybersource_secret_key = settings.secrets['ecommerce']['cybersource_secret_key']
 
     @task
     def payment_process(self):
@@ -51,8 +51,8 @@ class CybersourcePaymentTasks(AutoAuthTasks):
         self.api_client = LocustEdxRestApiClient(
             settings.data['ecommerce']['url']['api'],
             session=self.client,
-            signing_key=settings.data['jwt']['secret_key'],
-            issuer=settings.data['jwt']['issuer'],
+            signing_key=settings.secrets['jwt']['secret_key'],
+            issuer=settings.secrets['jwt']['issuer'],
             username=self._username,
             email=self._email,
         )

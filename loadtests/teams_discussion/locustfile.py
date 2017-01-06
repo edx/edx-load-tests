@@ -17,7 +17,7 @@ from locust import HttpLocust, task
 from helpers.auto_auth_tasks import AutoAuthTasks
 
 from helpers import settings
-settings.init(__name__, required=[
+settings.init(__name__, required_data=[
     'COURSE_ID',
     'LOCUST_MIN_WAIT',
     'LOCUST_MAX_WAIT',
