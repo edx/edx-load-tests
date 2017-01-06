@@ -10,6 +10,6 @@ edx-opaque-keys==0.3.3
 lazy
 
 # helpers use these
+dogapi==1.2.1
 edx-rest-api-client==1.6.0
 PyYAML==3.11
-dogapi==1.2.1
