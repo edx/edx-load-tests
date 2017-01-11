@@ -6,9 +6,11 @@ This directory contains Locust tasks designed to exercise ecommerce behavior on 
 Getting Started
 ---------------
 
-Load tests are configured using a YAML file. Refer to settings_files/ecommerce.yml.example for an example, then create your own alongside it at settings_files/ecommerce.yml. Git will ignore this file, so you can put secrets in it.
+Load tests are configured using a YAML file. Refer to ``settings_files/ecommerce.yml.example`` for an example, then create your own alongside it at ``settings_files/ecommerce.yml``. Git will ignore this file, so you can put secrets in it. In order to run the tests, auto auth must be enabled on the LMS, which can be found in ``lms.env.json`` under ``AUTOMATIC_AUTH_FOR_TESTING``. In addition, courses to be used for testing must be configured on both the LMS and Otto. At a minimum, these load tests require the existence of two courses on the LMS instance being used for testing. The edX Demonstration Course should be present by default on most LMS instances.
 
-In order to run the tests, auto auth must be enabled on the LMS. In addition, courses to be used for testing must be configured on both the LMS and Otto. At a minimum, these load tests require the existence of two courses on the LMS instance being used for testing. The edX Demonstration Course should be present by default on most LMS instances. Use Studio to create a course. Use Otto’s "Course Administration Tool" (CAT) to finish configuring the courses you created above. When developing, you can find the CAT at ``http://localhost:8002/courses/``. Add both of the courses present on your LMS instance to Otto. Configure one as a "Free (Honor)" course, and the second as a "Verified" course.
+#. Use Studio to create a course.
+#. Use Otto’s "Course Administration Tool" (CAT) to finish configuring the courses you created above. When developing, you can find the CAT at ``http://localhost:8002/courses/``.
+#. Add both of the courses present on your LMS instance to Otto. Configure one as a "Free (Honor)" course, and the second as a "Verified" course.
 
 Running
 -------
