@@ -62,12 +62,27 @@ def test_load_settings_no_secrets(mock_resource_filename):
     """
     load a valid settings file without a "secrets" yaml document.
     """
-    mock_resource_filename.return_value = 'tests/foo_no_secrets.yml'
+    mock_resource_filename.return_value = 'tests/foo_no_secrets_doc.yml'
     settings.init('loadtests.foo.locustfile', ['REQUIRED_KEY'])
-    with open('tests/foo_no_secrets.yml') as foo:
+    with open('tests/foo_no_secrets_doc.yml') as foo:
         settings_documents = yaml.load_all(foo)
         foo_data = settings_documents.next()
         with pytest.raises(StopIteration):
             settings_documents.next()
     assert settings.data == foo_data
     assert settings.secrets == {}
+
+
+@pytest.mark.usefixtures("reset_settings")
+@patch('helpers.settings.resource_filename')
+def test_load_settings_empty_secrets(mock_resource_filename):
+    """
+    load a valid settings file with an empty "secrets" yaml document.
+    """
+    mock_resource_filename.return_value = 'tests/foo_empty_secrets_doc.yml'
+    settings.init('loadtests.foo.locustfile', ['REQUIRED_KEY'])
+    with open('tests/foo_empty_secrets_doc.yml') as foo:
+        foo_data, foo_secrets = yaml.load_all(foo)
+    assert settings.data == foo_data
+    assert settings.secrets == {}
+    assert foo_secrets is None

@@ -75,7 +75,13 @@ def init(test_module_full_name, required_data=[], required_secrets=[]):
         try:
             secrets = settings_documents.next()
         except StopIteration:
+            # secrets yaml document doesn't exist
             secrets = {}
+        if secrets is None:
+            # secrets yaml document was loaded, but is empty
+            secrets = {}
+        # Now, the secrets variable is guaranteed to be assigned to a
+        # dictionary object.
     if len(secrets) > 0:
         LOG.info('secrets loaded from the settings file')
     else:
