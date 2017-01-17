@@ -272,67 +272,9 @@ class ModuleRenderTasks(LmsTasks):
             name='handler:capa:{}'.format(handler),
         )
 
-    @task(16)
-    def goto_position(self):
-        """
-        POST to goto_position in our course, using random inputs based on course data.
-        """
-        self.post(
-            self._handler_path('sequential', self.course_data.sequential_id, 'xmodule_handler/goto_position'),
-            data={'position': unicode(random.randint(0, 10))},
-            name='handler:goto_position',
-        )
-
-    @task(1)
-    def capa_problem_get(self):
-        """
-        Exercise the problem_get handler.
-        """
-        self._post_capa_handler('problem_get')
-
-    @task(2)
-    def capa_problem_show(self):
-        """
-        Exercise the problem_show handler.
-        """
-        self._post_capa_handler('problem_show')
-
     @task(10)
     def capa_problem_check(self):
         """
         Exercise the problem_check handler.
         """
         self._post_capa_handler('problem_check')
-
-    @task(1)
-    def capa_problem_save(self):
-        """
-        Exercise the problem_save handler.
-        """
-        self._post_capa_handler('problem_save')
-
-    @task(30)
-    def get_transcript(self):
-        """
-        Exercises transcript retrieval, using random inputs based on course data.
-        """
-        self.get(
-            self._handler_path('video', self.course_data.video_module_id, 'transcript/translation/en'),
-            params={'videoId': self.course_data.video_id},
-            name="handler:video:get_transcript"
-        )
-
-    @task(22)
-    def save_user_state(self):
-        """
-        Exercises user state persistence, using random inputs based on course data.
-        """
-        data = random.choice([
-            {'youtube_is_available': random.choice(['true', 'false'])},
-            {'saved_video_position': random.choice(['00:00:00', '01:23:45', '02:46:08'])},
-        ])
-        self.post(
-            self._handler_path('video', self.course_data.video_module_id, 'xmodule_handler/save_user_state'),
-            data=data,
-            name="handler:video:save_user_state"
-        )
