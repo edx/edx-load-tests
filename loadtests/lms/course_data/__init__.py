@@ -43,3 +43,16 @@ one_question = CourseData(
         },
     }
 )
+
+devstack_efischer = CourseData(
+    sequential_ids=(
+        'd8a6192ade314473a78242dfeedfbf5b',
+    ),
+    capa_problems={
+        '762c58d25dde42dfa1ce18bac56949e6': {
+            'inputs': {
+                '_2_1': ['choice_0', 'choice_1', 'choice_2'],
+            },
+        },
+    }
+)
