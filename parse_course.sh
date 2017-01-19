@@ -16,30 +16,37 @@ echo -e "\t),"
 cd ../problem/
 echo -e "\tcapa_problems={"
 for f in *; do
-    found_problem=0
+    found_multiple_choice=0
     num_choices=0
     counter=2
-    if grep --quiet multiplechoiceresponse $f; then
+    if grep --quiet -E "multiplechoiceresponse|stringresponse" $f; then
         echo -e "\t\t'"`basename $f .xml`"': {"
         echo -e "\t\t\t'inputs': {"
         cat $f |
         while read -r line || [[ -n "$line" ]]; do
-            if [ $found_problem -eq 0 ]; then
+            if [ $found_multiple_choice -eq 0 ]; then
                 if [[ "$line" =~ ^\<choicegroup* ]]; then
-                    found_problem=1
+                    found_multiple_choice=1
                 fi
-            elif [[ "$line" =~ ^\<\/choicegroup* ]]; then
-                echo -en "\t\t\t\t'_"$counter"_1': ["
-                for i in `seq 0 $num_choices`; do
-                    echo -n "'choice_"$i"', "
-                done
-                echo "],"
-
-                found_problem=0
-                num_choices=0
-                ((counter++))
+                string_rex="\<stringresponse answer=\"(.*)\" type=.*\>"
+                if [[ $line =~ $string_rex ]]; then
+                    echo -e "\t\t\t\t'_"$counter"_1': ('"${BASH_REMATCH[1]}"', ),"
+                    ((counter++))
+                fi
             else
-                ((num_choices++))
+                if [[ "$line" =~ ^\<\/choicegroup* ]]; then
+                    echo -en "\t\t\t\t'_"$counter"_1': ["
+                    for i in `seq 0 $num_choices`; do
+                        echo -n "'choice_"$i"', "
+                    done
+                    echo "],"
+
+                    found_multiple_choice=0
+                    num_choices=0
+                    ((counter++))
+                else
+                    ((num_choices++))
+                fi
             fi  
         done
         echo -e "\t\t\t},"
