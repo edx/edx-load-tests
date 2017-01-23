@@ -36,6 +36,8 @@ for f in *; do
             else
                 if [[ "$line" =~ ^\<\/choicegroup* ]]; then
                     echo -en "\t\t\t\t'_"$counter"_1': ["
+
+                    ((num_choices--)) # zero-indexing for seq call
                     for i in `seq 0 $num_choices`; do
                         echo -n "'choice_"$i"', "
                     done

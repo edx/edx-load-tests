@@ -5,8 +5,11 @@ from locust import task
 import logging
 
 from base import LmsTasks
+from helpers.interrupt_after import interrupt_after
 
 log = logging.getLogger(__name__)
+
+NUM_QUESTIONS_TO_ANSWER = 48
 
 
 class ModuleRenderTasks(LmsTasks):
@@ -60,8 +63,10 @@ class ModuleRenderTasks(LmsTasks):
         )
 
     @task(10)
+    @interrupt_after
     def capa_problem_check(self):
         """
         Exercise the problem_check handler.
         """
-        self._post_capa_handler('problem_check')
+        for _ in range(0, NUM_QUESTIONS_TO_ANSWER):
+            self._post_capa_handler('problem_check')
