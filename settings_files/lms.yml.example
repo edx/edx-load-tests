@@ -1,21 +1,28 @@
 ---
-# Course ID that we're running these tests against.  The default
-# targets a course which currently exists on courses-loadtest.edx.org.
-COURSE_ID: edX/DemoX/Demo_Course
+# The courses defines all the courses which will have load driven
+# against.  The keys at the top level are course IDs, and each value contains
+# some loadtesting-related metadata about the course.
+courses:
+    # This course currently exists on courses-loadtest.edx.org
+    edX/DemoX/Demo_Course:
+        # The name of the python object (must be defined in
+        # loadtests.lms.course_data) which contains course data specific to
+        # this course.
+        course_data: demo_course
 
-# The name of the course data variable which corresponds to the
-# COURSE_ID specified above.  Must be defined in the lms.course_data
-# module.
-COURSE_DATA: demo_course
+        # This ratio describes the relative amount of hatched locust clients to enroll
+        # and participate in this course.
+        ratio: 1
+
+        # Optionally provide a pointer to a large thread which you seeded using the
+        # SeedForumsTasks task set.  This thread will be used in addition to a
+        # small thread which will be automatically created.
+        #large_topic_id:
+        #large_thread_id:
 
 # Run the specified TaskSet (must be imported into the lms/locustfile.py
 # file):
 LOCUST_TASK_SET: LmsTest
-
-# Optionally provide a pointer to a large thread which you seeded using the
-# SeedForumsTasks task set:
-#LARGE_TOPIC_ID:
-#LARGE_THREAD_ID:
 
 # Used to determine how 'active' users are in timed and proctored exams.
 # This is the multiplying factor for how often proctoring-specific tasks happen (default is 1):

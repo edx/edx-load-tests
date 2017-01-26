@@ -19,8 +19,7 @@ from tracking import TrackingTasks
 
 from helpers import settings
 settings.init(__name__, required_data=[
-    'COURSE_ID',
-    'COURSE_DATA',
+    'courses',
     'LOCUST_TASK_SET',
     'LOCUST_MIN_WAIT',
     'LOCUST_MAX_WAIT',
