@@ -72,7 +72,10 @@ class BaseForumsTasks(LmsTasks):
         if BaseForumsTasks._large_thread:
             return BaseForumsTasks._large_thread[0]
         else:
-            return settings.data.get('LARGE_TOPIC_ID')
+            try:
+                return self._get_course_setting('large_topic_id')
+            except KeyError:
+                return None
 
     @lazy
     def large_thread_id(self):
@@ -82,7 +85,10 @@ class BaseForumsTasks(LmsTasks):
         if BaseForumsTasks._large_thread:
             return BaseForumsTasks._large_thread[1]
         else:
-            return settings.data.get('LARGE_THREAD_ID')
+            try:
+                return self._get_course_setting('large_thread_id')
+            except KeyError:
+                return None
 
     def create_thread(self, topic_id, name):
         """
