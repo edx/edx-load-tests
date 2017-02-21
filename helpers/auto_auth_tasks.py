@@ -32,18 +32,18 @@ class AutoAuthTasks(TaskSet):
         Logs in with a new, programmatically-generated user account.
         Requires AUTO_AUTH functionality to be enabled in the target edx instance.
         """
-        if "sessionid" in self.client.cookies:
-            del self.client.cookies["sessionid"]
+        if 'sessionid' in self.client.cookies:
+            del self.client.cookies['sessionid']
 
         response = self.client.get(
-            "{}/auto_auth".format(hostname),
+            '{}/auto_auth'.format(hostname),
             name="auto_auth",
-            headers={'accept': 'application/json'},
+            headers={'Accept': 'application/json'},
             params=params or {},
             verify=verify_ssl
         )
 
-        json_response = json.loads(response.text)
+        json_response = response.json()
         self._username = json_response['username']
         self._email = json_response['email']
         self._password = json_response['password']

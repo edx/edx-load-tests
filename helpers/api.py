@@ -2,14 +2,14 @@
 
 See: http://www.renzolucioni.com/pairing-locust-and-slumber/.
 """
+import slumber
 from edx_rest_api_client import exceptions
 from edx_rest_api_client.client import EdxRestApiClient
-import requests
-import slumber
 
 
 class LocustResource(slumber.Resource):
     """Custom Slumber Resource which takes advantage of Locust's extended HttpSession."""
+
     def _request(self, method, data=None, files=None, params=None):
         serializer = self._store['serializer']
         url = self.url()
@@ -47,7 +47,8 @@ class LocustResource(slumber.Resource):
             exception_class = exceptions.HttpNotFoundError if resp.status_code == 404 else exceptions.HttpClientError
             raise exception_class('Client Error %s: %s' % (resp.status_code, url), response=resp, content=resp.content)
         elif 500 <= resp.status_code <= 599:
-            raise exceptions.HttpServerError('Server Error %s: %s' % (resp.status_code, url), response=resp, content=resp.content)
+            raise exceptions.HttpServerError('Server Error %s: %s' % (resp.status_code, url), response=resp,
+                                             content=resp.content)
 
         self._ = resp
 

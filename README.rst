@@ -86,7 +86,7 @@ Reporting Security Issues
 Please do not report security issues in public. Please email security@edx.org.
 
 Mailing List and Slack Channel
-----------------------------
+------------------------------
 
 You can discuss this code in the `edx-code Google Group` or in the ``#general`` slack channel.
 

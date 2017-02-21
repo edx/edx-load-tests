@@ -9,8 +9,8 @@ tests:
 
 2. Create a settings file: "settings_files/<TEST MODULE NAME>.yml"
 
-   We assume the first yaml document contains non-secret settings, and the
-   second document contains secrets.  The second yaml document is optional.
+   We assume the first YAML document contains non-secret settings, and the
+   second document contains secrets.  The second YAML document is optional.
 
    Example settings file:
 
@@ -46,7 +46,7 @@ class MissingRequiredSettingError(Exception):
     pass
 
 
-def init(test_module_full_name, required_data=[], required_secrets=[]):
+def init(test_module_full_name, required_data=None, required_secrets=None):
     """
     This is the primary entrypoint for this module.  In short, it initializes
     the global data dict, finds/loads the settings files, and validates the
@@ -56,6 +56,9 @@ def init(test_module_full_name, required_data=[], required_secrets=[]):
     global secrets
     if data is not None:
         raise RuntimeError('helpers.settings has been initialized twice!')
+
+    required_data = required_data or []
+    required_secrets = required_secrets or []
 
     # Find the correct settings file under the "settings_files" directory of
     # this package.  The name of the settings file corresponds to the

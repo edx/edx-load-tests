@@ -1,1 +1,1 @@
-from locustfile import CredentialUser
+from locustfile import CredentialsLocust
