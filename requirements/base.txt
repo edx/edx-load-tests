@@ -6,10 +6,10 @@ locustio==0.7.5
 pyzmq==15.2.0  # needed for distributed mode. remove after we start using locustio>=8.0
 
 # common loadtest requirements
-edx-opaque-keys==0.3.3
+edx-opaque-keys==0.4
 lazy
 
 # helpers use these
 dogapi==1.2.1
-edx-rest-api-client==1.6.0
-PyYAML==3.11
+edx-rest-api-client==1.7.1
+PyYAML==3.12

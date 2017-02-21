@@ -5,27 +5,27 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from collections import deque
-import datetime
 import random
-import uuid
 
-import jwt
 from locust import task, HttpLocust
 from locust.clients import HttpSession
-from locust.exception import LocustError
 
+from helpers import settings
 from helpers.api import LocustEdxRestApiClient
 from helpers.auto_auth_tasks import AutoAuthTasks
 
-# FIXME: This load test does not yet implement the settings interface in
-# helpers/settings.py.
-from config import CREDENTIAL_API_URL, CREDENTIAL_SERVICE_URL, JWT, LMS_ROOT_URL, PROGRAM_ID, USERNAME
+settings.init(__name__, required_data=['credentials'], required_secrets=['oauth'])
+
+CREDENTIAL_SERVICE_URL = settings.data['credentials']['url']['service']
+LMS_ROOT_URL = settings.data['credentials']['lms_url_root']
+PROGRAM_UUID = settings.data['credentials']['program_uuid']
+USERNAME = settings.data['credentials']['username']
 
 
 class CredentialTaskSet(AutoAuthTasks):
     """Tasks exercising Credential functionality."""
 
-    # Keep track of credential ids created during a test, so they can be used to formulate read requests, and patch
+    # Keep track of credential UUIDs created during a test, so they can be used to formulate read requests, and patch
     # requests. A deque is used instead of a list in order to enforce maximum length.
     _user_credentials = deque(maxlen=1000)
 
@@ -37,46 +37,44 @@ class CredentialTaskSet(AutoAuthTasks):
         Default locust client will remain same for using auto_auth().
         """
         return LocustEdxRestApiClient(
-            CREDENTIAL_API_URL,
+            settings.data['credentials']['url']['api'],
             session=HttpSession(base_url=self.locust.host),
-            jwt=self._get_token()
+            jwt=self.get_access_token()
         )
 
-    def _get_token(self):
-        username_prefix = "load-test-"
+    @staticmethod
+    def get_access_token():
+        """ Returns the OAuth 2.0 access token for the Credentials Service.
 
-        # Django's AbstractUser, subclassed by Credentials, limits usernames to 30 characters.
-        # Keep the length of the resulting username within Django's prescribed limits.
-        username_suffix = uuid.uuid4().hex[:30 - len(username_prefix)]
-        payload = {
-            'preferred_username': username_prefix + username_suffix,
-            'iss': JWT["JWT_ISSUER"],
-            'aud': JWT["JWT_AUDIENCE"],
-            'iat': datetime.datetime.utcnow(),
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(days=JWT["JWT_EXPIRATION_DELTA"]),
-            'administrator': True
-        }
-        return jwt.encode(payload, JWT["JWT_SECRET_KEY"])
+        Returns:
+            str: JWT
+        """
+        access_token_url = settings.secrets['oauth']['access_token_url']
+        client_id = settings.secrets['oauth']['client_id']
+        client_secret = settings.secrets['oauth']['client_secret']
+        access_token, __ = LocustEdxRestApiClient.get_oauth_access_token(access_token_url, client_id, client_secret,
+                                                                         token_type='jwt')
+        return access_token
 
     @task(1000)
     def list_user_credential_with_username(self):
         """ Get all credentials for a user."""
-        self.user_credential_client.user_credentials.get(username=USERNAME)
+        self.user_credential_client.credentials.get(username=USERNAME)
 
     @task
     def list_user_credential_with_username_and_status(self):
         """ Get credentials having awarded status for a user."""
-        self.user_credential_client.user_credentials.get(username=USERNAME, status="awarded")
+        self.user_credential_client.credentials.get(username=USERNAME, status='awarded')
 
     @task
-    def list_program_credential_with_programs_id(self):
-        """ Get credentials of any any status for a program id."""
-        self.user_credential_client.program_credentials.get(program_id=PROGRAM_ID)
+    def list_credentials_filtered_by_program_uuid(self):
+        """ Get credentials filtered by program UUID."""
+        self.user_credential_client.credentials.get(program_uuid=PROGRAM_UUID)
 
     @task
-    def list_program_credential_with_program_id_and_status(self):
-        """ Get credentials having awarded status for a program id."""
-        self.user_credential_client.program_credentials.get(program_id=PROGRAM_ID, status="awarded")
+    def list_credentials_filtered_by_program_uuid_and_status(self):
+        """ Get credentials filtered by program UUID and status."""
+        self.user_credential_client.credentials.get(program_uuid=PROGRAM_UUID, status='awarded')
 
     @task
     def post_credential_with_attribute(self):
@@ -84,15 +82,15 @@ class CredentialTaskSet(AutoAuthTasks):
         # user information will be used in rendering of credentials.
         self.auto_auth(hostname=LMS_ROOT_URL)
         data = {
-            "username": self._username,
-            "credential": {"program_id": PROGRAM_ID},
-            "attributes": [{"name": "whitelist_reason", "value": "Reason for whitelisting."}]
+            'username': self._username,
+            'credential': {'program_uuid': PROGRAM_UUID},
+            'attributes': [{'name': 'whitelist_reason', 'value': 'Load testing'}]
         }
-        user_credential = self.user_credential_client.user_credentials.post(
+        user_credential = self.user_credential_client.credentials.post(
             data=data,
-            name="/api/v1/user_credentials/(with_attributes)"
+            name='/api/v2/credentials/(with_attributes)'
         )
-        self._user_credentials.append((user_credential["id"], user_credential["uuid"]))
+        self._user_credentials.append(user_credential['uuid'])
 
     @task
     def post_credential_without_attribute(self):
@@ -100,23 +98,23 @@ class CredentialTaskSet(AutoAuthTasks):
         # user information will be used in rendering of credentials.
         self.auto_auth(hostname=LMS_ROOT_URL)
         data = {
-            "username": self._username,
-            "credential": {"program_id": PROGRAM_ID},
-            "attributes": []
+            'username': self._username,
+            'credential': {'program_uuid': PROGRAM_UUID},
+            'attributes': []
         }
-        user_credential = self.user_credential_client.user_credentials.post(
+        user_credential = self.user_credential_client.credentials.post(
             data=data,
-            name="/api/v1/user_credentials/(without_attributes)"
+            name='/api/v2/credentials/(without_attributes)'
         )
-        self._user_credentials.append((user_credential["id"], user_credential["uuid"]))
+        self._user_credentials.append(user_credential['uuid'])
 
     @task
     def get_credential(self):
         if not self._user_credentials:
             return
 
-        credential_id = random.choice(self._user_credentials)[0]
-        self.user_credential_client.user_credentials(credential_id).get(name="/api/v1/user_credentials/[id]")
+        credential_uuid = random.choice(self._user_credentials)
+        self.user_credential_client.credentials(credential_uuid).get(name='/api/v2/credentials/[uuid]')
 
     @task
     def patch_credential(self):
@@ -126,27 +124,25 @@ class CredentialTaskSet(AutoAuthTasks):
         if not self._user_credentials:
             return
 
-        user_credentials = random.choice(self._user_credentials)
-        status = random.choice(["awarded", "revoked"])
-        data = {"status": status}
-        if status == "revoked":
-            self._user_credentials.remove(user_credentials)
-        self.user_credential_client.user_credentials(user_credentials[0]).patch(
-            data=data, name="/api/v1/user_credentials/[id]"
-        )
+        credential_uuid = random.choice(self._user_credentials)
+        status = random.choice(['awarded', 'revoked'])
+        data = {'status': status}
+        if status == 'revoked':
+            self._user_credentials.remove(credential_uuid)
+        self.user_credential_client.credentials(credential_uuid).patch(data=data, name='/api/v2/credentials/[uuid]')
 
     @task(10)
     def render_credential(self):
-        """ Render a user credential. """
+        """ Render a credential. """
         if not self._user_credentials:
             return
 
-        credential_uuid = random.choice(self._user_credentials)[1]
-        self.client.get("{}/credentials/{}/".format(CREDENTIAL_SERVICE_URL, credential_uuid.replace("-", "")),
-                        name="/credentials/[uuid]")
+        credential_uuid = random.choice(self._user_credentials)
+        url = '{}/credentials/{}/'.format(CREDENTIAL_SERVICE_URL.strip('/'), credential_uuid)
+        self.client.get(url, name='/credentials/[uuid]')
 
 
-class CredentialUser(HttpLocust):
+class CredentialsLocust(HttpLocust):
     """Representation of an HTTP "user" to be hatched.
 
     Hatched users will be used to attack the system being load tested. This class
@@ -155,15 +151,6 @@ class CredentialUser(HttpLocust):
     to interface with edX REST APIs.
     """
 
-    task_set = CredentialTaskSet
     min_wait = 30
     max_wait = 100
-
-    def __init__(self):
-        super(CredentialUser, self).__init__()
-
-        if not self.host:
-            raise LocustError(
-                'You must specify a base host, either in the host attribute in the Locust class, '
-                'or on the command line using the --host option.'
-            )
+    task_set = CredentialTaskSet
