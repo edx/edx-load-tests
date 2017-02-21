@@ -38,8 +38,10 @@ class BaseForumsTasks(LmsTasks):
     """
 
     # class variables used to share across locust users.
+    ###
     # track the large thread tuple (topic_id, thread_id).
     _large_thread = None
+    # cache of IDs for all topics in the course
     _all_topic_ids = None
 
     def random_topic_id(self):
@@ -114,6 +116,26 @@ class BaseForumsTasks(LmsTasks):
 
         thread_id = response.json()['id']
         return (topic_id, thread_id)
+
+    def update_thread(self, thread_id):
+        """
+        Edit (update) a given existing thread.
+
+        This will modify both the thread body and thread title.
+
+        Arguments:
+            thread_id: ID of the thread which will be updated
+        """
+        thread_data = {
+            'body': _dummy_text(100, 2000),  # NB size range not based on actual data.
+            'title': _dummy_text(20, 100),  # NB size range not based on actual data.
+        }
+
+        self.post(
+            'discussion/threads/{}/update'.format(thread_id),
+            data=thread_data,
+            name='forums:update_thread',
+        )
 
     def large_thread(self):
         """
@@ -229,6 +251,21 @@ class ForumsTasks(BaseForumsTasks):
         """
         thread = super(ForumsTasks, self).create_thread(self.random_topic_id(), name='forums:create_thread')
         ForumsTasks._thread_ids.append(thread)
+        self._my_thread_ids.append(thread)
+
+    @task(1)
+    def update_thread(self):
+        """
+        Edit (update) an existing thread.
+
+        The thread to update is randomly-selected from the cache of IDs for
+        threads which this locust user has created.  LMS users cannot edit each
+        others' threads.
+        """
+        if not self._my_thread_ids:
+            return
+        discussion_id, thread_id = random.choice(self._my_thread_ids)
+        super(ForumsTasks, self).update_thread(thread_id)
 
     @task(36)
     def single_thread(self):
@@ -301,6 +338,7 @@ class ForumsTasks(BaseForumsTasks):
         """
         super(ForumsTasks, self).on_start()
         self.topic_ids()
+        self._my_thread_ids = []
 
 
 class SeedForumsTasks(BaseForumsTasks):
