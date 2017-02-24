@@ -1,1 +1,0 @@
-from locustfile import ProgramsUser
