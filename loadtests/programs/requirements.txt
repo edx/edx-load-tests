@@ -1,3 +1,0 @@
-# Packages needed to run this suite of loadtests
-
--r ../../requirements/base.txt
