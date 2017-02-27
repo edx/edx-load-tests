@@ -13,15 +13,37 @@ from helpers import settings
 logging.basicConfig(level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
-_dummy_chars = string.lowercase + '      '
+DICTIONARY_FILENAME = 'words.txt'
+_dictionary_words = []
+
+
+def _random_word_from_dictionary():
+    """
+    Get a random word from the dictionary file.
+    """
+    global _dictionary_words
+    dictionary_path = os.path.join(os.path.dirname(__file__), DICTIONARY_FILENAME)
+    # cache the entire dictionary in memory
+    if not _dictionary_words:
+        _dictionary_words = open(dictionary_path).read().splitlines()
+
+    return random.choice(_dictionary_words)
 
 
 def _dummy_text(minlen, maxlen):
     """
-    Naive helper function to generate dummy text where needed in forums submissions.
+    Helper function to generate dummy text where needed in forums submissions.
     """
-
-    return ''.join(random.choice(_dummy_chars) for _ in xrange(minlen, random.randrange(minlen + 1, maxlen)))
+    desired_length = random.randrange(minlen, maxlen)
+    buf = ''
+    # We'll shoot for desired_length, but may end up overshooting.  It doesn't
+    # really matter.
+    while len(buf) < desired_length + 1:
+        buf += _random_word_from_dictionary()
+        buf += ' '
+    buf = buf[0:-1]  # cut off trailing space
+    buf = buf[0:maxlen]  # truncate
+    return buf
 
 
 class BaseForumsTasks(LmsTasks):
@@ -219,18 +241,32 @@ class ForumsTasks(BaseForumsTasks):
         self.get('discussion/forum', name="forums:forum_form_discussion")
 
     @task(4)
-    def search_topic(self):
+    def select_topic(self):
         """
         Load a randomly-selected topic from the discussion tab sidebar.
-        Uses ES, but not actually a search from the user perspective.
         """
         self.get(
-            'discussion/forum/search',
+            'discussion/forum/',
             params={
                 'commentable_ids': self.random_topic_id(),
                 'page': '1',
             },
-            name='forums:search_topic',
+            name='forums:select_topic',
+        )
+
+    @task(4)
+    def search_text(self):
+        """
+        Search for some random words.
+
+        This should hit Elasticsearch.
+        """
+        self.get(
+            'discussion/forum/search',
+            params={
+                'text': _random_word_from_dictionary(),
+            },
+            name='forums:search_text',
         )
 
     @task(10)
