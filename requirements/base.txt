@@ -13,3 +13,6 @@ lazy
 dogapi==1.2.1
 edx-rest-api-client==1.7.1
 PyYAML==3.12
+
+# utility scripts use these
+click

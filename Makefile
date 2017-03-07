@@ -76,8 +76,7 @@ $(LOADTEST_REQUIREMENTS) : %-requirements :
 #       because the example template got updated.  Thus, we use the `$|` symbol
 #       to refer to the settings example template.
 settings_files/%.yml : | settings_files/%.yml$(EXAMPLE_SUFFIX)
-	@echo 'NOTE: installing $* settings from a template'
-	cp $| $@
+	util/merge_settings.py $| settings_files/$*.overrides.yml settings_files/$*.secrets.yml >$@
 
 # This rule should be the only one that is required to run directly by users
 # and automation scripts, e.g. `make lms`.  It does not invoke locust because
