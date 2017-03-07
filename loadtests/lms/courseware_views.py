@@ -35,7 +35,7 @@ class CoursewareViewsTasks(LmsTasks):
         """
         Request the marketing about view (rendered as a button in the marketing site).
         """
-        self.get('mktg-about', name='courseware:mktg_course_about')
+        self.get('about', name='courseware:mktg_course_about')
 
     @task(10)
     def info(self):

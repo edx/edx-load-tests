@@ -316,9 +316,10 @@ class ModuleRenderTasks(LmsTasks):
         """
         Exercises transcript retrieval, using random inputs based on course data.
         """
+        video = self.course_data.video
         self.get(
-            self._handler_path('video', self.course_data.video_module_id, 'transcript/translation/en'),
-            params={'videoId': self.course_data.video_id},
+            self._handler_path('video', video['module_id'], 'transcript/translation/en'),
+            params={'videoId': video['video_id']},
             name="handler:video:get_transcript"
         )
 
@@ -332,7 +333,7 @@ class ModuleRenderTasks(LmsTasks):
             {'saved_video_position': random.choice(['00:00:00', '01:23:45', '02:46:08'])},
         ])
         self.post(
-            self._handler_path('video', self.course_data.video_module_id, 'xmodule_handler/save_user_state'),
+            self._handler_path('video', self.course_data.video['module_id'], 'xmodule_handler/save_user_state'),
             data=data,
             name="handler:video:save_user_state"
         )

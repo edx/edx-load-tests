@@ -27,18 +27,9 @@ class CourseData(dict):
         return random.choice(self['courseware_paths'])
 
     @property
-    def video_module_id(self):
-        """
-        Randomly select an id from among video modules known in this course.
-        """
-        return random.choice(self['video_module_ids'])
-
-    @property
-    def video_id(self):
-        """
-        Randomly select an id from among video assets known in this course.
-        """
-        return random.choice(self['video_ids'])
+    def video(self):
+        """ Randomly select a video ID and video module ID from the known videos in this course. """
+        return random.choice(self['videos'])
 
     @property
     def capa_problem(self):
@@ -207,18 +198,23 @@ demo_course = CourseData(
             'showanswer': 'always',
         },
     },
-    video_module_ids=(
-        "5c90cffecd9b48b188cbfea176bf7fe9",
-        "636541acbae448d98ab484b028c9a7f6",
-        "7e9b434e6de3435ab99bd3fb25bde807",
-        "edX_Introduction",
-    ),
-    video_ids=(
-        "CCxmtcICYNc",
-        "o2pLltkrhGM",
-        "OEoXaMPEzfM",
-        "oX46YqHWgyw",
-        "qWxm7CA2v24",
+    videos=(
+        {
+            'module_id': '7e9b434e6de3435ab99bd3fb25bde807',
+            'video_id': 'CCxmtcICYNc',
+        },
+        {
+            'module_id': '5c90cffecd9b48b188cbfea176bf7fe9',
+            'video_id': 'qWxm7CA2v24',
+        },
+        {
+            'module_id': '636541acbae448d98ab484b028c9a7f6',
+            'video_id': 'o2pLltkrhGM',
+        },
+        {
+            'module_id': '0b9e39477cf34507a7a48f74be381fdd',
+            'video_id': 'b7xgknqkQk8',
+        },
     ),
     courseware_paths=(
         '',
