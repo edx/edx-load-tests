@@ -1,0 +1,6 @@
+---
+course: course-v1:edX+DemoX+Demo_Course
+
+# Minimum/Maximum waiting time between the execution of locust tasks:
+LOCUST_MIN_WAIT: 1000
+LOCUST_MAX_WAIT: 5000

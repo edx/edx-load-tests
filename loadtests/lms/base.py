@@ -2,21 +2,17 @@
 """
 
 import logging
-import os
-import sys
-import random
 
 from lazy import lazy
 from opaque_keys.edx.keys import CourseKey
 
-from helpers.auto_auth_tasks import AutoAuthTasks
-from helpers import settings
-from helpers import util
-
 import course_data
+from helpers import settings, util
+from helpers.auto_auth_tasks import AutoAuthTasks
+from helpers.mixins import EnrollmentTaskSetMixin, HeadersTaskSetMixin
 
 
-class EdxAppTasks(AutoAuthTasks):
+class EdxAppTasks(HeadersTaskSetMixin, AutoAuthTasks):
     """
     Methods useful to any/all HTTP tests for edx-platform (i.e. LMS or Studio).
     """
@@ -86,18 +82,8 @@ class EdxAppTasks(AutoAuthTasks):
         """
         return settings.data['courses'][self.course_id][setting]
 
-    @property
-    def post_headers(self):
-        """
-        Boilerplate headers for HTTP POST.
-        """
-        return {
-            'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
-            'Referer': self.locust.host
-        }
 
-
-class LmsTasks(EdxAppTasks):
+class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
     """
     Base class for course-specific LMS TaskSets.
 
@@ -109,24 +95,6 @@ class LmsTasks(EdxAppTasks):
       data should correlate, or you're likely to see a high error rate in your
       results.
     """
-
-    def enroll(self):
-        """
-        Enrolls the test's user in the course under test.
-        """
-        with self.client.post(
-            '/change_enrollment',
-            data={'course_id': self.course_id, 'enrollment_action': 'enroll'},
-            headers=self.post_headers,
-            name='enroll',
-            catch_response=True
-        ) as response:
-            if response.status_code == 400:
-                response.failure(
-                    "Enrollment failed. Check to make sure that the course key is \
-                    correct, that the course is open for enrollment, and that that the course \
-                    enrollment isn't full."
-                )
 
     def _request(self, method, path, *args, **kwargs):
         """
@@ -160,7 +128,5 @@ class LmsTasks(EdxAppTasks):
         return self._request('post', *args, **kwargs)
 
     def on_start(self):
-        """
-        """
         self.auto_auth()
-        self.enroll()
+        self.enroll(self.course_id)
