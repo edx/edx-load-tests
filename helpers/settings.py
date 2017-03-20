@@ -34,6 +34,7 @@ tests:
 import os
 import yaml
 import logging
+import copy
 from pkg_resources import resource_filename
 from pprint import pformat
 
@@ -46,7 +47,168 @@ class MissingRequiredSettingError(Exception):
     pass
 
 
-def init(test_module_full_name, required_data=None, required_secrets=None):
+class MalformedSettingFileError(Exception):
+    pass
+
+
+class Settings(object):
+    """
+    Abstraction class for the standard edx-load-tests settings files syntax
+    based on YAML.
+    """
+
+    def __init__(self, data=None, secrets=None):
+        self._data = data or {}
+        self._secrets = secrets or {}
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def secrets(self):
+        return self._secrets
+
+    def __eq__(self, other):
+        return self.data == other.data and self.secrets == other.secrets
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    @classmethod
+    def from_file(cls, settings_file):
+        """
+        Factory method to create Settings instances from settings files.
+
+        Arguments:
+            settings_file (file):
+                This open file object represents a settings file.
+
+        Returns:
+            A Settings instance containing the data and secrets from the given
+            stream.
+        """
+        data, secrets = cls.load_file(settings_file)
+        return cls(data, secrets)
+
+    @classmethod
+    def load_file(cls, settings_file):
+        """
+        Load the contents of the open file object as settings.
+
+        Arguments:
+            settings_file (file):
+                This open file object represents a settings file.
+
+        Returns:
+            Two-tuple of dicts, where the first is settings data and the second
+            is settings secrets.
+        """
+        settings_documents = list(yaml.safe_load_all(settings_file))
+
+        # capture the data and secrets from their respective YAML documents
+        data = None
+        secrets = None
+        if len(settings_documents) == 1:
+            data, = settings_documents
+        elif len(settings_documents) == 2:
+            data, secrets = settings_documents
+        elif len(settings_documents) > 2:
+            raise MalformedSettingFileError("The settings file has more than two documents.")
+
+        # YAML treats empty documents as None, we normalize it to an empty dict
+        if data is None:
+            data = {}
+        if secrets is None:
+            secrets = {}
+
+        # Make sure we're actually returning dicts.  Documents in YAML could
+        # contain things other than mappings, but that wouldn't be valid for
+        # settings.
+        # not_mappings is a list of error messages:
+        not_mappings = [
+            "{} has type '{}'".format(descriptor, type(obj).__name__)
+            for descriptor, obj
+            in {"first document": data, "second document": secrets}.items()
+            if not isinstance(obj, dict)
+        ]
+        if not_mappings:
+            # Say "mapping" in the error message instead of "dict" because
+            # that's what they're called in YAML.
+            raise MalformedSettingFileError(
+                "One or more YAML documents in the settings file was not a mapping: {}.".format(', '.join(not_mappings))
+            )
+
+        return (data, secrets)
+
+    def validate_required(self, required_data=(), required_secrets=()):
+        """
+        Validate the settings keys by making sure the required ones are
+        present.
+
+        Arguments:
+            required_data (iterable of str):
+                dict keys which we will be confirming are in self.data and not
+                mapped to None.
+            required_secrets (iterable of str):
+                dict keys which we will be confirming are in self.secrets and
+                not mapped to None.
+
+        Raises:
+            MissingRequiredSettingError: if there are any missing settings keys
+        """
+        missing_data_keys = [key for key in required_data if self.data.get(key) is None]
+        missing_secret_keys = [key for key in required_secrets if self.secrets.get(key) is None]
+        if missing_data_keys or missing_secret_keys:
+            msgs = []
+            if missing_data_keys:
+                msgs.append('Missing settings: {}.'.format(', '.join(missing_data_keys)))
+            if missing_secret_keys:
+                msgs.append('Missing secret settings: {}.'.format(', '.join(missing_secret_keys)))
+            raise MissingRequiredSettingError(' '.join(msgs))
+
+    def dump(self, stream):
+        """
+        Dump the generated settings file contents to the given stream.
+
+        Arguments:
+            stream (file):
+                An open writable file object to dump settings into.
+        """
+        # only dump the secrets yaml document if it is populated
+        docs_to_dump = [self.data]
+        if self.secrets:
+            docs_to_dump.append(self.secrets)
+
+        yaml.safe_dump_all(
+            docs_to_dump,
+            stream=stream,
+            default_flow_style=False,  # Represent objects using indented blocks
+                                       # rather than inline enclosures.
+            explicit_start=True,  # Begin the first document with '---', per
+                                  # our usual settings file syntax.
+        )
+
+    def update(self, other_settings):
+        """
+        Merge other_settings into this one.
+
+        Existing settings are overridden by those in other_settings, and the
+        rest should remain unchanged.
+
+        Arguments:
+            other_settings (Settings):
+                Another settings instance.
+        """
+        # Only work with a deep copy of other_settings, or else we might
+        # transfer nested object references from other_settings into self,
+        # causing self to contain a mix of shared and unshared values.
+        other_settings_copy = copy.deepcopy(other_settings)
+        self._data.update(other_settings_copy.data)
+        self._secrets.update(other_settings_copy.secrets)
+
+
+def init(test_module_full_name, required_data=(), required_secrets=()):
     """
     This is the primary entrypoint for this module.  In short, it initializes
     the global data dict, finds/loads the settings files, and validates the
@@ -56,9 +218,6 @@ def init(test_module_full_name, required_data=None, required_secrets=None):
     global secrets
     if data is not None:
         raise RuntimeError('helpers.settings has been initialized twice!')
-
-    required_data = required_data or []
-    required_secrets = required_secrets or []
 
     # Find the correct settings file under the "settings_files" directory of
     # this package.  The name of the settings file corresponds to the
@@ -72,43 +231,25 @@ def init(test_module_full_name, required_data=None, required_secrets=None):
     LOG.info('using settings file: {}'.format(settings_filename))
 
     # load the settings file
-    with open(settings_filename, 'r') as settings_file:
-        settings_documents = yaml.load_all(settings_file)
-        data = settings_documents.next()
-        try:
-            secrets = settings_documents.next()
-        except StopIteration:
-            # secrets yaml document doesn't exist
-            secrets = {}
-        if secrets is None:
-            # secrets yaml document was loaded, but is empty
-            secrets = {}
-        # Now, the secrets variable is guaranteed to be assigned to a
-        # dictionary object.
-    if len(secrets) > 0:
+    try:
+        with open(settings_filename, 'r') as settings_file:
+            settings = Settings.from_file(settings_file)
+    except MalformedSettingFileError as e:
+        raise MalformedSettingFileError("{}: {}".format(settings_filename, e.message))
+
+    # validation: make sure the required keys are present
+    settings.validate_required(required_data, required_secrets)
+
+    # produce output messages for future reference
+    if settings.secrets:
         LOG.info('secrets loaded from the settings file')
     else:
         LOG.info('no secrets were specified in the settings file')
     LOG.info('loaded the following public settings:\n{}'.format(
-        pformat(data),
+        pformat(settings.data),
     ))
 
-    # check that the required settings are present
-    for key in required_data:
-        if data.get(key) is None:
-            raise MissingRequiredSettingError(
-                'the setting {} is absent, but required for the {} load tests.'.format(
-                    key,
-                    test_module_name,
-                )
-            )
-
-    # check that the required secrets are present
-    for key in required_secrets:
-        if secrets.get(key) is None:
-            raise MissingRequiredSettingError(
-                'the secret setting {} is absent, but required for the {} load tests.'.format(
-                    key,
-                    test_module_name,
-                )
-            )
+    # Copy loaded settings to globals.  The globals are used in load test code
+    # to refer to settings, not the Settings object.
+    data = settings.data
+    secrets = settings.secrets

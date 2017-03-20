@@ -86,3 +86,131 @@ def test_load_settings_empty_secrets(mock_resource_filename):
     assert settings.data == foo_data
     assert settings.secrets == {}
     assert foo_secrets is None
+
+
+def test_settings_generic():
+    """
+    Settings class smoke tests.
+    """
+    empty_settings = settings.Settings()
+    sparse_settings = settings.Settings({'public_settings_key': 1}, {'secret_settings_key': 2})
+
+    # Make sure that we start out with a blank slate when called without
+    # constructor parameters:
+    assert isinstance(empty_settings.data, dict) and not empty_settings.data
+    assert isinstance(empty_settings.secrets, dict) and not empty_settings.secrets
+
+    # Validation tests.
+    empty_settings.validate_required()
+    sparse_settings.validate_required()
+    sparse_settings.validate_required(['public_settings_key'])
+    with pytest.raises(settings.MissingRequiredSettingError):
+        empty_settings.validate_required(['missing_settings_key'])
+    with pytest.raises(settings.MissingRequiredSettingError):
+        empty_settings.validate_required(required_secrets=['missing_secret_settings_key'])
+    with pytest.raises(settings.MissingRequiredSettingError):
+        sparse_settings.validate_required(['missing_settings_key'])
+
+    # Make sure the .data attribute is actually protected:
+    try:
+        # Try to set the protected data attribute.
+        test_settings.data = {'foo': 'bar'}
+    except:
+        # Implementation dictates whether or not this is an error, but in this
+        # test we don't care.
+        pass
+    else:
+        # If there was no error, still make sure it was not changed.
+        assert not test_settings.data
+
+
+def test_settings_equality():
+    settings1 = settings.Settings(
+        data={
+            'a': 3,
+            'b': 3,
+        },
+        secrets={
+            'c': 3,
+            'd': 3,
+        },
+    )
+    settings2 = settings.Settings(
+        data={
+            'a': 3,
+            'b': 3,
+        },
+        secrets={
+            'c': 3,
+            'd': 3,
+        },
+    )
+    settings3 = settings.Settings(
+        data={
+            'a': 1,
+            'b': 3,
+        },
+        secrets={
+            'c': 3,
+            'd': 3,
+        },
+    )
+    settings4 = settings.Settings(
+        data={
+            'a': 1,
+            'b': 3,
+        },
+    )
+    assert settings1 == settings1
+    assert settings1 == settings2
+    assert settings1 != settings3
+    assert settings1 != settings4
+    assert settings2 == settings2
+    assert settings2 != settings3
+    assert settings2 != settings4
+    assert settings3 == settings3
+    assert settings3 != settings4
+
+
+def test_settings_update():
+    """
+    Settings.update() test to make sure overrides are working properly, keys
+    don't get dropped, etc.
+    """
+    test_settings = settings.Settings(
+        data={
+            'key_from_file_1': 1,
+            'key_from_file_1_overridden': 1,
+        },
+    )
+    test_settings.update(settings.Settings(
+        secrets={
+            'secret_key_from_file_2': 2,
+            'secret_key_from_file_2_overridden': 2,
+        },
+    ))
+    test_settings.update(settings.Settings(
+        data={
+            'key_from_file_1_overridden': 3,
+            'key_from_file_3': 3,
+        },
+        secrets={
+            'secret_key_from_file_2_overridden': 3,
+            'secret_key_from_file_3': 3,
+        },
+    ))
+    expected_settings = settings.Settings(
+        data={
+            'key_from_file_1': 1,
+            'key_from_file_1_overridden': 3,
+            'key_from_file_3': 3,
+        },
+        secrets={
+            'secret_key_from_file_2': 2,
+            'secret_key_from_file_2_overridden': 3,
+            'secret_key_from_file_3': 3,
+        },
+    )
+    # Settings implements __eq__() so assume this is actually doing the right
+    # thing.
+    assert test_settings == expected_settings
