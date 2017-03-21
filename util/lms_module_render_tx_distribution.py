@@ -28,39 +28,46 @@ import sys
 import fileinput
 import csv
 
-# fileinput takes input data from stdin or the filename in the first argument
-data = csv.reader(fileinput.input())
 
-# Set aside the first row, since it isn't data.  We'll use it to infer field
-# indexes.
-fields = next(data)
+def main():
 
-if 'Count' not in fields:
-    raise Exception('Count field not found')
-if 'Action' not in fields:
-    raise Exception('Action field not found')
+    # fileinput takes input data from stdin or the filename in the first argument
+    data = csv.reader(fileinput.input())
 
-# we're only concerned about the Count and Action fields
-count_idx = fields.index('Count')
-action_idx = fields.index('Action')
+    # Set aside the first row, since it isn't data.  We'll use it to infer field
+    # indexes.
+    fields = next(data)
 
-# filter out irrelevant data
-data = filter(
-    lambda record: record[action_idx].startswith('/XBlock/Handler'),
-    data
-)
+    if 'Count' not in fields:
+        raise Exception('Count field not found')
+    if 'Action' not in fields:
+        raise Exception('Action field not found')
 
-# sort by count
-data_sorted = sorted(data, key=lambda record: float(record[count_idx]), reverse=True)
+    # we're only concerned about the Count and Action fields
+    count_idx = fields.index('Count')
+    action_idx = fields.index('Action')
 
-# the total count is used to help normalize counts to percentages
-total_count = sum((float(record[count_idx]) for record in data_sorted))
+    # filter out irrelevant data
+    data = filter(
+        lambda record: record[action_idx].startswith('/XBlock/Handler'),
+        data
+    )
 
-# extract relevant fields and format/normalize them appropriately
-count_data_formatted = (
-    [record[action_idx], '{:.2f}%'.format(100 * float(record[count_idx]) / total_count)]
-    for record in data_sorted
-)
+    # sort by count
+    data_sorted = sorted(data, key=lambda record: float(record[count_idx]), reverse=True)
 
-# display results on stdout in CSV format
-csv.writer(sys.stdout).writerows(count_data_formatted)
+    # the total count is used to help normalize counts to percentages
+    total_count = sum((float(record[count_idx]) for record in data_sorted))
+
+    # extract relevant fields and format/normalize them appropriately
+    count_data_formatted = (
+        [record[action_idx], '{:.2f}%'.format(100 * float(record[count_idx]) / total_count)]
+        for record in data_sorted
+    )
+
+    # display results on stdout in CSV format
+    csv.writer(sys.stdout).writerows(count_data_formatted)
+
+
+if __name__ == '__main__':
+    main()  # pylint: disable=no-value-for-parameter

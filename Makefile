@@ -49,7 +49,7 @@ test : clean
 	py.test -n auto tests
 
 quality :
-	pep8 --config=.pep8 helpers loadtests tests
+	pep8 --config=.pep8 helpers loadtests tests util
 
 validate : quality test
 
