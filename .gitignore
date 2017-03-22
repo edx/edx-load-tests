@@ -2,6 +2,10 @@
 *~
 *.DS_Store
 *.log
+
+# pyenv
+.python-version
+
 results/
 data/
 
