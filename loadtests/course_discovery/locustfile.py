@@ -32,27 +32,27 @@ class CatalogTaskSet(SelfInterruptingTaskSet):
     @task(20)
     def get_catalog_courses(self):
         """Retrieve all courses associated with a catalog."""
-        self.client.catalogs(self.catalog_id).courses.get()
+        self.client.api.v1.catalogs(self.catalog_id).courses.get()
 
     @task(10)
     def list_courses_with_query(self):
         """Query the courses."""
-        self.client.courses.get(q='organizations:(MITx OR HarvardX)')
+        self.client.api.v1.courses.get(q='organizations:(MITx OR HarvardX)')
 
     @task(1)
     def get_catalog(self):
         """Retrieve catalog details."""
-        self.client.catalogs(self.catalog_id).get()
+        self.client.api.v1.catalogs(self.catalog_id).get()
 
     @task(1)
     def list_catalogs(self):
         """List all catalogs."""
-        self.client.catalogs.get()
+        self.client.api.v1.catalogs.get()
 
     @task(1)
     def list_courses(self):
         """List the full set of courses."""
-        self.client.courses.get()
+        self.client.api.v1.courses.get()
 
 
 class SearchTaskSet(SelfInterruptingTaskSet):
@@ -64,40 +64,40 @@ class SearchTaskSet(SelfInterruptingTaskSet):
     def search_query(self):
         """Search all content types with the given query."""
         query = random.choice(self.queries)
-        self.client.search.all.facets.get(q=query)
+        self.client.extensions.api.v1.search.all.facets.get(q=query)
 
     @task(5)
     def search_select_facet(self):
         """Filter content types using a facet."""
         facet = random.choice(self.facets)
-        self.client.search.all.facets.get(selected_facets=facet)
+        self.client.extensions.api.v1.search.all.facets.get(selected_facets=facet)
 
     @task(1)
     def search_select_query_facet(self):
         """Filter content types using a query (computed) facet."""
         query_facet = random.choice(self.query_facets)
-        self.client.search.all.facets.get(selected_query_facets=query_facet)
+        self.client.extensions.api.v1.search.all.facets.get(selected_query_facets=query_facet)
 
 
 class ProgramTaskSet(SelfInterruptingTaskSet):
     @task(1)
     def list_marketable_programs(self):
         """List the full set of marketable programs."""
-        self.client.programs.get(marketable=1)
+        self.client.api.v1.programs.get(marketable=1)
 
     @task(5)
     def filter_marketable_programs(self):
         """Filter the set of marketable programs."""
         program_types = settings.data['programs']['types']
         program_type = random.choice(program_types)
-        self.client.programs.get(marketable=1, type=program_type)
+        self.client.api.v1.programs.get(marketable=1, type=program_type)
 
     @task(1)
     def get_single_program(self):
         """Get a single program."""
         program_uuids = settings.data['programs']['uuids']
         program_uuid = random.choice(program_uuids)
-        self.client.programs(program_uuid).get()
+        self.client.api.v1.programs(program_uuid).get()
 
 
 class CourseDiscoveryTaskSet(TaskSet):
@@ -131,7 +131,7 @@ class CourseDiscoveryLocust(HttpLocust):
             settings.secrets['oauth']['client_secret'],
         )
 
-        api_url = '{}/api/v1/'.format(self.host.strip('/'))
+        api_url = self.host.strip('/')
 
         self.client = LocustEdxRestApiClient(
             api_url,
