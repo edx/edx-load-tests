@@ -30,12 +30,12 @@ class CoursewareViewsTasks(LmsTasks):
         path = 'courseware' + self.course_data.courseware_path
         self.get(path, name='courseware:index')
 
-    @task(33)
-    def mktg_course_about(self):
+    @task(10)
+    def course_home(self):
         """
-        Request the marketing about view (rendered as a button in the marketing site).
+        Requests the main course home page that contains the course outline.
         """
-        self.get('mktg-about', name='courseware:mktg_course_about')
+        self.get('course', name='courseware:course_home')
 
     @task(10)
     def info(self):
