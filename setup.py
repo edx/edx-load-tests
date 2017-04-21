@@ -8,4 +8,7 @@ setup(
     entry_points = {
         'console_scripts': ['merge_settings=util.merge_settings:main'],
     },
+    # minimal set of requirements only corresponding to the scripts in
+    # entry_points.
+    install_requires=["click", "PyYAML",],
 )
