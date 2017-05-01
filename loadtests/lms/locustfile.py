@@ -134,7 +134,7 @@ class LmsTest(LmsTasks):
 
     tasks = {
         CoursewareViewsTasks: 5,
-        ForumsTasks: 1,
+        ForumsTasks: 15,
         ModuleRenderTasks: int(round(22 * float(settings.data.get('MODULE_RENDER_MODIFIER', 1)))),
         ProctoredExamTasks: int(round(1 * float(settings.data.get('PROCTORED_EXAM_MODIFIER', 1)))),
         TrackingTasks: 24,
