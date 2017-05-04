@@ -14,8 +14,8 @@ import random
 import time
 
 from locust import HttpLocust, TaskSet, task, events
+from helpers import settings, markers
 
-from helpers import settings
 settings.init(
     __name__,
     required_data=[
@@ -27,6 +27,8 @@ settings.init(
         'CMS_USER_PASSWORD',
     ],
 )
+
+markers.install_event_markers()
 
 
 class CourseImport(TaskSet):

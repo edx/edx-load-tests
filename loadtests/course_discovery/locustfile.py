@@ -9,15 +9,16 @@ import random
 from locust import HttpLocust, task, TaskSet
 from locust.clients import HttpSession
 
-from helpers import settings
+from helpers import settings, markers
 from helpers.api import LocustEdxRestApiClient
-
 
 settings.init(
     __name__,
     required_data=['programs'],
     required_secrets=['oauth'],
 )
+
+markers.install_event_markers()
 
 
 class SelfInterruptingTaskSet(TaskSet):

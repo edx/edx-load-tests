@@ -31,11 +31,10 @@ from warnings import filterwarnings
 import MySQLdb as Database
 
 from helpers.raw_logs import RawLogger
-from helpers import datadog_reporting
+from helpers import datadog_reporting, settings, markers
 
 # load the test settings BEFORE django settings where they are used for
 # database configuration
-from helpers import settings
 settings.init(__name__, required_data=[
     'DB_ENGINE',
     'DB_HOST',
@@ -44,6 +43,8 @@ settings.init(__name__, required_data=[
     'DB_USER',
     'DB_PASSWORD',
 ])
+
+markers.install_event_markers()
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "csm.locustsettings"
 # Load django settings here to trigger edx-platform sys.path manipulations

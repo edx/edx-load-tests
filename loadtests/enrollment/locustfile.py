@@ -11,11 +11,13 @@ import json
 import uuid
 import random
 from locust import HttpLocust, TaskSet, task
+from helpers import settings, markers
 
-from helpers import settings
 settings.init(__name__, required_data=[
     'COURSE_ID_LIST',
 ])
+
+markers.install_event_markers()
 
 EMAIL_USERNAME = "success"
 EMAIL_URL = "simulator.amazonses.com"

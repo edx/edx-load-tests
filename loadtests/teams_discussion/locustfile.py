@@ -11,18 +11,17 @@ from collections import deque
 import json
 import random
 import string
-
 from locust import HttpLocust, task
-
 from helpers.auto_auth_tasks import AutoAuthTasks
+from helpers import settings, markers
 
-from helpers import settings
 settings.init(__name__, required_data=[
     'COURSE_ID',
     'LOCUST_MIN_WAIT',
     'LOCUST_MAX_WAIT',
 ])
 
+markers.install_event_markers()
 
 _dummy_chars = string.lowercase + ' '
 
