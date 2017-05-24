@@ -1,0 +1,38 @@
+---
+NOTES_HOST: https://loadtest-edx-notes.edx.org
+NUM_NOTES: 50
+NUM_WORDS: 50
+NUM_TAGS: 10
+NUM_SEARCH_TERMS: 5
+
+# The courses defines all the courses which will have load driven
+# against.  The keys at the top level are course IDs, and each value contains
+# some loadtesting-related metadata about the course.
+courses:
+    # This course was created on courses-loadtest.edx.org to re-run the demo
+    # course to use split mongo.
+    course-v1:Fx+LT001+2015_T3:
+        # The name of the python object (must be defined in
+        # loadtests.lms.course_data) which contains course data specific to
+        # this course.
+        course_data: demo_course
+
+        # This ratio describes the relative amount of hatched locust clients to enroll
+        # and participate in this course.
+        ratio: 1
+
+# The LmsNotesTasks task set is designed to reflect a typical student
+# interaction with the LMS.  Here are some other available options:
+#
+#   - ModifyNotesTasks
+#   - ListLmsNotesTasks
+#   - SearchLmsNotesTasks
+#   - SearchApiNotesTasks
+#
+LOCUST_TASK_SET: LmsNotesTasks
+
+# Minimum/Maximum waiting time between the execution of locust tasks:
+LOCUST_MIN_WAIT: 7500
+LOCUST_MAX_WAIT: 15000
+
+---

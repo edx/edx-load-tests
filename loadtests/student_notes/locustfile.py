@@ -13,29 +13,35 @@ There are many TaskSets for interacting with particular parts of
 student notes.  The `LmsNotesTasks` TaskSet attempts to model how an
 average user might interact with student notes.
 """
+import os
+import sys
+
+# due to locust sys.path manipulation, we need to re-add the project root.
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
 from contextlib import contextmanager
 import json
 from locust import HttpLocust, task, TaskSet
 import logging
-import os
 import random
-import sys
 
-# Work around the fact that Locust runs locustfiles as scripts within packages
-# and therefore doesn't allow the use of absolute or explicit relative imports.
-sys.path.append(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'lms'))
-from lms import EdxAppTasks
-from course_data import demo_course
-
+from helpers import settings
 # NOTE: the host URL passed in via command-line '--host' flag is the host of
-# the LMS!  Make sure to set the notes service URL via the NOTES_HOST
-# environment variable.
-NOTES_HOST = os.getenv('NOTES_HOST', 'http://localhost:8120')
+# the LMS!  Make sure to set the notes service URL via the NOTES_HOST setting.
+settings.init(__name__, required_data=[
+    'courses',
+    'NOTES_HOST',
+    'NUM_NOTES',
+    'NUM_WORDS',
+    'NUM_TAGS',
+    'NUM_SEARCH_TERMS',
+    'LOCUST_TASK_SET',
+    'LOCUST_MIN_WAIT',
+    'LOCUST_MAX_WAIT',
+])
 
-NUM_NOTES = os.getenv('NUM_NOTES', 50)
-NUM_WORDS = os.getenv('NUM_WORDS', 50)
-NUM_TAGS = os.getenv('NUM_TAGS', 10)
-NUM_SEARCH_TERMS = os.getenv('NUM_SEARCH_TERMS', 5)
+from helpers.mixins import EnrollmentTaskSetMixin
+from helpers.edx_app import EdxAppTasks
 
 # Constants used by the LMS when searching student notes.
 HIGHLIGHT_TAG = "span"
@@ -57,7 +63,7 @@ def pick_some(sequence, num_items):
     return random.sample(sequence, random.randint(1, num_items))
 
 
-class BaseNotesTask(EdxAppTasks):
+class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
     """
     Base class for all TaskSet classes which interact with student notes.
     """
@@ -68,7 +74,8 @@ class BaseNotesTask(EdxAppTasks):
 
     def on_start(self):
         """Runs before any requests are made."""
-        self.auto_auth(verify_ssl=False)
+        self.auto_auth()
+        self.enroll(self.course_id)
 
     @property
     def annotator_auth_token(self):
@@ -76,7 +83,6 @@ class BaseNotesTask(EdxAppTasks):
         return self.client.get(
             '/courses/{course_id}/edxnotes/token/'.format(course_id=self.course_id),
             headers={'content-type': 'text/plain'},
-            verify=False  # Skip SSL verification
         ).content
 
     @contextmanager
@@ -110,14 +116,16 @@ class BaseNotesTask(EdxAppTasks):
                 'X-CSRFToken': self.client.cookies.get('csrftoken', ''),
                 'content-type': 'application/json',
             },
-            'verify': False  # Skips SSL verification
         })
         if params_or_body is not None:
             if method == 'get':
                 kwargs.update({'params': params_or_body})
             elif method in ['post', 'patch', 'put', 'delete']:
                 kwargs.update({'data': json.dumps(params_or_body)})
-        return getattr(self.client, method)(NOTES_HOST + path, **kwargs)
+        return getattr(self.client, method)(
+            settings.data['NOTES_HOST'] + path,
+            **kwargs
+        )
 
     def get(self, path, params=None, **kwargs):
         """Internal helper for making a GET request to the notes service."""
@@ -144,10 +152,16 @@ class BaseNotesTask(EdxAppTasks):
         data = {
             "user": self._anonymous_user_id,
             "course_id": self.course_id,
-            "text": ' '.join(pick_some(NOTES_TEXT, NUM_WORDS)),
-            "tags": pick_some(NOTES_TEXT, NUM_TAGS),
+            "text": ' '.join(pick_some(
+                NOTES_TEXT,
+                settings.data['NUM_WORDS'],
+            )),
+            "tags": pick_some(
+                NOTES_TEXT,
+                settings.data['NUM_TAGS'],
+            ),
             "quote": ' '.join(pick_some(NOTES_TEXT, 5)),
-            "usage_id": demo_course.html_usage_id,
+            "usage_id": self.course_data.html_usage_id,
             "ranges": [
                 {
                     "start": "/div[1]/p[1]",
@@ -177,7 +191,10 @@ class BaseNotesTask(EdxAppTasks):
         """Edit a note."""
         collection_path = '/api/v1/annotations/'
         with self.get_posted_student_note('No notes left to edit.') as note:
-            note['text'] = ' '.join(pick_some(NOTES_TEXT, NUM_WORDS))
+            note['text'] = ' '.join(pick_some(
+                NOTES_TEXT,
+                settings.data['NUM_WORDS'],
+            ))
             self.put(collection_path + note['id'], note, name=collection_path + '[id]')
             self._notes[note['id']] = note
 
@@ -189,7 +206,12 @@ class BaseNotesTask(EdxAppTasks):
     def _search_notes(self):
         """Search notes from the LMS for random text."""
         path = '/courses/{course_id}/edxnotes/search/'.format(course_id=self.course_id)
-        params = {'text': ' '.join(pick_some(NOTES_TEXT, NUM_SEARCH_TERMS))}
+        params = {
+            'text': ' '.join(pick_some(
+                NOTES_TEXT,
+                settings.data['NUM_SEARCH_TERMS'],
+            )),
+        }
         # Custom name ensures searches are grouped together in locust results.
         self.client.get(path, params=params, name=path + '?text=[search_text]', verify=False)
 
@@ -199,7 +221,7 @@ class BaseNotesTask(EdxAppTasks):
         return isinstance(self.parent, TaskSet)
 
 
-class ModifyNotesTasks(BaseNotesTask, EdxAppTasks):
+class ModifyNotesTasks(BaseNotesTask):
     """Create, edit, and delete notes with weighted probabilities."""
     @task(10)
     def create_note(self):
@@ -222,7 +244,7 @@ class ListLmsNotesTasks(BaseNotesTask):
     def on_start(self):
         """Create a constant number of notes"""
         super(ListLmsNotesTasks, self).on_start()
-        self._create_many_notes(NUM_NOTES)
+        self._create_many_notes(settings.data['NUM_NOTES'])
 
     @task(10)
     def list_notes(self):
@@ -241,7 +263,7 @@ class SearchLmsNotesTasks(BaseNotesTask):
     def on_start(self):
         """Create a constant number of notes"""
         super(SearchLmsNotesTasks, self).on_start()
-        self._create_many_notes(NUM_NOTES)
+        self._create_many_notes(settings.data['NUM_NOTES'])
 
     @task(10)
     def search_notes(self):
@@ -297,7 +319,10 @@ class SearchApiNotesTasks(BaseNotesTask):
             {
                 "user": self._anonymous_user_id,
                 "course_id": self.course_id,
-                'text': ' '.join(pick_some(NOTES_TEXT, NUM_SEARCH_TERMS)),
+                'text': ' '.join(pick_some(
+                    NOTES_TEXT,
+                    settings.data['NUM_SEARCH_TERMS'],
+                )),
                 'highlight': True,
                 'highlight_tag': HIGHLIGHT_TAG,
                 'highlight_class': HIGHLIGHT_CLASS
@@ -307,6 +332,6 @@ class SearchApiNotesTasks(BaseNotesTask):
 
 
 class NotesLocust(HttpLocust):
-    task_set = globals()[os.getenv('LOCUST_TASK_SET', 'LmsNotesTasks')]
-    min_wait = int(os.getenv('LOCUST_MIN_WAIT', 7500))
-    max_wait = int(os.getenv('LOCUST_MAX_WAIT', 15000))
+    task_set = globals()[settings.data['LOCUST_TASK_SET']]
+    min_wait = settings.data['LOCUST_MIN_WAIT']
+    max_wait = settings.data['LOCUST_MAX_WAIT']
