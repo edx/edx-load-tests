@@ -37,7 +37,7 @@ settings.init(__name__, required_data=[
     'NUM_SEARCH_TERMS',
     'LOCUST_TASK_SET',
     'LOCUST_MIN_WAIT',
-    'LOCUST_MAX_WAIT',
+    'LOCUST_MAX_WAIT'
 ])
 
 from helpers.mixins import EnrollmentTaskSetMixin
