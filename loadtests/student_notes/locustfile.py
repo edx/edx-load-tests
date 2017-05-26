@@ -44,11 +44,11 @@ from helpers.mixins import EnrollmentTaskSetMixin
 from helpers.edx_app import EdxAppTasks
 
 # Constants used by the LMS when searching student notes.
-HIGHLIGHT_TAG = "span"
-HIGHLIGHT_CLASS = "note-highlight"
+HIGHLIGHT_TAG = 'span'
+HIGHLIGHT_CLASS = 'note-highlight'
 
 # Internal constants
-DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), "notes_data/")
+DATA_DIRECTORY = os.path.join(os.path.dirname(__file__), 'notes_data/')
 with open(os.path.join(DATA_DIRECTORY, 'basic_words.txt')) as f:
     NOTES_TEXT = [word for line in f for word in line.split()]
 
@@ -68,18 +68,24 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
     Base class for all TaskSet classes which interact with student notes.
     """
     def __init__(self, *args, **kwargs):
-        """Keep track of notes we post."""
+        """
+        Keep track of notes we post.
+        """
         super(BaseNotesTask, self).__init__(*args, **kwargs)
         self._notes = {}
 
     def on_start(self):
-        """Runs before any requests are made."""
+        """
+        Runs before any requests are made.
+        """
         self.auto_auth()
         self.enroll(self.course_id)
 
     @property
     def annotator_auth_token(self):
-        """Get the JWT key for making requests to the notes service from the LMS."""
+        """
+        Get the JWT key for making requests to the notes service from the LMS.
+        """
         return self.client.get(
             '/courses/{course_id}/edxnotes/token/'.format(course_id=self.course_id),
             headers={'content-type': 'text/plain'},
@@ -128,19 +134,27 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
         )
 
     def get(self, path, params=None, **kwargs):
-        """Internal helper for making a GET request to the notes service."""
+        """
+        Internal helper for making a GET request to the notes service.
+        """
         return self._request_from_notes_service('get', path, params, **kwargs)
 
     def post(self, path, body=None, **kwargs):
-        """Internal helper for making a POST request to the notes service."""
+        """
+        Internal helper for making a POST request to the notes service.
+        """
         return self._request_from_notes_service('post', path, body, **kwargs)
 
     def put(self, path, body=None, **kwargs):
-        """Internal helper for making a PUT request to the notes service."""
+        """
+        Internal helper for making a PUT request to the notes service.
+        """
         return self._request_from_notes_service('put', path, body, **kwargs)
 
     def delete(self, path, params=None, **kwargs):
-        """Internal helper for making a DELETE request to the notes service."""
+        """
+        Internal helper for making a DELETE request to the notes service.
+        """
         return self._request_from_notes_service('delete', path, params, **kwargs)
 
     def _create_note(self):
@@ -150,24 +164,24 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
         'tags', and 'quote' fields will be arbitrarily generated.
         """
         data = {
-            "user": self._anonymous_user_id,
-            "course_id": self.course_id,
-            "text": ' '.join(pick_some(
+            'user': self._anonymous_user_id,
+            'course_id': self.course_id,
+            'text': ' '.join(pick_some(
                 NOTES_TEXT,
                 settings.data['NUM_WORDS'],
             )),
-            "tags": pick_some(
+            'tags': pick_some(
                 NOTES_TEXT,
                 settings.data['NUM_TAGS'],
             ),
-            "quote": ' '.join(pick_some(NOTES_TEXT, 5)),
-            "usage_id": self.course_data.html_usage_id,
-            "ranges": [
+            'quote': ' '.join(pick_some(NOTES_TEXT, 5)),
+            'usage_id': self.course_data.html_usage_id,
+            'ranges': [
                 {
-                    "start": "/div[1]/p[1]",
-                    "end": "/div[1]/p[1]",
-                    "startOffset": 0,
-                    "endOffset": 6
+                    'start': '/div[1]/p[1]',
+                    'end': '/div[1]/p[1]',
+                    'startOffset': 0,
+                    'endOffset': 6
                 }
             ],
         }
@@ -176,19 +190,25 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
         return note
 
     def _create_many_notes(self, num_notes):
-        """Create many notes within the course for the current user."""
+        """
+        Create many notes within the course for the current user.
+        """
         for _ in xrange(num_notes):
             self._create_note()
 
     def _delete_note(self):
-        """Delete a note."""
+        """
+        Delete a note.
+        """
         collection_path = '/api/v1/annotations/'
         with self.get_posted_student_note('No notes left to delete.') as note:
             self.delete(collection_path + note['id'], note, name=collection_path + '[id]')
             self._notes.pop(note['id'])
 
     def _edit_note(self):
-        """Edit a note."""
+        """
+        Edit a note.
+        """
         collection_path = '/api/v1/annotations/'
         with self.get_posted_student_note('No notes left to edit.') as note:
             note['text'] = ' '.join(pick_some(
@@ -199,12 +219,16 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
             self._notes[note['id']] = note
 
     def _list_notes(self):
-        """List notes in the LMS."""
+        """
+        List notes in the LMS.
+        """
         path = '/courses/{course_id}/edxnotes/'.format(course_id=self.course_id)
         self.client.get(path, verify=False)
 
     def _search_notes(self):
-        """Search notes from the LMS for random text."""
+        """
+        Search notes from the LMS for random text.
+        """
         path = '/courses/{course_id}/edxnotes/search/'.format(course_id=self.course_id)
         params = {
             'text': ' '.join(pick_some(
@@ -217,15 +241,21 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
 
     @property
     def is_child(self):
-        """Return True if this TaskSet is a child of another TaskSet"""
+        """
+        Return True if this TaskSet is a child of another TaskSet
+        """
         return isinstance(self.parent, TaskSet)
 
 
 class ModifyNotesTasks(BaseNotesTask):
-    """Create, edit, and delete notes with weighted probabilities."""
+    """
+    Create, edit, and delete notes with weighted probabilities.
+    """
     @task(10)
     def create_note(self):
-        """Create a note."""
+        """
+        Create a note.
+        """
         self._create_note()
 
     @task(2)
@@ -242,7 +272,9 @@ class ListLmsNotesTasks(BaseNotesTask):
     List notes on the LMS notes tab.
     """
     def on_start(self):
-        """Create a constant number of notes"""
+        """
+        Create a constant number of notes
+        """
         super(ListLmsNotesTasks, self).on_start()
         self._create_many_notes(settings.data['NUM_NOTES'])
 
@@ -261,7 +293,9 @@ class SearchLmsNotesTasks(BaseNotesTask):
     Search the notes API through the LMS, as a user would.
     """
     def on_start(self):
-        """Create a constant number of notes"""
+        """
+        Create a constant number of notes
+        """
         super(SearchLmsNotesTasks, self).on_start()
         self._create_many_notes(settings.data['NUM_NOTES'])
 
@@ -309,16 +343,20 @@ class LmsNotesTasks(BaseNotesTask):
 
 
 class SearchApiNotesTasks(BaseNotesTask):
-    """Search the notes API directly."""
+    """
+    Search the notes API directly.
+    """
     @task
     def search_notes(self):
-        """Search notes for random text."""
+        """
+        Search notes for random text.
+        """
         path = '/api/v1/search/'
         self.get(
             path,
             {
-                "user": self._anonymous_user_id,
-                "course_id": self.course_id,
+                'user': self._anonymous_user_id,
+                'course_id': self.course_id,
                 'text': ' '.join(pick_some(
                     NOTES_TEXT,
                     settings.data['NUM_SEARCH_TERMS'],
