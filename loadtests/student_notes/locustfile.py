@@ -187,8 +187,8 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
         }
         dump_data = json.dumps(data)
         data_json = json.loads(dump_data)
-        print data_json
         note = json.loads(self.post("/api/v1/annotations/", data).content)
+        print "This is the result of posting and content %s" %note
         #note = json.loads(self.post('/api/v1/annotations/', data).content)
         self._notes[note['id']] = note
         return note
