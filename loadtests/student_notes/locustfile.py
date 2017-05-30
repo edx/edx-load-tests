@@ -20,6 +20,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from contextlib import contextmanager
+from copy import copy
 import json
 from locust import HttpLocust, task, TaskSet
 import logging
@@ -73,6 +74,15 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
         """
         super(BaseNotesTask, self).__init__(*args, **kwargs)
         self._notes = {}
+
+        # The notes API is sensitive to being offered basic auth credentials.
+        # It needs JWTs for auth, but it needs the basic auth credentials to be
+        # absent from the request or else it will return 403.  We avoid that
+        # situation entirely by making a copy of self.client with stripped
+        # basic auth settings.  Only use this copy with calls to the notes API,
+        # not the LMS.
+        self.api_client = copy(self.client)
+        self.api_client.auth = None
 
     def on_start(self):
         """
@@ -128,7 +138,7 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
                 kwargs.update({'params': params_or_body})
             elif method in ['post', 'patch', 'put', 'delete']:
                 kwargs.update({'data': json.dumps(params_or_body)})
-        return getattr(self.client, method)(
+        return getattr(self.api_client, method)(
             settings.data['NOTES_HOST'] + path,
             **kwargs
         )
