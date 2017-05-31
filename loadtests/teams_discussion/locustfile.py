@@ -166,7 +166,7 @@ class TeamsDiscussionTasks(AutoAuthTasks):
         )
 
         # Add the thread to our local list.
-        self._thread_ids.append((discussion_id, response.json()['id']))
+        self._thread_ids.append((discussion_id, response.json()['content']['id']))
 
     @task
     def add_comment(self):
