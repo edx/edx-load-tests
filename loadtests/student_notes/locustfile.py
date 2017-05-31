@@ -239,7 +239,7 @@ class BaseNotesTask(EdxAppTasks, EnrollmentTaskSetMixin):
         """
         Search notes from the LMS for random text.
         """
-        path = '/courses/{course_id}/edxnotes/search/'.format(course_id=self.course_id)
+        path = '/courses/{course_id}/edxnotes/notes/'.format(course_id=self.course_id)
         params = {
             'text': ' '.join(pick_some(
                 NOTES_TEXT,
