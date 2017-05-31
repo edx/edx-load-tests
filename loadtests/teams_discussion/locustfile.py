@@ -164,7 +164,7 @@ class TeamsDiscussionTasks(AutoAuthTasks):
             data=thread_data,
             name=url.format(course_id="[course_id]", discussion_id="[discussion_topic_id]"),
         )
-	print "this is the response: %s" % response
+	print "this is the response: %s" % response.json()
         # Add the thread to our local list.
         self._thread_ids.append((discussion_id, response.json()['content']['id']))
 
