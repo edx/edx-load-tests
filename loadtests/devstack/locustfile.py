@@ -13,7 +13,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from locust import HttpLocust, task, TaskSet
 
-from helpers import settings
+from helpers import settings, markers
 from helpers.auto_auth_tasks import AutoAuthTasks
 from helpers.mixins import EnrollmentTaskSetMixin
 
@@ -22,6 +22,8 @@ settings.init(__name__, required_data=[
     'LOCUST_MIN_WAIT',
     'LOCUST_MAX_WAIT',
 ])
+
+markers.install_event_markers()
 
 
 class LMSDevstackTasks(EnrollmentTaskSetMixin, AutoAuthTasks):

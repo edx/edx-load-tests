@@ -8,14 +8,15 @@ from locust import HttpLocust, TaskSet
 
 from baskets import BasketsTasks
 from payment import CybersourcePaymentTasks
-from helpers import settings
-
+from helpers import settings, markers
 
 settings.init(
     __name__,
     required_data=['ecommerce'],
     required_secrets=['ecommerce', 'jwt'],
 )
+
+markers.install_event_markers()
 
 
 class EcommerceTest(TaskSet):

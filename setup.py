@@ -6,7 +6,10 @@ setup(
         'settings_files': ['*.yml'],
     },
     entry_points = {
-        'console_scripts': ['merge_settings=util.merge_settings:main'],
+        'console_scripts': [
+            'merge_settings = util.merge_settings:main',
+            'generate_summary = util.generate_summary:main',
+        ],
     },
     # minimal set of requirements only corresponding to the scripts in
     # entry_points.

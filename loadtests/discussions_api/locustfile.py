@@ -23,9 +23,7 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 import requests
-
 from locust import HttpLocust
-
 from discussions_api.dapi import DiscussionsApiTasks
 from discussions_api.tasks.dapi_tasks import (
     DeleteCommentsTask,
@@ -39,10 +37,10 @@ from discussions_api.tasks.dapi_tasks import (
     PostCommentsTask,
     PostThreadsTask,
 )
+from helpers import settings, markers
 
 requests.packages.urllib3.disable_warnings()
 
-from helpers import settings
 settings.init(__name__, required_data=[
     'COURSE_ID',
     'VERBOSE',
@@ -50,6 +48,8 @@ settings.init(__name__, required_data=[
     'LOCUST_MIN_WAIT',
     'LOCUST_MAX_WAIT',
 ])
+
+markers.install_event_markers()
 
 
 class DiscussionsApiTest(DiscussionsApiTasks):

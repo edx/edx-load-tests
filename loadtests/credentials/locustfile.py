@@ -10,11 +10,13 @@ import random
 from locust import task, HttpLocust
 from locust.clients import HttpSession
 
-from helpers import settings
+from helpers import settings, markers
 from helpers.api import LocustEdxRestApiClient
 from helpers.auto_auth_tasks import AutoAuthTasks
 
 settings.init(__name__, required_data=['credentials'], required_secrets=['oauth'])
+
+markers.install_event_markers()
 
 CREDENTIAL_SERVICE_URL = settings.data['credentials']['url']['service']
 LMS_ROOT_URL = settings.data['credentials']['lms_url_root']

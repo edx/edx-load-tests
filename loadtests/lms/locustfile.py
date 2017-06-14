@@ -16,14 +16,16 @@ from proctoring import ProctoredExamTasks
 from module_render import ModuleRenderTasks
 from wiki_views import WikiViewTask
 from tracking import TrackingTasks
+from helpers import settings, markers
 
-from helpers import settings
 settings.init(__name__, required_data=[
     'courses',
     'LOCUST_TASK_SET',
     'LOCUST_MIN_WAIT',
     'LOCUST_MAX_WAIT',
 ])
+
+markers.install_event_markers()
 
 
 class LmsTest(LmsTasks):
