@@ -8,6 +8,7 @@ pyzmq==15.2.0  # needed for distributed mode. remove after we start using locust
 # common loadtest requirements
 edx-opaque-keys==0.4
 lazy
+backoff==1.4.3
 
 # helpers use these
 dogapi==1.2.1
