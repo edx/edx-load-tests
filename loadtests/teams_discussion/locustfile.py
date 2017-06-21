@@ -7,13 +7,21 @@ import sys
 # due to locust sys.path manipulation, we need to re-add the project root.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+import backoff
 from collections import deque
+import requests.exceptions
 import json
 import random
 import string
 from locust import HttpLocust, task
 from helpers.auto_auth_tasks import AutoAuthTasks
 from helpers import settings, markers
+import logging
+
+# make sure all the retries appear in the log
+logging.getLogger('backoff').setLevel(logging.INFO)
+
+LOG = logging.getLogger(__name__)
 
 settings.init(__name__, required_data=[
     'COURSE_ID',
@@ -24,6 +32,24 @@ settings.init(__name__, required_data=[
 markers.install_event_markers()
 
 _dummy_chars = string.lowercase + ' '
+
+
+class TeamFullException(Exception):
+    """
+    Helper exception for the retry infrastructure for joining teams.
+    """
+    pass
+
+
+def join_team_giveup_handler(details):
+    """
+    This handler is called when a locust client gives up joining a team.
+
+    This giveup handler corresponds to TeamsDiscussionTasks.join_team()
+    retries.  We assume that this point has been reached if all the teams are
+    full.
+    """
+    raise RuntimeError('Check that there are enough open memberships among the teams.')
 
 
 def _dummy_text(minlen, maxlen):
@@ -95,20 +121,36 @@ class TeamsDiscussionTasks(AutoAuthTasks):
         """ Pick a random team from our list of teams. """
         return random.choice(self._teams)
 
+    @backoff.on_exception(backoff.constant,
+                          TeamFullException,
+                          max_tries=15,
+                          interval=2,  # 15 max tries and 2 second interval corresponds to possibly 30 seconds of
+                                       # retries until this client gives up.
+                          on_giveup=join_team_giveup_handler)
     def join_team(self):
         """
         Get the current user to join a team.
+
+        In case a client tries to join a full team, this function is decorated
+        to retry up to 15 times until an open slot is found (randomly).  As of
+        this writing, there is no obvious way to determine if a team is full
+        via the teams API.
         """
         # Pick the team this user will be on.
         self.team = self._pick_team()
         url = '/api/team/v0/team_membership/'
 
-        self._make_request(
+        response = self._make_request(
             'post',
             url,
             data={'team_id': self.team['id'], 'username': self._username},
-            name='join_team'
+            name='join_team',
         )
+        if response.status_code == 400:
+            # The complete message would be "This team is already full.",
+            # but we'll only check for the keyword "full".
+            if 'full' in response.json()['developer_message']:
+                raise TeamFullException()
 
     @property
     def _headers(self):
