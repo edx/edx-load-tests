@@ -6,6 +6,7 @@ import logging
 from helpers.edx_app import EdxAppTasks
 from helpers.mixins import EnrollmentTaskSetMixin
 from helpers import settings
+from urlparse import urlparse
 
 
 class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
@@ -17,6 +18,7 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
         """
         Single internal helper for setting up course-specific LMS requests.
         """
+        self.client.cookies.clear(domain=urlparse(self.client.base_url).hostname, path='/', name='AWSELB')
         path = '/courses/{course_id}/' + path
         path = path.format(**{n: getattr(self, n) for n in ('course_id', 'course_num', 'course_run', 'course_org')})
         logging.debug(path)
