@@ -8,7 +8,9 @@ This repository is home to public load tests for edX software components. New te
 Getting Started
 ---------------
 
-If you have not already done so, create and activate a `virtualenv <https://virtualenvwrapper.readthedocs.org/en/latest/>`_. Unless otherwise stated, assume all commands below are executed within said virtualenv.
+If you have not already done so, create and activate a `virtualenv
+<https://virtualenvwrapper.readthedocs.org/en/latest/>`_. Unless otherwise
+stated, assume all commands below are executed within said virtualenv.
 
 Prepare a load test using its make target.  This should install pip
 dependencies and a settings file. For example:
@@ -62,6 +64,16 @@ subclass of the `Locust class
 is defined. This subclass is imported into the test package's ``__init__.py``
 to facilitate discovery at runtime.  Settings for each test are read from
 ``settings_files/<testname>.yml``, and examples are provided.
+
+Test Automation
+---------------
+
+``util/run-loadtest.sh`` is an an entrypoint for automation systems.  It
+manages installation of dependencies, merging of settings files, timeout setup,
+and ``locust`` invocation, among other things.
+
+At edX, we use Jenkins as our automation system for invoking load tests.  Refer
+to ``util/jenkins-common.sh`` for more info.
 
 License
 -------
