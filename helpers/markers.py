@@ -20,16 +20,18 @@ As of this writing, the events are:
 """
 import re
 import logging
+import yaml
 from datetime import datetime, timedelta
 
 LOG = logging.getLogger(__name__)
+
+INTERMEDIATE_SUMMARY_FILENAME = 'results/intermediate_summary.yml'
 
 # As of this writing, locust prefixes logs using the default datefmt used by
 # the python logging library:
 # https://github.com/locustio/locust/blob/v0.7.5/locust/log.py#L13
 # https://github.com/python/cpython/blob/master/Lib/logging/__init__.py#L492
 LOCUST_TIMESTAMP_FORMAT = '%Y-%m-%d %H:%M:%S,%f'
-
 
 class EventMarker(object):
     """
@@ -64,6 +66,22 @@ class HeartbeatEventMarker(EventMarker):
             self._last_heartbeat = datetime.now()
 
 
+def quitting_handler():
+    """
+    """
+    # "import locust" within this scope so that this module is importable by
+    # code running in environments which do not have locust installed.
+    import locust
+    num_errors = sum(e.occurences for e in locust.stats.global_stats.errors.values())
+    locust_counts = {
+        'num_requests': locust.stats.global_stats.num_requests,
+        'num_failures': locust.stats.global_stats.num_failures,
+        'num_errors': num_errors,
+    }
+    with open(INTERMEDIATE_SUMMARY_FILENAME, 'w') as f:
+        yaml.dump(locust_counts, stream=f)
+
+
 def install_event_markers():
     """
     Call this function from a locustfile to enable event markers in logging.
@@ -72,16 +90,20 @@ def install_event_markers():
     # code running in environments which do not have locust installed.
     import locust
 
-    # install simple event markers
+    # Install simple event markers
     locust.events.locust_start_hatching += EventMarker('locust_start_hatching')
     locust.events.master_start_hatching += EventMarker('master_start_hatching')
     locust.events.quitting += EventMarker('quitting')
     locust.events.hatch_complete += EventMarker('hatch_complete')
 
-    # install heartbeat markers which are rate limited
+    # Install heartbeat markers which are rate limited
     heartbeat_handler = HeartbeatEventMarker()
     locust.events.request_success += heartbeat_handler
     locust.events.request_failure += heartbeat_handler
+
+    # Install handler which reports basic success/failure statistics for later
+    # consumption.
+    locust.events.quitting += quitting_handler
 
 
 def parse_logfile_event_marker(line_str):
