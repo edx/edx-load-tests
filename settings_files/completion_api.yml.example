@@ -1,0 +1,30 @@
+---
+# The course to drive the load test against. The following IDs should correspond
+# to the IDs of each component in the course that you are testing on.
+# The course should be structured as follows:
+
+# Chapter
+# - Subsection (html section_id)
+# - - Unit (html vertical_id)
+# - - - HTML Xblock (html xblock_id)
+# - Subsection (video section_id)
+# - - Unit (video section_id)
+# - - - Video Xblock (video xblock_id)
+
+COURSE_ID: course-v1:1+1+1
+chapter_id: 'b30cee6dd12a4ac3aebedcd94a60fff4'
+
+html:
+  section_id: '2d817b8a63ec424792899c65971951bf'
+  vertical_id: 'block-v1:1+1+1+type@vertical+block@038edcc50d6540a09f55db71b305ccfd'
+  xblock_id: 'block-v1:1+1+1+type@html+block@6c83dc487a3f47749dd3dbcd34e90586'
+
+video:
+  section_id: '8af122c833524c1eb3a884bea6f9ffae'
+  vertical_id: 'block-v1:1+1+1+type@vertical+block@673f3945bc3f432985a03db084a2194d'
+  xblock_id: 'block-v1:1+1+1+type@video+block@b8be89cc0cf043fea5047fe6275fa9cf'
+
+
+# Minimum/Maximum waiting time between the execution of locust tasks:
+LOCUST_MIN_WAIT: 7500
+LOCUST_MAX_WAIT: 15000
