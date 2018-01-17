@@ -1,0 +1,1 @@
+from locustfile import CompletionApiLocust
