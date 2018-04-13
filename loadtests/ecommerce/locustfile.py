@@ -27,12 +27,20 @@ class SelfInterruptingTaskSet(TaskSet):
 
 
 class BasketTaskSet(SelfInterruptingTaskSet):
-    catalog_id = 1
-
     @task(20)
     def get_basket_summary(self):
         """Retrieve all courses associated with a catalog."""
-        self.client.api.v2.basket.get()
+        self.client.basket.get()
+
+    @task(20)
+    def get_basket_add(self):
+        """http://localhost:18130/basket/add?sku=8CF08E5"""
+        self.client.basket.add.get(sku='8CF08E5')
+
+    @task(20)
+    def get_basket_calculate(self):
+        """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
+        self.client.api.v2.baskets.calculate.get(sku='8CF08E5')
 
 
 class EcommerceTaskSet(TaskSet):
@@ -41,7 +49,7 @@ class EcommerceTaskSet(TaskSet):
     }
 
 
-class CourseDiscoveryLocust(HttpLocust):
+class EcommerceLocust(HttpLocust):
     """Representation of a user.
 
     Locusts are hatched and used to attack the system being load tested. This class
@@ -52,7 +60,7 @@ class CourseDiscoveryLocust(HttpLocust):
     task_set = EcommerceTaskSet
 
     def __init__(self):
-        super(CourseDiscoveryLocust, self).__init__()
+        super(EcommerceLocust, self).__init__()
 
         access_token_endpoint = '{}/oauth2/access_token'.format(
             settings.secrets['oauth']['provider_url'].strip('/')

@@ -1,1 +1,1 @@
-from locustfile import EcommerceUser
+from locustfile import EcommerceLocust
