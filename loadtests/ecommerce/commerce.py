@@ -17,6 +17,9 @@ class CommerceTasks(AutoAuthTasks):
         """Setup code. Run once, before any tasks are scheduled."""
         pass
 
+    def get(self, *args, **kwargs):
+        return self._request('get', *args, **kwargs)
+
     def post(self, *args, **kwargs):
         """Perform a POST."""
         kwargs['headers'] = self.post_headers

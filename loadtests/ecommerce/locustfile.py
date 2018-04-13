@@ -4,40 +4,70 @@ import sys
 # due to locust sys.path manipulation, we need to re-add the project root.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from locust import HttpLocust, TaskSet
+import random
 
-from baskets import BasketsTasks
-from payment import CybersourcePaymentTasks
+from locust import HttpLocust, task, TaskSet
+from locust.clients import HttpSession
+
 from helpers import settings, markers
+from helpers.api import LocustEdxRestApiClient
 
 settings.init(
     __name__,
-    required_data=['ecommerce'],
-    required_secrets=['ecommerce', 'jwt'],
+    required_secrets=['oauth'],
 )
 
 markers.install_event_markers()
 
 
-class EcommerceTest(TaskSet):
-    """Load test exercising ecommerce-related operations on the LMS and Otto.
+class SelfInterruptingTaskSet(TaskSet):
+    @task(1)
+    def stop(self):
+        self.interrupt()
 
-    Execution probabilities are derived from a conservative estimate from
-    marketing placing the percentage of paid enrollments at 2% of all
-    enrollments.
-    """
+
+class BasketTaskSet(SelfInterruptingTaskSet):
+    catalog_id = 1
+
+    @task(20)
+    def get_basket_summary(self):
+        """Retrieve all courses associated with a catalog."""
+        self.client.api.v2.basket.get()
+
+
+class EcommerceTaskSet(TaskSet):
     tasks = {
-        BasketsTasks: 50,
-        CybersourcePaymentTasks: 1,
+        BasketTaskSet: 1
     }
 
 
-class EcommerceUser(HttpLocust):
-    """Representation of an HTTP "user".
+class CourseDiscoveryLocust(HttpLocust):
+    """Representation of a user.
 
-    Defines how long a simulated user should wait between executing tasks, as
-    well as which TaskSet class should define the user's behavior.
+    Locusts are hatched and used to attack the system being load tested. This class
+    defines which TaskSet class should control each locust's behavior.
     """
-    task_set = EcommerceTest
     min_wait = 3 * 1000
     max_wait = 5 * 1000
+    task_set = EcommerceTaskSet
+
+    def __init__(self):
+        super(CourseDiscoveryLocust, self).__init__()
+
+        access_token_endpoint = '{}/oauth2/access_token'.format(
+            settings.secrets['oauth']['provider_url'].strip('/')
+        )
+
+        access_token, __ = LocustEdxRestApiClient.get_oauth_access_token(
+            access_token_endpoint,
+            settings.secrets['oauth']['client_id'],
+            settings.secrets['oauth']['client_secret'],
+        )
+
+        api_url = self.host.strip('/')
+
+        self.client = LocustEdxRestApiClient(
+            api_url,
+            session=HttpSession(base_url=self.host),
+            oauth_access_token=access_token
+        )

@@ -161,6 +161,8 @@ class Settings(object):
         missing_secret_keys = [key for key in required_secrets if self.secrets.get(key) is None]
         if missing_data_keys or missing_secret_keys:
             msgs = []
+            import pdb
+            pdb.set_trace()
             if missing_data_keys:
                 msgs.append('Missing settings: {}.'.format(', '.join(missing_data_keys)))
             if missing_secret_keys:
