@@ -4,6 +4,7 @@ import sys
 # due to locust sys.path manipulation, we need to re-add the project root.
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+import uuid
 import random
 
 from locust import HttpLocust, task, TaskSet
@@ -19,6 +20,33 @@ settings.init(
 
 markers.install_event_markers()
 
+EMAIL_USERNAME = "success"
+EMAIL_URL = "simulator.amazonses.com"
+# Set a password for the users
+USER_PASSWORD = "test"
+
+
+class AutoAuthTaskSet(TaskSet):
+    """Use the auto-auth end-point to create test users. """
+
+    def auto_auth(self):
+        """Create a new account with given credentials and log in.
+
+        This requires that the test server has the feature flag
+        `AUTOMATIC_AUTH_FOR_TESTING` set to True.
+
+        """
+        del self.client.cookies["sessionid"]
+        self.username = "{0}{1}".format(EMAIL_USERNAME, uuid.uuid4().hex[:20])
+        self.full_email = "{0}@{1}".format(self.username, EMAIL_URL)
+        params = {
+            'password': USER_PASSWORD,
+            'email': self.full_email,
+            'username': self.username,
+        }
+        self.client.get("/auto_auth", params=params, verify=False, name="/auto_auth")
+        return self.username
+
 
 class SelfInterruptingTaskSet(TaskSet):
     @task(1)
@@ -26,26 +54,42 @@ class SelfInterruptingTaskSet(TaskSet):
         self.interrupt()
 
 
-class BasketTaskSet(SelfInterruptingTaskSet):
-    @task(20)
-    def get_basket_summary(self):
-        """Retrieve all courses associated with a catalog."""
-        self.client.basket.get()
+# class BasketTaskSet(SelfInterruptingTaskSet):
+#     @task(20)
+#     def get_basket_summary(self):
+#         """Retrieve all courses associated with a catalog."""
+#         self.client.basket.get()
+#
+#     @task(20)
+#     def get_basket_add(self):
+#         """http://localhost:18130/basket/add?sku=8CF08E5"""
+#         self.client.basket.add.get(sku='8CF08E5')
+#
+#     @task(20)
+#     def get_basket_calculate(self):
+#         """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
+#         self.client.api.v2.baskets.calculate.get(sku='8CF08E5')
+
+class AuthBasketTaskSet(AutoAuthTaskSet):
+    # @task(20)
+    # def get_basket_summary(self):
+    #     """Retrieve all courses associated with a catalog."""
+    #     self.client.basket.get()
 
     @task(20)
     def get_basket_add(self):
         """http://localhost:18130/basket/add?sku=8CF08E5"""
         self.client.basket.add.get(sku='8CF08E5')
 
-    @task(20)
-    def get_basket_calculate(self):
-        """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
-        self.client.api.v2.baskets.calculate.get(sku='8CF08E5')
+    # @task(20)
+    # def get_basket_calculate(self):
+    #     """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
+    #     self.client.api.v2.baskets.calculate.get(sku='8CF08E5')
 
 
 class EcommerceTaskSet(TaskSet):
     tasks = {
-        BasketTaskSet: 1
+        AuthBasketTaskSet: 1
     }
 
 
