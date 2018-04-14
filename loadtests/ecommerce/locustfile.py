@@ -25,7 +25,7 @@ EMAIL_URL = "simulator.amazonses.com"
 # Set a password for the users
 USER_PASSWORD = "test"
 
-SKUS = []
+SKUS = ["A967F95", "E0155EE", "CBA1948", "CBA1948", "8AE70EF", "A967F95"]
 HOST = "http://localhost:18130"
 
 
@@ -94,8 +94,6 @@ class AuthBasketTaskSet(AutoAuthTaskSet):
             skus=self._get_skus()
         )
         self._get(url)
-
-        self.client.basket.add.get(sku=SKUS)
 
     @task(20)
     def get_basket_calculate(self):
