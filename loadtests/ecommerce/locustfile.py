@@ -25,6 +25,9 @@ EMAIL_URL = "simulator.amazonses.com"
 # Set a password for the users
 USER_PASSWORD = "test"
 
+SKUS = []
+HOST = "http://localhost:18130"
+
 
 class AutoAuthTaskSet(TaskSet):
     """Use the auto-auth end-point to create test users. """
@@ -54,42 +57,84 @@ class SelfInterruptingTaskSet(TaskSet):
         self.interrupt()
 
 
-# class BasketTaskSet(SelfInterruptingTaskSet):
-#     @task(20)
-#     def get_basket_summary(self):
-#         """Retrieve all courses associated with a catalog."""
-#         self.client.basket.get()
-#
-#     @task(20)
-#     def get_basket_add(self):
-#         """http://localhost:18130/basket/add?sku=8CF08E5"""
-#         self.client.basket.add.get(sku='8CF08E5')
-#
-#     @task(20)
-#     def get_basket_calculate(self):
-#         """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
-#         self.client.api.v2.baskets.calculate.get(sku='8CF08E5')
-
-class AuthBasketTaskSet(AutoAuthTaskSet):
-    # @task(20)
-    # def get_basket_summary(self):
-    #     """Retrieve all courses associated with a catalog."""
-    #     self.client.basket.get()
+class BasketTaskSet(SelfInterruptingTaskSet):
+    @task(20)
+    def get_basket_summary(self):
+        """Retrieve all courses associated with a catalog."""
+        self.ecom_client.basket.get()
 
     @task(20)
     def get_basket_add(self):
         """http://localhost:18130/basket/add?sku=8CF08E5"""
-        self.client.basket.add.get(sku='8CF08E5')
+        self.ecom_client.basket.add.get(sku=SKUS)
 
-    # @task(20)
-    # def get_basket_calculate(self):
-    #     """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
-    #     self.client.api.v2.baskets.calculate.get(sku='8CF08E5')
+    @task(20)
+    def get_basket_calculate(self):
+        """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
+        self.ecom_client.api.v2.baskets.calculate.get(sku=SKUS)
+
+
+class AuthBasketTaskSet(AutoAuthTaskSet):
+
+    def on_start(self):
+        """Ensure the user is logged in and enrolled. """
+        self.auto_auth()
+
+    @task(20)
+    def get_basket_summary(self):
+        """Retrieve all courses associated with a catalog."""
+        url = u"{base}/basket".format(base=HOST)
+        self._get(url)
+
+    @task(20)
+    def get_basket_add(self):
+        """http://localhost:18130/basket/add?sku=8CF08E5"""
+        url = u"{base}/basket/add?{skus}".format(
+            base=HOST,
+            skus=self._get_skus()
+        )
+        self._get(url)
+
+        self.client.basket.add.get(sku=SKUS)
+
+    @task(20)
+    def get_basket_calculate(self):
+        """http://localhost:18130/api/v2/baskets/calculate?sku=8CF08E5"""
+        url = u"{base}/api/v2/baskets/calculate?{skus}".format(
+            base=HOST,
+            skus=self._get_skus()
+        )
+        self._get(url)
+
+    def _get_skus(self):
+        skus = ""
+        for sku in SKUS:
+            skus += "sku=" + sku + "&"
+        return skus
+
+    def _get(self, *args, **kwargs):
+        """Make a GET request to the server.
+
+        Skips SSL verification.
+
+        Raises a NotAuthorizedException if the server responds
+        with a status 403.
+        """
+        kwargs['verify'] = False
+        response = self.client.get(*args, **kwargs)
+        self._check_response(response)
+        return response
+
+    def _check_response(self, response):
+        """Check whether a response was successful. """
+        if response.status_code == 403:
+            raise Exception
 
 
 class EcommerceTaskSet(TaskSet):
     tasks = {
-        AuthBasketTaskSet: 1
+        AuthBasketTaskSet: 1,
+        # BasketTaskSet: 1
     }
 
 
@@ -118,7 +163,7 @@ class EcommerceLocust(HttpLocust):
 
         api_url = self.host.strip('/')
 
-        self.client = LocustEdxRestApiClient(
+        self.ecom_client = LocustEdxRestApiClient(
             api_url,
             session=HttpSession(base_url=self.host),
             oauth_access_token=access_token

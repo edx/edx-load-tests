@@ -19,4 +19,5 @@ You can run the E-Commerce load tests from the top level ``edx-load-tests`` dire
 
 .. code-block:: bash
 
-    $ locust --host=https://localhost:8000 -f ecommerce
+    $ locust --host=http://localhost:18130 -f ecommerce
+
