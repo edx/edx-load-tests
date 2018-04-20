@@ -44,6 +44,15 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
         kwargs['headers'] = headers
         return self._request('post', *args, **kwargs)
 
+    def login(self, email, password):
+        self.client.post(
+            '/user_api/v1/account/login_session/',
+            name="login",
+            data={'email': email, 'password': password},
+            headers=self.post_headers
+        )
+
     def on_start(self):
-        self.auto_auth()
+        self.auto_auth(params={'no_login': True})
+        self.login(self._email, self._password)
         self.enroll(self.course_id)
