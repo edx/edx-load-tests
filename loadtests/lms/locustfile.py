@@ -17,6 +17,7 @@ from module_render import ModuleRenderTasks
 from wiki_views import WikiViewTask
 from tracking import TrackingTasks
 from helpers import settings, markers
+from user_api_views import UserApiViewsTasks
 
 settings.init(__name__, required_data=[
     'courses',
@@ -140,6 +141,7 @@ class LmsTest(LmsTasks):
         ModuleRenderTasks: int(round(22 * float(settings.data.get('MODULE_RENDER_MODIFIER', 1)))),
         ProctoredExamTasks: int(round(1 * float(settings.data.get('PROCTORED_EXAM_MODIFIER', 1)))),
         TrackingTasks: 24,
+        UserApiViewsTasks: 2
     }
 
 
@@ -147,3 +149,11 @@ class LmsLocust(HttpLocust):
     task_set = globals()[settings.data['LOCUST_TASK_SET']]
     min_wait = settings.data['LOCUST_MIN_WAIT']
     max_wait = settings.data['LOCUST_MAX_WAIT']
+
+    def __init__(self, *args, **kwargs):
+        super(LmsLocust, self).__init__(*args, **kwargs)
+
+        self._email = None
+        self._password = None
+        self._is_logged_in = False
+        self._is_enrolled = False

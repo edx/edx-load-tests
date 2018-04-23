@@ -44,6 +44,30 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
         kwargs['headers'] = headers
         return self._request('post', *args, **kwargs)
 
+    def login(self, email, password):
+        response = self.client.post(
+            '/user_api/v1/account/login_session/',
+            data={'email': email, 'password': password},
+            headers=self.post_headers,
+            name='login'
+        )
+        if response.status_code == 200:
+            self.locust._is_logged_in = True
+
+    def logout(self):
+        response = self.client.get('/logout', name='logout')
+        if response.status_code == 200:
+            self.locust._is_logged_in = False
+
     def on_start(self):
-        self.auto_auth()
-        self.enroll(self.course_id)
+        if not (self.locust._email and self.locust._password):
+            self.auto_auth(params={'no_login': True})
+            self.locust._email = self._email
+            self.locust._password = self._password
+
+        if not self.locust._is_logged_in:
+            self.login(self.locust._email, self.locust._password)
+
+        if not self.locust._is_enrolled:
+            self.enroll(self.course_id)
+            self.locust._is_enrolled = True
