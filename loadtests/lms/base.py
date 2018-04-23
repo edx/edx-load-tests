@@ -46,7 +46,7 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
 
     def login(self, email, password):
         response = self.client.post(
-            '/user_api/v1/account/login_session/',
+            '/login_ajax',
             data={'email': email, 'password': password},
             headers=self.post_headers,
             name='login'
