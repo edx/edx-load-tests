@@ -382,7 +382,7 @@ class ForumsTasks(BaseForumsTasks):
         super(ForumsTasks, self).on_start()
         self.topic_ids()
         if getattr(self.locust, '_my_thread_ids', None) is None:
-           self.locust._my_thread_ids = []
+            self.locust._my_thread_ids = []
 
 
 class SeedForumsTasks(BaseForumsTasks):
