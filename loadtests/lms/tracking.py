@@ -27,7 +27,7 @@ class TrackingTasks(LmsTasks):
         random_chars = (choice(char_pool) for _ in xrange(length))
         return ''.join(random_chars)
 
-    @task(1)
+    @task(9)
     def report_event(self):
         """
         POST a user tracking event.  This simulates event reports such as
@@ -50,3 +50,10 @@ class TrackingTasks(LmsTasks):
         }
 
         response = self.client.post(EVENT_API_PATH, data=data, headers=self.post_headers)
+
+    @task(1)
+    def stop(self):
+        """
+        Switch to another TaskSet.
+        """
+        self.interrupt()
