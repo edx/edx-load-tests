@@ -3,6 +3,8 @@
 
 import logging
 
+from locust import TaskSet
+
 from helpers.edx_app import EdxAppTasks
 from helpers.mixins import EnrollmentTaskSetMixin
 from helpers import settings
@@ -45,5 +47,18 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
         return self._request('post', *args, **kwargs)
 
     def on_start(self):
-        self.auto_auth()
-        self.enroll(self.course_id)
+        if not self.locust._is_authenticated:
+            self.locust._is_authenticated = self.auto_auth()
+
+            # If we failed to authenticate, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
+            # that we can select another TaskSet and try to authenticate again.
+            if isinstance(self.parent, TaskSet) and not self.locust._is_authenticated:
+                self.interrupt()
+
+        if self.locust._is_authenticated and not self.locust._is_enrolled:
+            self.locust._is_enrolled = self.enroll(self.course_id)
+
+            # If we failed to enroll, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
+            # that we can select another TaskSet and try to authenticate again.
+            if isinstance(self.parent, TaskSet) and not self.locust._is_enrolled:
+                self.interrupt()

@@ -147,3 +147,8 @@ class LmsLocust(HttpLocust):
     task_set = globals()[settings.data['LOCUST_TASK_SET']]
     min_wait = settings.data['LOCUST_MIN_WAIT']
     max_wait = settings.data['LOCUST_MAX_WAIT']
+
+    def __init__(self, *args, **kwargs):
+        super(LmsLocust, self).__init__(*args, **kwargs)
+        self._is_authenticated = False
+        self._is_enrolled = False
