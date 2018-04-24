@@ -366,6 +366,13 @@ class ForumsTasks(BaseForumsTasks):
             name='forums:followed_threads',
         )
 
+    @task(9)
+    def stop(self):
+        """
+        Switch to a new TaskSet
+        """
+        self.interrupt()
+
     def on_start(self):
         """
         This on_start method performs the following actions:

@@ -336,3 +336,10 @@ class ModuleRenderTasks(LmsTasks):
             data=data,
             name="handler:video:save_user_state"
         )
+
+    @task(8)
+    def stop(self):
+        """
+        Switch to a new TaskSet
+        """
+        self.interrupt()
