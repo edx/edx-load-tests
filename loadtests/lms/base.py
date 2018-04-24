@@ -15,6 +15,13 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
     Base class for course-specific LMS TaskSets.
     """
 
+    @property
+    def _is_child(self):
+        """
+        Returns True if the parent of this TaskSet instance is another TaskSet.
+        """
+        return isinstance(self.parent, TaskSet)
+
     def _request(self, method, path, *args, **kwargs):
         """
         Single internal helper for setting up course-specific LMS requests.
@@ -46,19 +53,55 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
         kwargs['headers'] = headers
         return self._request('post', *args, **kwargs)
 
-    def on_start(self):
-        if not self.locust._is_authenticated:
-            self.locust._is_authenticated = self.auto_auth()
+    def auto_auth(self, *args, **kwargs):
+        success = super(LmsTasks, self).auto_auth(*args, **kwargs)
+        if success and self._email and self._password:
+            self.locust._email = self._email
+            self.locust._password = self._password
+        return success
 
-            # If we failed to authenticate, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
-            # that we can select another TaskSet and try to authenticate again.
-            if isinstance(self.parent, TaskSet) and not self.locust._is_authenticated:
+    def login(self):
+        success = False
+        if self.locust._email and self.locust._password:
+            response = self.client.post(
+                settings.data['LOGIN_PATH'],
+                data={'email': self.locust._email, 'password': self.locust._password},
+                headers=self.post_headers,
+                name='login'
+            )
+            success = response.status_code == 200
+
+        if success:
+            self.locust._is_logged_in = True
+        return success
+
+    def enroll(self, *args, **kwargs):
+        success = super(LmsTasks, self).enroll(*args, **kwargs)
+        if success:
+            self.locust._is_enrolled = True
+        return success
+
+    def on_start(self):
+        if not self.locust._is_registered:
+            self.auto_auth(params={'no_login': True})
+
+            # If we failed to register the user, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
+            # that we can select another TaskSet and try to register again.
+            if self._is_child and not self.locust._is_registered:
                 self.interrupt()
 
-        if self.locust._is_authenticated and not self.locust._is_enrolled:
-            self.locust._is_enrolled = self.enroll(self.course_id)
+        if self.locust._is_registered and not self.locust._is_logged_in:
+            self.login()
+
+            # If we failed to log in, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
+            # that we can select another TaskSet and try to log in again.
+            if self._is_child and not self.locust._is_logged_in:
+                self.interrupt()
+
+        if self.locust._is_logged_in and not self.locust._is_enrolled:
+            self.enroll(self.course_id)
 
             # If we failed to enroll, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
-            # that we can select another TaskSet and try to authenticate again.
-            if isinstance(self.parent, TaskSet) and not self.locust._is_enrolled:
+            # that we can select another TaskSet and try to enroll again.
+            if self._is_child and not self.locust._is_enrolled:
                 self.interrupt()
