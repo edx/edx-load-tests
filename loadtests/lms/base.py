@@ -77,7 +77,7 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
         return success
 
     def logout(self):
-        response = self.client.get('/logout', name='logout')
+        response = self.client.get('/logout', name='logout', allow_redirects=False)
 
         success = response.ok
         if success:
