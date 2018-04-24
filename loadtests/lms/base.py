@@ -75,6 +75,14 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
             self.locust._is_logged_in = True
         return success
 
+    def logout(self):
+        response = self.client.get('/logout', name='logout')
+
+        success = response.ok
+        if success:
+            self.locust._is_logged_in = False
+        return success
+
     def enroll(self, *args, **kwargs):
         success = super(LmsTasks, self).enroll(*args, **kwargs)
         if success:
