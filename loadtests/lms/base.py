@@ -55,7 +55,8 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
 
     def auto_auth(self, *args, **kwargs):
         success = super(LmsTasks, self).auto_auth(*args, **kwargs)
-        if success and self._email and self._password:
+        if success and self._user_id and self._email and self._password:
+            self.locust._user_id = self._user_id
             self.locust._email = self._email
             self.locust._password = self._password
         return success

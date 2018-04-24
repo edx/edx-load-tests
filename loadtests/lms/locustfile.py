@@ -152,6 +152,7 @@ class LmsLocust(HttpLocust):
 
     def __init__(self, *args, **kwargs):
         super(LmsLocust, self).__init__(*args, **kwargs)
+        self._user_id = None
         self._email = None
         self._password = None
         self._is_logged_in = False
@@ -159,4 +160,4 @@ class LmsLocust(HttpLocust):
 
     @property
     def _is_registered(self):
-        return bool(self._email and self._password)
+        return bool(self._user_id and self._email and self._password)
