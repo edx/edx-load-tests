@@ -13,9 +13,8 @@ Getting Started
 #. Set up settings file. Use ``ecommerce_deadlock.yml.example`` as an example.
 #. Set up the temporary constants file. Use ``ecommerce_deadlock_constants.py.example`` as an example.
 #. Navigate to the folder that has this loadtest folder. You should be in the folder ``loadtests``.
-#. Run locust
+#. Run locust and visit localhost:8089 to use their web GUI.
 
-.. code-block:: bash
+  .. code-block:: bash
 
-    $ locust -f ecommerce_deadlock/locustfile.py
-
+      $ locust -f ecommerce_deadlock/locustfile.py
