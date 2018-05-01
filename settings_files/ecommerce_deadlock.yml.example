@@ -1,0 +1,18 @@
+BASIC_AUTH:
+  BASIC_AUTH_USER: user
+  BASIC_AUTH_PASS: pass
+ECOMMERCE_HOST: http://localhost:18130/
+# ECOMMERCE_HOST: https://loadtest-edx-ecommerce.edx.org/
+LMS_HOST: http://localhost:18000/
+# LMS_HOST: https://courses-loadtest.edx.org/
+
+---
+# secrets below
+oauth:
+  # Typically the LMS.
+  provider_url: http://localhost:18000/
+  # provider_url: https://courses-loadtest.edx.org/
+
+  # From the course discovery client.
+  client_id: ecommerce-key
+  client_secret: ecommerce-secret

@@ -1,0 +1,10 @@
+"""
+Temporary constants
+
+Constants that will be different depending on the data in the loadtesting environment.
+"""
+SKU_LIST = ["123456", "abcdef", "123abc", "goFindaASku"]
+USER_LOGIN_CREDENTIALS = [
+    ("putatestemail1@edx.org", "password123"),
+    ("putatestemail2@edx.org", "password456"),
+]

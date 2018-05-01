@@ -1,0 +1,16 @@
+# Packages needed to run this suite of loadtests
+
+locustio==0.8.1
+
+# common loadtest requirements
+edx-opaque-keys==0.4
+lazy
+backoff==1.4.3
+
+# helpers use these
+dogapi==1.2.1
+edx-rest-api-client==1.7.1
+PyYAML==3.12
+
+# utility scripts use these
+click
