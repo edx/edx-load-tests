@@ -96,6 +96,8 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
 
             # If we failed to register the user, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
             # that we can select another TaskSet and try to register again.
+            #
+            # NOTE: this is basically a retry mechanism without backoff, so it may behoove us to add delays to this
             if self._is_child and not self.locust._is_registered:
                 self.interrupt()
 
@@ -104,6 +106,8 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
 
             # If we failed to log in, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
             # that we can select another TaskSet and try to log in again.
+            #
+            # NOTE: this is basically a retry mechanism without backoff, so it may behoove us to add delays to this
             if self._is_child and not self.locust._is_logged_in:
                 self.interrupt()
 
@@ -112,5 +116,7 @@ class LmsTasks(EnrollmentTaskSetMixin, EdxAppTasks):
 
             # If we failed to enroll, and this TaskSet is a child of the main LmsTest TaskSet, interrupt so
             # that we can select another TaskSet and try to enroll again.
+            #
+            # NOTE: this is basically a retry mechanism without backoff, so it may behoove us to add delays to this
             if self._is_child and not self.locust._is_enrolled:
                 self.interrupt()
