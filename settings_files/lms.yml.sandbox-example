@@ -8,6 +8,9 @@ COURSE_ID: course-v1:edX+DemoX+Demo_Course
 # module.
 COURSE_DATA: demo_course
 
+# Path to the primary login endpoint
+LOGIN_PATH: '/login_ajax'
+
 # Run the specified TaskSet (must be imported into the lms/locustfile.py
 # file):
 LOCUST_TASK_SET: LmsTasks

@@ -57,3 +57,10 @@ class CoursewareViewsTasks(LmsTasks):
         Request the LMS' internal about page for this course.
         """
         self.get('about', name='courseware:about')
+
+    @task(8)
+    def stop(self):
+        """
+        Switch to another TaskSet.
+        """
+        self.interrupt()

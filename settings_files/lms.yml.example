@@ -21,6 +21,9 @@ courses:
         #large_topic_id:
         #large_thread_id:
 
+# Path to the primary login endpoint
+LOGIN_PATH: '/login_ajax'
+
 # Run the specified TaskSet (must be imported into the lms/locustfile.py
 # file):
 LOCUST_TASK_SET: LmsTest

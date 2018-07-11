@@ -29,7 +29,7 @@ class ProctoredExamTasks(LmsTasks):
         response_data = json.loads(response.text)
         self.attempt_id = response_data.get('exam_attempt_id')
 
-    @task(1)
+    @task(9)
     def exam_poll_attempt(self):
         """
         Retrieves the status of an existing exam attempt.
@@ -42,3 +42,10 @@ class ProctoredExamTasks(LmsTasks):
             '{url}/{attempt_id}'.format(url=self.attempt_api_path, attempt_id=attempt_id),
             name='timed_exam:poll_attempt'
         )
+
+    @task(1)
+    def stop(self):
+        """
+        Switch to another TaskSet.
+        """
+        self.interrupt()

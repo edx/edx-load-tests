@@ -43,9 +43,16 @@ class AutoAuthTasks(TaskSet):
             verify=verify_ssl
         )
 
-        json_response = response.json()
-        self._username = json_response['username']
-        self._email = json_response['email']
-        self._password = json_response['password']
-        self._user_id = json_response['user_id']
-        self._anonymous_user_id = json_response['anonymous_id']
+        if response.status_code == 200:
+            try:
+                json_response = response.json()
+                self._username = json_response['username']
+                self._email = json_response['email']
+                self._password = json_response['password']
+                self._user_id = json_response['user_id']
+                self._anonymous_user_id = json_response['anonymous_id']
+                return True
+            except ValueError, KeyError:
+                pass
+
+        return False

@@ -287,7 +287,7 @@ class ForumsTasks(BaseForumsTasks):
         """
         thread = super(ForumsTasks, self).create_thread(self.random_topic_id(), name='forums:create_thread')
         ForumsTasks._thread_ids.append(thread)
-        self._my_thread_ids.append(thread)
+        self.locust._my_thread_ids.append(thread)
 
     @task(1)
     def update_thread(self):
@@ -298,9 +298,9 @@ class ForumsTasks(BaseForumsTasks):
         threads which this locust user has created.  LMS users cannot edit each
         others' threads.
         """
-        if not self._my_thread_ids:
+        if not self.locust._my_thread_ids:
             return
-        discussion_id, thread_id = random.choice(self._my_thread_ids)
+        discussion_id, thread_id = random.choice(self.locust._my_thread_ids)
         super(ForumsTasks, self).update_thread(thread_id)
 
     @task(36)
@@ -351,7 +351,7 @@ class ForumsTasks(BaseForumsTasks):
         Request the user profile endpoint.
         """
         self.get(
-            'discussion/forum/users/{}'.format(self._user_id),
+            'discussion/forum/users/{}'.format(self.locust._user_id),
             name='forums:get_user_profile',
         )
 
@@ -361,10 +361,17 @@ class ForumsTasks(BaseForumsTasks):
         Request the followed threads endpoint.
         """
         self.get(
-            'discussion/forum/users/{}/followed'.format(self._user_id),
+            'discussion/forum/users/{}/followed'.format(self.locust._user_id),
             headers={"X-Requested-With": "XMLHttpRequest"},  # non-ajax requests don't work here.
             name='forums:followed_threads',
         )
+
+    @task(11)
+    def stop(self):
+        """
+        Switch to another TaskSet.
+        """
+        self.interrupt()
 
     def on_start(self):
         """
@@ -374,7 +381,8 @@ class ForumsTasks(BaseForumsTasks):
         """
         super(ForumsTasks, self).on_start()
         self.topic_ids()
-        self._my_thread_ids = []
+        if getattr(self.locust, '_my_thread_ids', None) is None:
+            self.locust._my_thread_ids = []
 
 
 class SeedForumsTasks(BaseForumsTasks):

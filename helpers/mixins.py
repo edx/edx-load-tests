@@ -17,6 +17,7 @@ class EnrollmentTaskSetMixin(HeadersTaskSetMixin):
         """
         Enrolls the test's user in the course under test.
         """
+        success = True
         with self.client.post(
             '/change_enrollment',
             data={'course_id': course_id, 'enrollment_action': 'enroll'},
@@ -29,3 +30,5 @@ class EnrollmentTaskSetMixin(HeadersTaskSetMixin):
                     "Enrollment failed. Check to make sure that the course key is correct, "
                     "that the course is open for enrollment, and that that the course enrollment isn't full."
                 )
+                success = False
+        return success

@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 from locust import HttpLocust
 
+from authentication_views import AuthenticationViewsTasks
 from courseware_views import CoursewareViewsTasks
 from forums import ForumsTasks, SeedForumsTasks
 from base import LmsTasks
@@ -135,6 +136,7 @@ class LmsTest(LmsTasks):
     """
 
     tasks = {
+        AuthenticationViewsTasks: 1,
         CoursewareViewsTasks: 5,
         ForumsTasks: 1,
         ModuleRenderTasks: int(round(22 * float(settings.data.get('MODULE_RENDER_MODIFIER', 1)))),
@@ -147,3 +149,15 @@ class LmsLocust(HttpLocust):
     task_set = globals()[settings.data['LOCUST_TASK_SET']]
     min_wait = settings.data['LOCUST_MIN_WAIT']
     max_wait = settings.data['LOCUST_MAX_WAIT']
+
+    def __init__(self, *args, **kwargs):
+        super(LmsLocust, self).__init__(*args, **kwargs)
+        self._user_id = None
+        self._email = None
+        self._password = None
+        self._is_logged_in = False
+        self._is_enrolled = False
+
+    @property
+    def _is_registered(self):
+        return bool(self._user_id and self._email and self._password)
