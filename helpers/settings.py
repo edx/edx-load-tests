@@ -221,7 +221,7 @@ def init(test_module_full_name, required_data=(), required_secrets=()):
 
     # Find the correct settings file under the "settings_files" directory of
     # this package.  The name of the settings file corresponds to the
-    # name of the directory containing the locustfile. E.g.
+    # name of the directory contaisning the locustfile. E.g.
     # "loadtests/lms/locustfile.py" reads settings data from
     # "settings_files/lms.yml".
     test_module_name = test_module_full_name.split('.')[-2]
